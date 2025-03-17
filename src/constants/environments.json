@@ -1,0 +1,6 @@
+[
+  { "label": "Local", "value": "local", "prefix": "LOC" },
+  { "label": "Integrations", "value": "integrations", "prefix": "INT" },
+  { "label": "Staging", "value": "staging", "prefix": "STAG" },
+  { "label": "Test", "value": "test", "prefix": "TEST" }
+]

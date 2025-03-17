@@ -1,0 +1,11 @@
+[
+  { "label": "UK", "value": "uk" },
+  { "label": "IE", "value": "ie" },
+  { "label": "CA", "value": "ca" },
+  { "label": "US", "value": "us" },
+  { "label": "AU", "value": "au" },
+  { "label": "UNI", "value": "uni" },
+  { "label": "TD", "value": "td" },
+  { "label": "BMO", "value": "bmo" },
+  { "label": "SPW", "value": "spw" }
+]

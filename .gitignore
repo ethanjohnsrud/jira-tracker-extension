@@ -1,0 +1,9 @@
+/dist/
+/node_modules/
+/src-*/
+/src -*/
+
+package-lock.json
+yarn.lock
+.env
+.pem

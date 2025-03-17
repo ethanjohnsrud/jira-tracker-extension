@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  overflow-y: hidden;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 10px;
+  transition: background 0.3s, color 0.3s;
+  min-width: 500px;
+  height: 600px;
+  overflow: hidden;
+  border: none;
+
+  /* Main Extension Background Color to Match Chrome Toolbar */
+  background: #353535;
+  color: white;
+}
+
+#react-target {
+  height: 600px;
+}
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 20px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: transparent;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: #113d42;
+    border-radius: 100vh;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #1a494f;
+  }
+}
