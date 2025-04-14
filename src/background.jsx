@@ -41,7 +41,6 @@ const clearCache = () => {
 
 
 const getListEntryDisplayName = (url, jiraSprint, agoClientName) => {
-    jiraSprint = 77;
     /* Jira List Entries */
     if(JIRA_URL_MATCHING_REGEX.test(url)) {
         console.log('NAME for JIRA', jiraSprint, url.match(JIRA_URL_MATCHING_REGEX)[1] + ((jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : ''));
@@ -76,16 +75,16 @@ const getListEntryDisplayName = (url, jiraSprint, agoClientName) => {
 
     //TODO refactor to match: AGO_CLIENT_CAPTURE_URL_REGEX
 
-const updateLastVisited = (urlList, mainUrl) => {
-    const existingUrl = urlList.find((u) => u.url === mainUrl);
-    if(existingUrl) {
-        console.log('**Revisited URL:', existingUrl);
-        existingUrl.lastVisited = new Date().toISOString();
-        return urlList;
-    }
-    console.log('**NEW URL:', mainUrl, urlList);
-    return false;
-};
+// const updateLastVisited = (urlList, mainUrl) => {
+//     const existingUrl = urlList.find((u) => u.url === mainUrl);
+//     if(existingUrl) {
+//         console.log('**Revisited URL:', existingUrl);
+//         existingUrl.lastVisited = new Date().toISOString();
+//         return urlList;
+//     }
+//     console.log('**NEW URL:', mainUrl, urlList);
+//     return false;
+// };
 
 // Utility method to trim list size to the maximum length
 const evaluateMaxListLength = (urlList) => {
@@ -133,10 +132,19 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
     if(!displayName || displayName.length === 0) return false;
 
     // Update the URL list if the URL already exists
-    let updatedUrlList = updateLastVisited(urlList, capturedUrl);
+    let updatedUrlList = [];
+    const existingUrl = urlList.find((u) => u.url === url);
+    if(existingUrl) {
+        console.log('**Revisited URL:', existingUrl);
+        existingUrl.lastVisited = new Date().toISOString();
+
+        if(!existingUrl.preserveCustomName && (isJiraUrl || !existingUrl.favorite))
+            existingUrl.displayName = displayName; //Updates Jira Sprint & AGO last name
+        updatedUrlList = urlList;
+    } else {
+        console.log('**NEW URL:', url, urlList);
     //TODO refactor to match: AGO_CLIENT_CAPTURE_URL_REGEX
 
-    if(!updatedUrlList) {
         urlList.push({
             id: uuidv4(),
             url: capturedUrl,
@@ -258,6 +266,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
             case "SAVE_URL":
                 const { url, jiraSprint, agoClientName } = request;
+                console.log(`Background Recieveing 'SAVE_ULR'`, jiraSprint, agoClientName, url);
                 const saved = await saveUrl(url, jiraSprint, agoClientName);
                 if(saved) sendResponse({ message: "URL saved" });
                 break;

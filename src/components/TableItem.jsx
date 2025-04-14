@@ -47,6 +47,7 @@ export default function TableItem({
 
         const url = urlList.find((u) => u.id === id);
         url.displayName = itemRef.current.innerText.trim();
+        url.preserveCustomName = true;
 
         await saveToStorage({ [storageListKey]: urlList });
         setEditable(false);

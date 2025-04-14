@@ -225,7 +225,7 @@ const Popup = () => {
 	};
 
 	const loadTime = async () => {
-		const { nextTimer } = await getFromStorage("nextTimer");
+		const nextTimer = await getFromStorage("nextTimer");
 		if (nextTimer) setNextTime(nextTimer);
 	};
 

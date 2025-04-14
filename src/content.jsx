@@ -7,15 +7,22 @@ import ROUTES from "./constants/routes.json";
 /* content.jsx is for manipulating the DOM */
 let currentUrl = '';
 
-const extractJiraSprint = () => {
+const extractJiraSprint = async() => {
     try {
-        const sprintElement = document.querySelector('div[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
-        if(!element) 
+        let sprintElement = await document.querySelector('div[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
+
+        //TODO Remove after testing
+        const options = ["ACTIVE", "February 28th, 2025", "March 5, 2025", "Triage"];
+        const randomIndex = Math.floor(Math.random() * options.length);
+        sprintElement = {innerText: options[randomIndex] };
+
+
+        if(!sprintElement?.innerText) 
             return "";
-        
+
         const rawText = sprintElement ? sprintElement.innerText.trim() : "";
         const parsedDate = Date.parse(rawText);
-        value = isNaN(parsedDate) ? rawText : new Date(parsedDate);
+        const value = isNaN(parsedDate) ? rawText : new Date(parsedDate);
 
         if(value instanceof Date && !isNaN(value))
             return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).replace(',', '').replace(' ', '-');
@@ -23,20 +30,31 @@ const extractJiraSprint = () => {
             return "ACT";
         else if(value === "Backlog" || value === "TRIAGED")
             return "";
+        else
+            return "";
     } catch(error) {
+        console.warn('NOTE-ERROR in extractJiraSprint', error)
         return "";
     }
 }
 
-const extractAGOClientLastName = () => { 
+const extractAGOClientLastName = async() => { 
     try {
-        const element = document.getElementById("client-actions-dropdown");
-        if(!element) 
+        let element = await document.getElementById("client-actions-dropdown");
+
+        //TODO Remove after testing
+        const options = ["Testing", "Hanson, Hannah", "Phillips, Emily", "Sadergaski, Paul"];
+        const randomIndex = Math.floor(Math.random() * options.length);
+        element = {innerText: options[randomIndex] };
+
+
+        if(!element?.innerText) 
             return "";
 
         const text = element.innerText.trim();
         return text.split(",")[0].trim(); 
-    } catch (error) {
+    } catch(error) {
+        console.warn('NOTE-ERROR in extractAGOClientLastName', error)
         return "";
     }
 };
@@ -46,14 +64,15 @@ const saveUrl = async () => {
     const url = window.location.href;
 
     /* Extract Page Text and pass to background.jsx */
-    const jiraSprint = extractJiraSprint(); //Empty string when not applicable
-    const agoClientName = extractAGOClientLastName(); //Empty string when not applicable
+    const jiraSprint = await extractJiraSprint(); //Empty string when not applicable
+    const agoClientName = await extractAGOClientLastName(); //Empty string when not applicable
+    console.log(`CONTENT SENDING 'SAVE_ULR'`, jiraSprint, agoClientName, url);
 
     const response = await chrome.runtime.sendMessage({
         command: "SAVE_URL",
         url,
         jiraSprint,
-        agoName: agoClientName
+        agoClientName
     });
     // console.log(response);
 };
