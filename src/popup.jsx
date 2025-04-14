@@ -3,23 +3,24 @@ import "./index.css";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
-
+import { JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX, AGO_HEADER_HYPERLINK, JIRA_HEADER_HYPERLINK } from "./constants/constants.js";
+ 
 import Dropdown from "./components/Dropdown.jsx";
 import Button from "./components/Button.jsx";
 
 import { saveToStorage, getFromStorage } from "./controllers/storageController.js";
 import { createRoot } from "react-dom/client";
 import TableItem from "./components/TableItem.jsx";
-import { JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX, AGO_HEADER_HYPERLINK, JIRA_HEADER_HYPERLINK } from "./constants/constants.js";
 
 
-/* popup.jsx is the React extension popup display */
-
+/**************************************************
+ * popup.jsx is the React extension popup display *
+ **************************************************/
 const Popup = () => {
 	const [dropdowns, setDropdowns] = useState({
-		region: "",
-		environment: "",
-		route: "",
+		region: REGIONS[0],
+		environment: ENVIRONMENTS[1],
+		route: ROUTES[0],
 	});
 	const [tabOn, setTabOn] = useState(false);
 	const [cacheOn, setCacheOn] = useState(false);
@@ -194,8 +195,8 @@ const Popup = () => {
 		setJiraDisplayList(jiraSortedList);
 		setAgoDisplayList(agoSortedList);
 
-		/* Determine Link Ready URLs */
-		 
+
+		/* Determine Link Ready URLs */		 
 		if (jiraUrlList && jiraUrlList.length > 0)
 			setLatestJiraId(jiraUrlList.reduce((latest, current) => new Date(current.lastVisited) > new Date(latest.lastVisited) ? current : latest).id);
 
@@ -247,6 +248,9 @@ const Popup = () => {
 	}, [nextTime]);
 
 
+	/************************
+	 * POPUP INITIALIZATION *
+	 ************************/
 
 	useEffect(() => {
 
@@ -281,9 +285,9 @@ const Popup = () => {
 			setCacheOn(cacheOn === true || cacheOn === 'true');
 
 			// Validate the values against the predefined lists
-			const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
-			const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? '').toLowerCase());
-			const validRoute = ROUTES.find((r) => new RegExp(r.regex).test(route));
+			const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase()) ?? REGIONS[0];
+			const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? '').toLowerCase()) ?? ENVIRONMENTS[1];
+			const validRoute = ROUTES.find((r) => new RegExp(r.regex).test(route)) ?? ROUTES[0];
 
 			console.log('initialize-dropdowns...', region, validRegion, environment, validEnvironment, route, validRoute);
 

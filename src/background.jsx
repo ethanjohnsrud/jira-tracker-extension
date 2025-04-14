@@ -41,11 +41,12 @@ const clearCache = () => {
 
 
 const getListEntryDisplayName = (url, jiraSprint, agoClientName) => {
+    jiraSprint = 77;
     /* Jira List Entries */
     if(JIRA_URL_MATCHING_REGEX.test(url)) {
-        console.log('NAME for JIRA', url.match(JIRA_URL_MATCHING_REGEX)[1]);
+        console.log('NAME for JIRA', jiraSprint, url.match(JIRA_URL_MATCHING_REGEX)[1] + ((jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : ''));
         return url.match(JIRA_URL_MATCHING_REGEX)[1] 
-            + (jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : '';
+                + ((jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : '');
   
     /* AGO List Entries */
     } else if((AGO_URL_MATCHING_REGEX.test(url))) {
@@ -77,7 +78,7 @@ const getListEntryDisplayName = (url, jiraSprint, agoClientName) => {
 
 const updateLastVisited = (urlList, mainUrl) => {
     const existingUrl = urlList.find((u) => u.url === mainUrl);
-    if (existingUrl) {
+    if(existingUrl) {
         console.log('**Revisited URL:', existingUrl);
         existingUrl.lastVisited = new Date().toISOString();
         return urlList;
@@ -106,7 +107,7 @@ const evaluateMaxListLength = (urlList) => {
 // Core saveUrl function
 const saveUrl = async (url, jiraSprint, agoClientName) => {
     // console.log('saveURL-testing', url, JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX);
-    if (!(JIRA_URL_MATCHING_REGEX.test(url) || AGO_URL_MATCHING_REGEX.test(url))) {
+    if(!(JIRA_URL_MATCHING_REGEX.test(url) || AGO_URL_MATCHING_REGEX.test(url))) {
         console.log('**URL did not match', url);
         return false;
     }
@@ -122,14 +123,14 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
     const regexToUse = isJiraUrl ? JIRA_CAPTURE_SAVE_URL_REGEX : AGO_PLAN_CAPTURE_URL_REGEX;
     let capturedUrl = url.match(regexToUse)?.[1];
 
-    if (!capturedUrl) {
+    if(!capturedUrl) {
         console.log('URL Not captures', capturedUrl, regexToUse, url);
         return false;
     }
 
     /* Save URL as Bookmark List Entry */
-    let displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
-    if (!displayName) return false;
+    const displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
+    if(!displayName || displayName.length === 0) return false;
 
     // Update the URL list if the URL already exists
     let updatedUrlList = updateLastVisited(urlList, capturedUrl);
@@ -172,7 +173,7 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
             console.log('Saved route:', route);
 
             //Initialize Cache URL | (only update with cacheOn is deactivated)
-            const { cacheOn } = await getFromStorage("cacheOn");
+            const cacheOn = await getFromStorage("cacheOn");
             if(!cacheOn) {
                 const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
                 const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? '').toLowerCase());    
