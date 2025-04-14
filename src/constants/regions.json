@@ -6,6 +6,11 @@
   { "label": "AU", "value": "au" },
   { "label": "UNI", "value": "uni" },
   { "label": "TD", "value": "td" },
+  { "label": "TDR", "value": "tdr" },
   { "label": "BMO", "value": "bmo" },
-  { "label": "SPW", "value": "spw" }
+  { "label": "CIBC", "value": "cibc" },
+  { "label": "COUTTS", "value": "coutts" },
+  { "label": "BARC", "value": "barc" },
+  { "label": "SPW", "value": "spw" },
+  { "label": "BOI", "value": "boi" }
 ]

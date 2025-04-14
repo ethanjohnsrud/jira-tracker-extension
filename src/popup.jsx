@@ -3,7 +3,7 @@ import "./index.css";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
-import { JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX, AGO_HEADER_HYPERLINK, JIRA_HEADER_HYPERLINK } from "./constants/constants.js";
+import { AGO_HEADER_HYPERLINK, JIRA_HEADER_HYPERLINK, UK_HOSTED_TEST_REGIONS, QA_TEST_REGIONS } from "./constants/constants.js";
  
 import Dropdown from "./components/Dropdown.jsx";
 import Button from "./components/Button.jsx";
@@ -51,8 +51,28 @@ const Popup = () => {
 		}
 	};
 
-	const openUrlOnChange = (event, config) => {
-		const url = `https://${config.region.value}-${config.environment.value}.planwithvoyant.com/${config.route.value}`;       //TODO support LOCAL
+	const navigateTabOnChange = (event, config) => {
+		const region = config.region.value.toUpperCase();
+		let environment = config.environment.value.toLowerCase();
+		let route = config.route.value;
+
+		let domain = '';
+		if (environment === 'local') {
+			domain = `${region}.localhost.tld:8443`;
+
+		} else {
+			//Unique Testing Domains
+			if(environment === 'test') {
+				if(QA_TEST_REGIONS.includes(region)) environment = 'qa';
+				else if(region === 'UNI') region = 'global';
+			}
+
+			const tld = (environment === 'test' && UK_HOSTED_TEST_REGIONS.includes(region)) ? 'co.uk' : 'com';
+			domain = `${region.toLowerCase()}-${environment.toLowerCase()}.planwithvoyant.${tld}`;
+		}
+
+  		const url = `https://${domain}/${route}`
+
 
 		console.log('NAVIGATING', url, config);
 
@@ -69,7 +89,7 @@ const Popup = () => {
 
 		setDropdowns((prev) => ({ ...prev, route: validRoute }));
 		await saveDropDown({ ...dropdowns, route: validRoute });
-		openUrlOnChange(event, { ...dropdowns, route: validRoute });
+		navigateTabOnChange(event, { ...dropdowns, route: validRoute });
 	};
 
 	const onRegionChange = async (event, region) => {
@@ -77,7 +97,7 @@ const Popup = () => {
 
 		setDropdowns((prev) => ({ ...prev, region: validRegion }));
 		await saveDropDown({ ...dropdowns, region: validRegion });
-		openUrlOnChange(event, { ...dropdowns, region: validRegion });
+		navigateTabOnChange(event, { ...dropdowns, region: validRegion });
 	};
 
 	const onEnvironmentChange = async (event, environment) => {
@@ -85,7 +105,7 @@ const Popup = () => {
 
 		setDropdowns((prev) => ({ ...prev, environment: validEnvironment }));
 		await saveDropDown({ ...dropdowns, environment: validEnvironment });
-		openUrlOnChange(event, { ...dropdowns, environment: validEnvironment });
+		navigateTabOnChange(event, { ...dropdowns, environment: validEnvironment });
 	};
 
 	//Rename AGO Links
@@ -107,30 +127,39 @@ const Popup = () => {
 
 	const handleCacheClick = async () => {
 		try {
-			const cacheRoute = ROUTES.find((l) => l.label === "Cache")?.value;
-			if (!cacheRoute) {
-				console.error("Cache route not found in ROUTES");
-				return;
-			}
 
-			const cacheUrl = `https://${dropdowns.region.value}-${dropdowns.environment.value}.planwithvoyant.com/${cacheRoute}`;          //TODO support LOCAL
-			await saveToStorage({ cacheUrl });
-			console.log('Setting cacheUrl in storage:', cacheUrl);
+			// const cacheUrl = `https://${dropdowns.region.value}-${dropdowns.environment.value}.planwithvoyant.com/${cacheRoute}`;          //TODO support LOCAL
+			// await saveToStorage({ cacheUrl });
+			// console.log('Setting cacheUrl in storage:', cacheUrl);
 
-			const newCacheState = !cacheOn;
-			console.log('Toggling cache status from', cacheOn, 'to', newCacheState);
+			
 
-			setCacheOn(newCacheState);
-			await saveToStorage({ cacheOn: newCacheState });
+			// const newCacheState = !cacheOn;
+			// console.log('Toggling cache status from', cacheOn, 'to', newCacheState);
+
+			// setCacheOn(newCacheState);
+			// await saveToStorage({ cacheOn: newCacheState });
 
 			// Send message to clear cache
 			if(newCacheState) {
-				console.log('Sending START_CACHE_INTERVAL message to initiate cache Interval');
-				chrome.runtime.sendMessage({ command: "START_CACHE_INTERVAL" }); //Triggers Interval Alarm
+				//Only initiate in LOCAL Environment
+				if(environment === 'local') {
+					setCacheOn(newCacheState);
+					await saveToStorage({ cacheOn: newCacheState });
+
+					console.log('Sending START_CACHE_INTERVAL message to initiate cache Interval');
+					chrome.runtime.sendMessage({ command: "START_CACHE_INTERVAL" }); //Triggers Interval Alarm
+				} else {
+					console.log('Initializing Cache Interval blocked outside local environment');
+				}
 			} else {
+				setCacheOn(false);
+				await saveToStorage({ cacheOn: newCacheState });
+
 				console.log('Sending STOP_CACHE_INTERVAL message to initiate cache Interval');
 				chrome.runtime.sendMessage({ command: "STOP_CACHE_INTERVAL" }); 
 			}
+
 
 		} catch (error) {
 			console.error("Error in handleCacheClick:", error);
@@ -274,8 +303,8 @@ const Popup = () => {
 			const { tabOn, cacheOn, region, environment, route } = await getFromStorage([
 				"tabOn",
 				"cacheOn",
-				"region",
 				"environment",
+				"region",
 				"route"
 			]);
 

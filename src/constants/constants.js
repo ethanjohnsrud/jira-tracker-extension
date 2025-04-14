@@ -1,5 +1,9 @@
 export const MAX_LIST_LENGTH = 100; //will not remove favorites
 
+//Test Environment URL Navigation
+export const UK_HOSTED_TEST_REGIONS = ['UK', 'COUTTS', 'BARC', 'SPW', 'IE', 'BOI'];
+export const QA_TEST_REGIONS = ['TD', 'TDR', 'BMO', 'SPW', 'COUTTS', 'BARC', 'SPW', 'BOI']; //Uses bmo-qa instead of bmo-test
+
 /* JIRA URL MATCHING & CAPTURE REGEX */
 // [Group #1] Capture full URL; excludes subroutes
 // [Group #2] Ticket Marker (AGO-3065, CA-719)
