@@ -111,17 +111,35 @@ const extractAGOClientLastName = async() => {
 };
 
 /*  Send URL save request to background script */
-const saveUrl = async url => {
-    if(JIRA_REGEX.test(url) || VOYANT_REGEX.test(url)){
-        const jiraSprint = JIRA_REGEX.test(url)?await extractJiraSprint() : '';
-        const agoClientName = AGO_REGEX.test(url)?await extractAGOClientLastName() : '';
-        if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_URL', url, jiraSprint, agoClientName);
-        await chrome.runtime.sendMessage({command:'SAVE_URL',url,jiraSprint,agoClientName});
-        if(AGO_REGEX.test(url)) createCacheURL();
+const saveUrl = async (url = currentUrl) => {
+    if(JIRA_REGEX.test(url)){
+      const jiraSprint = await extractJiraSprint();
+      if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_JIRA_URL',url,jiraSprint);
+
+      await chrome.runtime.sendMessage({
+        command:'SAVE_JIRA_URL',
+        url,
+        jiraSprint
+      });
+
+    } else if(AGO_REGEX.test(url)){
+      const agoClientName = await extractAGOClientLastName();
+      if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_AGO_URL',url,agoClientName);
+
+      await chrome.runtime.sendMessage({
+        command:'SAVE_AGO_URL',
+        url,
+        agoClientName
+      });
+
+      //Update
+      createCacheURL(url);
+
     } else {
-        if(DEBUG_MODE) console.log('[CONTENT][saveUrl] URL not tracked', url);
+      if(DEBUG_MODE) console.log('[CONTENT][saveUrl] URL not tracked',url);
     }
-};
+  };
+  
 
 /*  Initialize AGO tab renaming based on storage setting */
 const initializeAGOTabRenaming = async() => {
@@ -221,7 +239,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 const initialize = async () => {
     // Set DEBUG_MODE from storage
     DEBUG_MODE = (await getFromStorage('debug')) === true;
-    if (DEBUG_MODE) console.log('[CONTENT][init] DEBUG_MODE enabled');
+    if(DEBUG_MODE) console.log('[CONTENT][init] DEBUG_MODE enabled');
 
     //Set global variables
     currentUrl = window.location.href;
@@ -229,16 +247,16 @@ const initialize = async () => {
 
     // Get and cache this tab's ID
     chrome.runtime.sendMessage({ command: 'GET_TAB_ID' }, (response) => {
-        if (response?.tabId !== undefined) {
+        if(response?.tabId !== undefined) {
             thisTabId = response.tabId;
-            if (DEBUG_MODE) console.log('[CONTENT][initTabId] Tab ID:', thisTabId);
+            if(DEBUG_MODE) console.log('[CONTENT][initTabId] Tab ID:', thisTabId);
 
-            // Check if this tab should start polling
+            // Check ifthis tab should start polling
             chrome.storage.local.get(['cacheTabId'], (result) => {
-                if (result.cacheTabId === thisTabId) startCachePolling();
+                if(result.cacheTabId === thisTabId) startCachePolling();
             });
         } else {
-            if (DEBUG_MODE) console.warn('[CONTENT][initTabId] Failed to get tab ID:', response?.error);
+            if(DEBUG_MODE) console.warn('[CONTENT][initTabId] Failed to get tab ID:', response?.error);
         }
     });
 
@@ -246,7 +264,7 @@ const initialize = async () => {
     await initializeAGOTabRenaming();
     await initializeTabURLSaving(); //Updates currentUrl
 
-    if (DEBUG_MODE) console.log('[CONTENT][init] Content script initialized');
+    if(DEBUG_MODE) console.log('[CONTENT][init] Content script initialized');
 };
 
 // Call the initializer

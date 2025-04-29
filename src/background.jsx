@@ -171,7 +171,7 @@ const saveAGOUrl = async(url, agoClientName) => {
 
 
 /* Handles incoming extension messages */
-chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
+chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     (async()=>{
         switch(request.command){
             case 'GET_TAB_ID':
@@ -179,19 +179,17 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
                 else if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] GET_TAB_ID missing sender.tab');
                 break;
 
-            case 'SAVE_URL':
-                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_URL', request.url);
-            
-                let saved = false;
-            
-                if(JIRA_REGEX.test(request.url)) {
-                    saved = await saveJiraUrl(request.url, request.jiraSprint);
-                } else if (AGO_REGEX.test(request.url)) {
-                    saved = await saveAGOUrl(request.url, request.agoClientName);
-                }
-            
-                if(saved) sendResponse({ message: 'URL saved' });
-                break;                
+            case 'SAVE_JIRA_URL':
+                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_JIRA_URL',request.url);
+                const savedJira = await saveJiraUrl(request.url,request.jiraSprint);
+                if(savedJira) sendResponse({message:'JIRA URL saved'});
+                break;
+        
+            case 'SAVE_AGO_URL':
+                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_AGO_URL',request.url);
+                const savedAgo = await saveAGOUrl(request.url,request.agoClientName);
+                if(savedAgo) sendResponse({message:'AGO URL saved'});
+                break;           
         }
     })();
     return true;
