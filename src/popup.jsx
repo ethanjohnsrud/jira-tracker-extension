@@ -4,8 +4,8 @@ import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
 import {
-	AGO_HEADER_HYPERLINK,
-	JIRA_HEADER_HYPERLINK,
+	AGO_HEADER_HYPERLINK_DEFAULT,
+	JIRA_HEADER_HYPERLINK_DEFAULT,
 	UK_HOSTED_TEST_REGIONS,
 	QA_TEST_REGIONS,
 } from "./constants/constants.js";
@@ -34,6 +34,8 @@ const Popup = () => {
 		environment: ENVIRONMENTS[1],
 		route: ROUTES[0],
 	});
+	const [agoLink, setAgoLink] = useState(AGO_HEADER_HYPERLINK_DEFAULT);
+	const [jiraLink, setJiraLink] = useState(JIRA_HEADER_HYPERLINK_DEFAULT);
 	const [tabOn, setTabOn] = useState(false);
 	const [cacheOn, setCacheOn] = useState(false);
 	const [cacheLoading, setCacheLoading] = useState(false);
@@ -43,6 +45,16 @@ const Popup = () => {
 	const [latestAgoId, setLatestAgoId] = useState("");
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState(0);
 	const timerRef = useRef(null);
+
+	/* Initialize Header Button Links */
+	useEffect(() => {
+		(async () => {
+			const storedAgo = await getFromStorage('ago_header_link');
+			const storedJira = await getFromStorage('jira_header_link');
+			if(storedAgo) setAgoLink(storedAgo);
+			if(storedJira) setJiraLink(storedJira);
+		})();
+	}, []);
 
 	/* Open URL in new or current tab */
 	const openUrlTab = (event, url) => {
@@ -352,9 +364,9 @@ const Popup = () => {
 				{/* 35% Width Column */}
 				<div className="w-[35%] h-full" id="scrollable">
 					<a
-						href={JIRA_HEADER_HYPERLINK}
+						href={jiraLink}
 						target="_self"
-						onClick={(e) => openUrlTab(e, JIRA_HEADER_HYPERLINK)}
+						onClick={(e) => openUrlTab(e, jiraLink)}
 						className="text-primary text-[14px] font-bold pl-3"
 					>
 						Jira
@@ -376,9 +388,9 @@ const Popup = () => {
 				{/* 65% Width Column */}
 				<div className="w-[65%] h-full" id="scrollable">
 					<a
-						href={AGO_HEADER_HYPERLINK}
+						href={agoLink}
 						target="_self"
-						onClick={(e) => openUrlTab(e, AGO_HEADER_HYPERLINK)}
+						onClick={(e) => openUrlTab(e, agoLink)}
 						className="text-primary text-[14px] font-bold pl-3"
 					>
 						Adviser Go

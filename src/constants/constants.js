@@ -53,5 +53,5 @@ export const VOYANT_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.planwit
 
 
 /* List Header Labels Links */
-export const JIRA_HEADER_HYPERLINK = "https://voyant.atlassian.net/jira/software/c/projects/MAS/boards/17/backlog?assignee=628b9248d5ec4f0069e7776e";
-export const AGO_HEADER_HYPERLINK = "https://planwithvoyant.com/us/home";
+export const JIRA_HEADER_HYPERLINK_DEFAULT = 'https://www.atlassian.com/software/jira';
+export const AGO_HEADER_HYPERLINK_DEFAULT = 'https://planwithvoyant.com/us/home';

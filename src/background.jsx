@@ -10,346 +10,218 @@ import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
 
-/* background.jsx is for the service worker which is always running in the background; however cannot access the DOM */
 
-//Global | Local Environment when 'cacheOn' was initialized
-// let cacheUrl = "";
-// let cacheSessionCookie = "";
+/*********************************************************************************************************************
+* background.jsx is for the service worker which is always running in the background; however cannot access the DOM  *
+**********************************************************************************************************************/
 
-//Assumes "CacheOn" or manual Called
-const clearCache = async () => {
-    if (!cacheUrl || cacheUrl.length === 0 || !cacheSessionCookie || cacheSessionCookie.length === 0) {
-      console.log("clearCache-blocked", cacheUrl, cacheSessionCookie);
-      return false;
-    }
-  
-    try {
-      const res = await fetch(cacheUrl, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          Cookie: `JSESSIONID=${cacheSessionCookie}`,
-        },
-      });
-  
-      if (res.status !== 200) {
-        console.warn("Clear Cache Unavailable:", res.status, cacheUrl);
-        return false;
-      } else {
-        console.log("Local Cache Cleared:", res.status, cacheUrl);
-        return true;
-      }
-    } catch (e) {
-      console.error("Failed to Clear Cache with:", cacheUrl, e);
-      return false;
-    }
-  };
-  
+//Global 
+let DEBUG_MODE = false;
 
-const getListEntryDisplayName = (url, jiraSprint, agoClientName) => {
-    /* Jira List Entries */
-    if(JIRA_REGEX.test(url)) {
-        console.log('NAME for JIRA', jiraSprint, url.match(JIRA_REGEX)[2] + ((jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : ''), url.match(JIRA_REGEX));
-        return url.match(JIRA_REGEX)[2] 
-                + ((jiraSprint && jiraSprint.length > 0) ? ` [${jiraSprint}]` : '');
-  
-    /* AGO List Entries */
-    } else if((AGO_REGEX.test(url))) {
-        const urlMatchGroups = url.match(AGO_REGEX);
 
-        console.log('NAME for AGO', agoClientName, urlMatchGroups);
-
-        if (!urlMatchGroups || urlMatchGroups.length < 5) {
-            console.log('Invalid AGO Name Match', url, AGO_REGEX, urlMatchGroups);
+/*/ Derives display name for JIRA and AGO URLs */
+const getListEntryDisplayName = (url,jiraSprint,agoClientName)=>{
+    if(JIRA_REGEX.test(url)){
+        const match = url.match(JIRA_REGEX);
+        const name = match[2] +((jiraSprint&&jiraSprint.length>0)?` [${jiraSprint}]`: '');
+        if(DEBUG_MODE) console.log('[BACKGROUND][getListEntryDisplayName] JIRA name', name);
+        return name;
+    } else if(AGO_REGEX.test(url)){
+        const groups = url.match(AGO_REGEX);
+        if(!groups||groups.length<5) {
+            if(DEBUG_MODE) console.log('[BACKGROUND][getListEntryDisplayName] Invalid AGO Match', url, groups);
             return 'AGO';
         }
 
-        const region = urlMatchGroups[2].toUpperCase();
-        const environment = urlMatchGroups[3] || urlMatchGroups[4];
-        // const localEnvironment = ENVIRONMENTS.find((l) => l.label === "Local");  
-        const environmentPrefix = (ENVIRONMENTS.find(env => env.value === environment)?.prefix || 'ENV').toUpperCase();
-        const clientSuffix = urlMatchGroups[5];
-        const planSuffix = urlMatchGroups[6];
+        const region = groups[2].toUpperCase();
+        const environmentPrefix = (ENVIRONMENTS.find(e=>e.value===groups[3]||e.value===groups[4])?.prefix||'ENV').toUpperCase();
+        const clientSuffix = groups[5];
+        const planSuffix = groups[6];
+        const display = (agoClientName && agoClientName.length > 0) ? 
+                        `${region}-${environmentPrefix}-${agoClientName}`
+                        : `${region}-${environmentPrefix}-${clientSuffix}-${planSuffix}`;
 
-        return (agoClientName && agoClientName.length > 0) ? 
-                `${region}-${environmentPrefix}-${agoClientName}`
-                : `${region}-${environmentPrefix}-${clientSuffix}-${planSuffix}`;
-
+        if(DEBUG_MODE) console.log('[BACKGROUND][getListEntryDisplayName] AGO name', display, 'from:', region, environmentPrefix, clientSuffix, planSuffix);
+        return display;
     } else {
-        console.error('DisplayName - Did Not Match', url, JIRA_REGEX, AGO_REGEX);
+        if(DEBUG_MODE) console.error('[BACKGROUND][getListEntryDisplayName] No regex match', url);
         return false;
     }
 };
 
-
-// Utility method to update the last visited timestamp
-
-    //TODO refactor to match: AGO_CLIENT_CAPTURE_URL_REGEX
-
-// const updateLastVisited = (urlList, mainUrl) => {
-//     const existingUrl = urlList.find((u) => u.url === mainUrl);
-//     if(existingUrl) {
-//         console.log('**Revisited URL:', existingUrl);
-//         existingUrl.lastVisited = new Date().toISOString();
-//         return urlList;
-//     }
-//     console.log('**NEW URL:', mainUrl, urlList);
-//     return false;
-// };
-
-// Utility method to trim list size to the maximum length
-const evaluateMaxListLength = (urlList) => {
-    if (urlList.length > MAX_LIST_LENGTH) {
-        urlList.sort((a, b) => new Date(a.lastVisited) - new Date(b.lastVisited));
-        const indexToRemove = urlList.findIndex((url) => url.favorite === false);
-        if (indexToRemove !== -1) {
-            console.log('Max Length Reached:', urlList.length, indexToRemove, urlList[indexToRemove]);
-            urlList.splice(indexToRemove, 1);
-        }
-    } else
-        console.log('List length fine', urlList.length, urlList);
+/*/ Trims URL list to MAX_LIST_LENGTH removing oldest non-favorites */
+const evaluateMaxListLength = urlList=>{
+    if(urlList.length>MAX_LIST_LENGTH) {
+        urlList.sort((a,b)=>new Date(a.lastVisited)-new Date(b.lastVisited));
+        const idx=urlList.findIndex(u=>u.favorite===false);
+        if(idx!==-1) urlList.splice(idx,1);
+    }
+    if(DEBUG_MODE) console.log('[BACKGROUND][evaluateMaxListLength] List length', urlList.length);
     return urlList;
 };
 
+/*/ Processes and saves visited URLs into storage lists */
+const saveJiraUrl = async(url, jiraSprint) => {
+    const isJiraUrl = JIRA_REGEX.test(url);
+    if(!isJiraUrl) return false;
 
-//TODO support LOCAL
+    const storageKey = 'jiraUrlList';
+    const storedList = await getFromStorage(storageKey) || [];
+    const urlList = Array.isArray(storedList) ? storedList : [];
 
-// Core saveUrl function
-const saveUrl = async (url, jiraSprint, agoClientName) => {
-    if((JIRA_REGEX.test(url) || AGO_REGEX.test(url))) {
+    const capturedUrl = url.match(JIRA_REGEX)?.[1];
+    if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] Captured:', capturedUrl);
 
-
-        //TODO refactor into updateOrAddEntry(), maybe with enum type matched
-
-        const isJiraUrl = JIRA_REGEX.test(url);
-        const storageKey = isJiraUrl ? 'jiraUrlList' : 'agoUrlList';
-        let storedList = await getFromStorage(storageKey) || []; //Fetch storage once and ensure it's an array
-        const urlList = Array.isArray(storedList) ? storedList : [];
-        console.log('Current List', storageKey, urlList.length, urlList);
-
-        const regexToUse = isJiraUrl ? JIRA_REGEX : AGO_REGEX;
-        let capturedUrl = url.match(regexToUse)?.[1];
-
-        console.log('SaveURL-Captured:', capturedUrl, url.match(regexToUse), regexToUse, url);
-
-        if(capturedUrl) {
-            /* Save URL as Bookmark List Entry */
-            const displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
-            if(!displayName || displayName.length === 0) return false;
-
-            // Update the URL list if the URL already exists
-            let updatedUrlList = [];
-            const existingUrlItem = urlList.find((u) => u.url === capturedUrl);
-            if(existingUrlItem) {
-                console.log('**Revisited URL:', displayName, existingUrlItem);
-                existingUrlItem.lastVisited = new Date().toISOString();
-
-                if(!existingUrlItem.preserveCustomName && (isJiraUrl || !existingUrlItem.favorite))
-                    existingUrlItem.displayName = displayName; //Updates Jira Sprint & AGO last name
-                updatedUrlList = urlList;
-            } else {
-                console.log('**NEW URL:', displayName, capturedUrl, urlList);
-
-                urlList.push({
-                    id: uuidv4(),
-                    url: capturedUrl,
-                    displayName,
-                    lastVisited: new Date().toISOString(),
-                    favorite: false,
-                    preserveCustomName: false,
-                });
-
-                updatedUrlList = evaluateMaxListLength(urlList);
-            }
-            // Save the updated list back to storage
-            await saveToStorage({ [storageKey]: updatedUrlList });
-
-            console.log("Saved URL ==> ", isJiraUrl ? 'JIRA' : 'AGO', updatedUrlList.length, updatedUrlList);
-
-        } else
-            console.log('URL Not captures', capturedUrl, regexToUse, url);
-
-
-    } else {
-        console.log('**URL did not for link saving', url);
+    if(!capturedUrl) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] URL Not Captured', url);
+        return false;
     }
 
+    const displayName = getListEntryDisplayName(url, jiraSprint, null);
+    if(!displayName) return false;
 
-    /* Save AGO URL parts for Popup Link Dropdowns */
+    let updatedUrlList = [];
+    const existing = urlList.find((u) => u.url === capturedUrl);
+    if(existing) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] Revisiting:', displayName);
+        existing.lastVisited = new Date().toISOString();
+        if(!existing.preserveCustomName)
+            existing.displayName = displayName;
+        updatedUrlList = urlList;
+    } else {
+        urlList.push({
+            id: uuidv4(),
+            url: capturedUrl,
+            displayName,
+            lastVisited: new Date().toISOString(),
+            favorite: false,
+            preserveCustomName: false,
+        });
+        updatedUrlList = evaluateMaxListLength(urlList);
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] New Entry:', capturedUrl);
+    }
+
+    await saveToStorage({ [storageKey]: updatedUrlList });
+    if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] Saved List', updatedUrlList.length);
+    return true;
+};
+
+
+
+/* Save AGO URL to Storage List and update popup dropdowns */
+const saveAGOUrl = async(url, agoClientName) => {
+    const isAgoUrl = AGO_REGEX.test(url);
+    if(!isAgoUrl) return false;
+
+    const storageKey = 'agoUrlList';
+    const storedList = await getFromStorage(storageKey) || [];
+    const urlList = Array.isArray(storedList) ? storedList : [];
+
+    const capturedUrl = url.match(AGO_REGEX)?.[1];
+    if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Captured:', capturedUrl);
+
+    if(!capturedUrl) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] URL Not Captured', url);
+        return false;
+    }
+
+    const displayName = getListEntryDisplayName(url, null, agoClientName);
+    if(!displayName) return false;
+
+    let updatedUrlList = [];
+    const existing = urlList.find((u) => u.url === capturedUrl);
+    if(existing) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Revisiting:', displayName);
+        existing.lastVisited = new Date().toISOString();
+        if(!existing.preserveCustomName && !existing.favorite)
+            existing.displayName = displayName;
+        updatedUrlList = urlList;
+    } else {
+        urlList.push({
+            id: uuidv4(),
+            url: capturedUrl,
+            displayName,
+            lastVisited: new Date().toISOString(),
+            favorite: false,
+            preserveCustomName: false,
+        });
+        updatedUrlList = evaluateMaxListLength(urlList);
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] New Entry:', capturedUrl);
+    }
+
+    await saveToStorage({ [storageKey]: updatedUrlList });
+    if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Saved List', updatedUrlList.length);
+
+    // Additional dropdown storage (for popup)
     if(VOYANT_REGEX.test(url)) {
         const matched = url.match(VOYANT_REGEX);
-
-        if(matched && matched.length >= 4) { 
+        if(matched && matched.length >= 4) {
             const route = matched[1];
             const region = matched[2];
-            //[Group #3] Environment planwithvoyant (integrations/staging/test) | [Group #4] Environment (local)
             const environment = matched[3] || matched[4];
-    
-            console.log('current-URL-matched', matched, route, region, environment);
 
-            // Store each value separately
-            await saveToStorage({ region });
-            console.log('Saved region:', region);
-    
-            await saveToStorage({ environment });
-            console.log('Saved environment:', environment);
-    
-            await saveToStorage({ route });
-            console.log('Saved route:', route);
-
-            //Initialize LOCAL Cache URL | (only update with cacheOn is deactivated)
-            // const cacheOn = await getFromStorage("cacheOn");
-            // if(!cacheOn) {
-            //     const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
-            //     const localEnvironment = ENVIRONMENTS.find((l) => l.label === "Local");  
-            //     const cacheRoute = ROUTES.find((l) => l.label === "Cache");
-
-            //     //ONLY Local Cache URL
-            //     const cacheUrl = (validRegion && localEnvironment && cacheRoute) ?
-            //         `https://${validRegion.value}.${localEnvironment.value}/${cacheRoute.value}`
-            //         : ''; //Clear if invalid
-            //     await saveToStorage({ cacheUrl });
-            //     console.log('Saved LOCAL cacheUrl:', cacheUrl);
-
-            // }
-
-            // console.log('Initializing cacheUrl', cacheUrl, matched);
+            await saveToStorage({ region, environment, route });
+            if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Saved dropdowns:', region, environment, route);
         }
-    } else {
-        console.log('**URL did not for dropdown syncing', url);
     }
 
     return true;
 };
 
-// Clear existing alarms
-// const stopCacheIntervalTimer = async() => {
-//     const alarms = await chrome.alarms.getAll();
-//     alarms.forEach((alarm) => {
-//         if (alarm.name === "cache-interval-timer") {
-//             console.log("TIMERS CLEARED");
-//             chrome.alarms.clear(alarm.name);
-//         }
-//     });
-// }
 
 
-//Clear Cache Interval Timer
-// const startCacheIntervalTimer = async () => {
-//     // Clear existing alarms
-//     await stopCacheIntervalTimer();
+/* Handles incoming extension messages */
+chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
+    (async()=>{
+        switch(request.command){
+            case 'GET_TAB_ID':
+                if(sender?.tab?.id!==undefined) sendResponse({tabId:sender.tab.id});
+                else if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] GET_TAB_ID missing sender.tab');
+                break;
 
-//     const now = new Date();
-//     const thirtySecondsLater = new Date(now.getTime() + 30 * 1000).toISOString();  //Chrome limits to 30 seconds
-//     await saveToStorage({ nextTimer: thirtySecondsLater });
-
-//     //LOCAL Environment only | (Regulated in: Popup.handleCacheClick)
-//     const region = await getFromStorage("region");
-//     const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
-//     const localEnvironment = ENVIRONMENTS.find((l) => l.label === "Local");  
-//     const cacheRoute = ROUTES.find((l) => l.label === "Cache");
-
-//     if(!validRegion) {
-//         console.error('Region not Identified');
-//         return;
-//     }
-
-
-//     //Global variable assigned
-//     cacheUrl = (validRegion && localEnvironment && cacheRoute) ?
-//         `https://${validRegion.value}.${localEnvironment.value}/${cacheRoute.value}`
-//         : ''; //Clear if invalid
-
-//     console.log('Making Cache URL:', region, validRegion, localEnvironment, cacheRoute, cacheUrl);
-
-
-//     // //Fetch & Save JSESSIONID for authentication
-//     // if (cacheUrl) {
-//     //     const cookieUrl = `https://${validRegion.value}.${localEnvironment.value}/`;
-//     //     cacheSessionCookie = await new Promise((resolve) => {
-//     //       chrome.cookies.get({ url: cookieUrl, name: "JSESSIONID" }, (cookie) => {
-//     //         if (chrome.runtime.lastError) {
-//     //           console.error("Cookie fetch error:", chrome.runtime.lastError);
-//     //           return resolve(null);
-//     //         }
-//     //         if (!cookie) {
-//     //           console.warn("No JSESSIONID found for", cookieUrl);
-//     //           return resolve(null);
-//     //         }
-//     //         console.log('Cookie FOUND', cookie);
-//     //         resolve(cookie.value);
-//     //       });
-//     //     });
-//     //   }
-
-//     const cacheOn = await getFromStorage("cacheOn");
-//     if(cacheOn) {
-//         chrome.alarms.create("cache-interval-timer", {
-//             periodInMinutes: 0.5,
-//             });
-//     }
-
-//     //Execute Immediately
-//     await clearCache();
-// };
-
-//Cache Timer
-// chrome.alarms.onAlarm.addListener(async (alarm) => {
-//     if (alarm.name === "cache-interval-timer") {
-//         const now = new Date();
-//         const thirtySecondsLater = new Date(
-//             now.getTime() + (30 * 1000)
-//         ).toISOString();
-
-//         const res = await clearCache();
-//         console.log("CLEAR CACHE RESPONSE ==> ", res);
-//         console.log("Timer fired at: ", now.toLocaleTimeString());
-//         console.log({ nextTimer: thirtySecondsLater });
-//         await saveToStorage({ nextTimer: thirtySecondsLater });
-//     }
-// });
-
-
-//Global Actions
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    (async () => {
-        switch (request.command) {
-            // case "START_CACHE_INTERVAL":
-            //     const success = await clearCache();
-            //     startCacheIntervalTimer();
-            //     sendResponse({ message: "Cache Interval Started", success });
-            //     break;
-
-            // case "STOP_CACHE_INTERVAL":
-            //     stopCacheIntervalTimer();
-            //     sendResponse({ message: "Cache Interval Stopped", success });
-            //     break;
-
-            //Content.jsx can't get it's own tab ID (Used for local cache clearing)
-            case "GET_TAB_ID":
-                if (sender?.tab?.id !== undefined) {
-                    sendResponse({ tabId: sender.tab.id });
-                } else {
-                    console.warn("GET_TAB_ID: sender.tab is undefined");
-                    sendResponse({ tabId: null, error: "Tab ID not available. Was this sent from a content script?" });
+            case 'SAVE_URL':
+                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_URL', request.url);
+            
+                let saved = false;
+            
+                if(JIRA_REGEX.test(request.url)) {
+                    saved = await saveJiraUrl(request.url, request.jiraSprint);
+                } else if (AGO_REGEX.test(request.url)) {
+                    saved = await saveAGOUrl(request.url, request.agoClientName);
                 }
-                break;
-
-            case "SAVE_URL":
-                const { url, jiraSprint, agoClientName } = request;
-                console.log(`Background Recieveing 'SAVE_ULR'`, jiraSprint, agoClientName, url);
-                const saved = await saveUrl(url, jiraSprint, agoClientName);
-                if(saved) sendResponse({ message: "URL saved" });
-                break;
+            
+                if(saved) sendResponse({ message: 'URL saved' });
+                break;                
         }
     })();
     return true;
 });
 
-//Initialize Service Worker
-chrome.runtime.onInstalled.addListener(async() => {
-    console.log("Background Service Worker Initialized...");
-    // await saveToStorage({ cacheOn: false });
-    await removeFromStorage("cacheTabId");
+
+/*/ Initializes background service worker and settings on install */
+chrome.runtime.onInstalled.addListener(async()=>{
+    // Initialize DEBUG_MODE after potentially saving it
+    DEBUG_MODE = (await getFromStorage('debug')) === true;
+    if(DEBUG_MODE) console.log('[BACKGROUND][onInstalled] DEBUG_MODE enabled');
+
+    //Only set default values if not present
+    const defaults = {
+        debug: false,
+        jira_header_link: JIRA_HEADER_HYPERLINK_DEFAULT,
+        ago_header_link: AGO_HEADER_HYPERLINK_DEFAULT
+    };
+
+    for(const key in defaults){
+        const existing = await getFromStorage(key);
+        if(existing===undefined){
+            await saveToStorage({[key]:defaults[key]});
+            if(DEBUG_MODE) console.log(`[BACKGROUND][onInstalled] Set default: ${key} = ${defaults[key]}`);
+        }
+    }
+
+    //Reset on CHrome restart
+    await removeFromStorage('cacheTabId');
+
+    if(DEBUG_MODE) console.log('[BACKGROUND][onInstalled] Service Worker initialized');
 });
-  
+
