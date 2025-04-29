@@ -15,7 +15,7 @@ body {
   padding: 10px;
   transition: background 0.3s, color 0.3s;
   min-width: 500px;
-  height: 600px;
+  height: 540px;
   overflow: hidden;
   border: none;
 
@@ -29,21 +29,31 @@ body {
 }
 @layer utilities {
   .scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 20px;
+    width: 2px;
+    height: 4px;
   }
 
   .scrollbar::-webkit-scrollbar-track {
     border-radius: 100vh;
     background: transparent;
+    max-height: 4px;
   }
 
   .scrollbar::-webkit-scrollbar-thumb {
-    background: #113d42;
+    background: #7bbd4a;
     border-radius: 100vh;
   }
 
   .scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #1a494f;
+    background: #7bbd4a;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none; 
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

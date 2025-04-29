@@ -29,13 +29,13 @@ export default function Dropdown({ onChange, value, options }) {
           </svg>
         </button>
       </DropdownTrigger>
-      <DropdownMenu className="mt-2 rounded-md shadow-lg w-full">
+      <DropdownMenu className="mt-2 rounded-md shadow-lg w-full max-h-60 overflow-y-auto overflow-x-hidden hide-scrollbar">
         {options.map((option) => (
           <DropdownItem
             key={option.value}
             onPress={(e) => onChange(e, option.value)}
-            className="hover:bg-gray-200 transition duration-300 ease-in-out"
-          >
+            className="transition duration-300 ease-in-out data-[hover=true]:!bg-[#7bbd4a] data-[hover=true]:!text-white"
+            >
             {option.label}
           </DropdownItem>
         ))}

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getFromStorage, saveToStorage } from "./controllers/storageController";
+import { getFromStorage, saveToStorage, removeFromStorage } from "./controllers/storageController";
 import {
     JIRA_REGEX,
     MAX_LIST_LENGTH,
@@ -13,8 +13,8 @@ import ROUTES from "./constants/routes.json";
 /* background.jsx is for the service worker which is always running in the background; however cannot access the DOM */
 
 //Global | Local Environment when 'cacheOn' was initialized
-let cacheUrl = "";
-let cacheSessionCookie = "";
+// let cacheUrl = "";
+// let cacheSessionCookie = "";
 
 //Assumes "CacheOn" or manual Called
 const clearCache = async () => {
@@ -223,107 +223,111 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
 };
 
 // Clear existing alarms
-const stopCacheIntervalTimer = async() => {
-    const alarms = await chrome.alarms.getAll();
-    alarms.forEach((alarm) => {
-        if (alarm.name === "cache-interval-timer") {
-            console.log("TIMERS CLEARED");
-            chrome.alarms.clear(alarm.name);
-        }
-    });
-}
+// const stopCacheIntervalTimer = async() => {
+//     const alarms = await chrome.alarms.getAll();
+//     alarms.forEach((alarm) => {
+//         if (alarm.name === "cache-interval-timer") {
+//             console.log("TIMERS CLEARED");
+//             chrome.alarms.clear(alarm.name);
+//         }
+//     });
+// }
 
 
 //Clear Cache Interval Timer
-const startCacheIntervalTimer = async () => {
-    // Clear existing alarms
-    await stopCacheIntervalTimer();
+// const startCacheIntervalTimer = async () => {
+//     // Clear existing alarms
+//     await stopCacheIntervalTimer();
 
-    const now = new Date();
-    const thirtySecondsLater = new Date(now.getTime() + 30 * 1000).toISOString();  //Chrome limits to 30 seconds
-    await saveToStorage({ nextTimer: thirtySecondsLater });
+//     const now = new Date();
+//     const thirtySecondsLater = new Date(now.getTime() + 30 * 1000).toISOString();  //Chrome limits to 30 seconds
+//     await saveToStorage({ nextTimer: thirtySecondsLater });
 
-    //LOCAL Environment only | (Regulated in: Popup.handleCacheClick)
-    const region = await getFromStorage("region");
-    const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
-    const localEnvironment = ENVIRONMENTS.find((l) => l.label === "Local");  
-    const cacheRoute = ROUTES.find((l) => l.label === "Cache");
+//     //LOCAL Environment only | (Regulated in: Popup.handleCacheClick)
+//     const region = await getFromStorage("region");
+//     const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
+//     const localEnvironment = ENVIRONMENTS.find((l) => l.label === "Local");  
+//     const cacheRoute = ROUTES.find((l) => l.label === "Cache");
 
-    if(!validRegion) {
-        console.error('Region not Identified');
-        return;
-    }
-
-
-    //Global variable assigned
-    cacheUrl = (validRegion && localEnvironment && cacheRoute) ?
-        `https://${validRegion.value}.${localEnvironment.value}/${cacheRoute.value}`
-        : ''; //Clear if invalid
-
-    console.log('Making Cache URL:', region, validRegion, localEnvironment, cacheRoute, cacheUrl);
+//     if(!validRegion) {
+//         console.error('Region not Identified');
+//         return;
+//     }
 
 
-    //Fetch & Save JSESSIONID for authentication
-    if (cacheUrl) {
-        const cookieUrl = `https://${validRegion.value}.${localEnvironment.value}/`;
-        cacheSessionCookie = await new Promise((resolve) => {
-          chrome.cookies.get({ url: cookieUrl, name: "JSESSIONID" }, (cookie) => {
-            if (chrome.runtime.lastError) {
-              console.error("Cookie fetch error:", chrome.runtime.lastError);
-              return resolve(null);
-            }
-            if (!cookie) {
-              console.warn("No JSESSIONID found for", cookieUrl);
-              return resolve(null);
-            }
-            console.log('Cookie FOUND', cookie);
-            resolve(cookie.value);
-          });
-        });
-      }
+//     //Global variable assigned
+//     cacheUrl = (validRegion && localEnvironment && cacheRoute) ?
+//         `https://${validRegion.value}.${localEnvironment.value}/${cacheRoute.value}`
+//         : ''; //Clear if invalid
 
-    const cacheOn = await getFromStorage("cacheOn");
-    if(cacheOn) {
-        chrome.alarms.create("cache-interval-timer", {
-            periodInMinutes: 0.5,
-            });
-    }
+//     console.log('Making Cache URL:', region, validRegion, localEnvironment, cacheRoute, cacheUrl);
 
-    //Execute Immediately
-    await clearCache();
-};
+
+//     // //Fetch & Save JSESSIONID for authentication
+//     // if (cacheUrl) {
+//     //     const cookieUrl = `https://${validRegion.value}.${localEnvironment.value}/`;
+//     //     cacheSessionCookie = await new Promise((resolve) => {
+//     //       chrome.cookies.get({ url: cookieUrl, name: "JSESSIONID" }, (cookie) => {
+//     //         if (chrome.runtime.lastError) {
+//     //           console.error("Cookie fetch error:", chrome.runtime.lastError);
+//     //           return resolve(null);
+//     //         }
+//     //         if (!cookie) {
+//     //           console.warn("No JSESSIONID found for", cookieUrl);
+//     //           return resolve(null);
+//     //         }
+//     //         console.log('Cookie FOUND', cookie);
+//     //         resolve(cookie.value);
+//     //       });
+//     //     });
+//     //   }
+
+//     const cacheOn = await getFromStorage("cacheOn");
+//     if(cacheOn) {
+//         chrome.alarms.create("cache-interval-timer", {
+//             periodInMinutes: 0.5,
+//             });
+//     }
+
+//     //Execute Immediately
+//     await clearCache();
+// };
 
 //Cache Timer
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name === "cache-interval-timer") {
-        const now = new Date();
-        const thirtySecondsLater = new Date(
-            now.getTime() + (30 * 1000)
-        ).toISOString();
+// chrome.alarms.onAlarm.addListener(async (alarm) => {
+//     if (alarm.name === "cache-interval-timer") {
+//         const now = new Date();
+//         const thirtySecondsLater = new Date(
+//             now.getTime() + (30 * 1000)
+//         ).toISOString();
 
-        const res = await clearCache();
-        console.log("CLEAR CACHE RESPONSE ==> ", res);
-        console.log("Timer fired at: ", now.toLocaleTimeString());
-        console.log({ nextTimer: thirtySecondsLater });
-        await saveToStorage({ nextTimer: thirtySecondsLater });
-    }
-});
+//         const res = await clearCache();
+//         console.log("CLEAR CACHE RESPONSE ==> ", res);
+//         console.log("Timer fired at: ", now.toLocaleTimeString());
+//         console.log({ nextTimer: thirtySecondsLater });
+//         await saveToStorage({ nextTimer: thirtySecondsLater });
+//     }
+// });
 
 
 //Global Actions
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
         switch (request.command) {
-            case "START_CACHE_INTERVAL":
-                const success = await clearCache();
-                startCacheIntervalTimer();
-                sendResponse({ message: "Cache Interval Started", success });
-                break;
+            // case "START_CACHE_INTERVAL":
+            //     const success = await clearCache();
+            //     startCacheIntervalTimer();
+            //     sendResponse({ message: "Cache Interval Started", success });
+            //     break;
 
-            case "STOP_CACHE_INTERVAL":
-                stopCacheIntervalTimer();
-                sendResponse({ message: "Cache Interval Stopped", success });
-                break;
+            // case "STOP_CACHE_INTERVAL":
+            //     stopCacheIntervalTimer();
+            //     sendResponse({ message: "Cache Interval Stopped", success });
+            //     break;
+
+            //Content.jsx can't get it's own tab ID (Used for local cache clearing)
+            case "GET_TAB_ID":
+                sendResponse(sender.tab.id);
 
             case "SAVE_URL":
                 const { url, jiraSprint, agoClientName } = request;
@@ -339,6 +343,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 //Initialize Service Worker
 chrome.runtime.onInstalled.addListener(async() => {
     console.log("Background Service Worker Initialized...");
-    await saveToStorage({ cacheOn: false });
+    // await saveToStorage({ cacheOn: false });
+    await removeFromStorage("cacheTabId");
 });
   

@@ -3,6 +3,7 @@ export const MAX_LIST_LENGTH = 100; //will not remove favorites
 export const URL_SAVING_INTERVAL = 1000; //ms
 export const AGO_TAB_RENAMING_INTERVAL = 10000; //ms
 export const DOM_NAMING_TIMEOUT = 5000; //ms
+export const LOCAL_CACHE_INTERVAL = 10000; //ms
 
 //Test Environment URL Navigation
 export const UK_HOSTED_TEST_REGIONS = ['UK', 'COUTTS', 'BARC', 'SPW', 'IE', 'BOI'];

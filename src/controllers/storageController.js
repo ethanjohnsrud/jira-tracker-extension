@@ -1,6 +1,17 @@
 export const saveToStorage = (obj) => new Promise(resolve => {
     chrome.storage.local.set(obj, res => resolve(true));
-})
+});
+
+export const removeFromStorage = (keys) => new Promise((resolve, reject) => {
+      chrome.storage.local.remove(keys, () => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve();
+        }
+      });
+    });
+  
 
 // export const getFromStorage = (arr) => new Promise(resolve => {
 //     chrome.storage.local.get(arr, res => resolve(res));
