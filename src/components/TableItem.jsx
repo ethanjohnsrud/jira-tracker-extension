@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import StarButton from "./StarButton";
 import { saveToStorage, getFromStorage } from "../controllers/storageController";
-import { JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX } from "../constants/constants";
 
 export default function TableItem({
     storageListKey,
@@ -12,15 +11,16 @@ export default function TableItem({
     id,
     url,
     lastVisited,
+    preserveCustomName,
     linkReady,
     ...props
 }) {
-    const [showEdit, setShowEdit] = useState(false);
-    const [editable, setEditable] = useState(false);
+    const [showEditMenu, setShowEditMenu] = useState(false);
+    const [showLabelEdit, setShowLabelEdit] = useState(false);
     const itemRef = useRef(null);
 
     const handleClick = (e) => {
-        if (editable) return;
+        if (showLabelEdit) return;
 
         if (e.ctrlKey || e.metaKey) {
             return chrome.tabs.create({ url });
@@ -38,23 +38,22 @@ export default function TableItem({
         const updatedUrls = urlList.filter((u) => u.id !== id);
 
         await saveToStorage({ [storageListKey]: updatedUrls });
-        setEditable(false);
+        setShowLabelEdit(false);
     };
 
     const handleSave = async () => {
         let storedList = await getFromStorage(storageListKey) ?? [];
         const urlList = Array.isArray(storedList) ? storedList : [];
 
-        const url = urlList.find((u) => u.id === id);
-        url.displayName = itemRef.current.innerText.trim();
-        url.preserveCustomName = true;
+        const urlItem = urlList.find((u) => u.id === id);
+        urlItem.displayName = itemRef.current.innerText.trim();
+        urlItem.preserveCustomName = true;
 
         await saveToStorage({ [storageListKey]: urlList });
-        setEditable(false);
+        setShowLabelEdit(false);
     };
 
     const handleFavPress = async () => {
-        // const isJiraUrl = JIRA_URL_MATCHING_REGEX.test(url);
         // const storageKey = isJiraUrl ? 'jiraUrlList' : 'agoUrlList';
 
         let storedList = await getFromStorage(storageListKey) ?? [];
@@ -76,24 +75,24 @@ export default function TableItem({
     };
 
     const handleEdit = () => {
-        setEditable(true);
+        setShowLabelEdit(true);
         itemRef.current.focus();
     };
 
     const handleContextMenu = (e) => {
         e.preventDefault();
-        if (editable) return;
-        setShowEdit(true);
+        if(showLabelEdit) return;
+        setShowEditMenu(true);
     };
 
     useEffect(() => {
-        if (showEdit) {
-            document.addEventListener("click", () => setShowEdit(false));
+        if (showEditMenu) {
+            document.addEventListener("click", () => setShowEditMenu(false));
         }
         return () => {
-            document.removeEventListener("click", () => setShowEdit(false));
+            document.removeEventListener("click", () => setShowEditMenu(false));
         };
-    }, [showEdit]);
+    }, [showEditMenu]);
 
     return (
         <div
@@ -108,16 +107,17 @@ export default function TableItem({
             />
             <div
                 ref={itemRef}
-                className={`text-[14px] rounded-md w-full px-2 outline-none cursor-pointer 
-          ${editable ? " border border-alternative-background" : ""} 
-          ${(!editable && !showEdit && linkReady) ? " text-primary" : " text-white"}`}
-                contentEditable={editable}
+                className={`text-[14px] rounded-md w-full px-2 outline-none cursor-pointer
+          ${showEditMenu ? " break-words" : " whitespace-nowrap"} 
+          ${showLabelEdit ? " border border-alternative-background" : ""} 
+          ${(!showLabelEdit && !showEditMenu && linkReady) ? " text-primary" : " text-white"}`}
+                contentEditable={showLabelEdit}
                 suppressContentEditableWarning={true}
                 onClick={handleClick}
             >
                 {displayName}
             </div>
-            {showEdit && (
+            {showEditMenu && (
                 <button
                     className="ml-auto bg-[#7bbd4a] text-white px-2 py-[2px] rounded"
                     onClick={handleEdit}
@@ -125,7 +125,7 @@ export default function TableItem({
                     Edit
                 </button>
             )}
-            {showEdit && (
+            {showEditMenu && (
                 <button
                     className="ml-auto bg-[#8B0000] text-white px-2 py-[2px] rounded"
                     onClick={handleDelete}
@@ -145,7 +145,7 @@ export default function TableItem({
                     </svg>
                 </button>
             )}
-            {editable && (
+            {showLabelEdit && (
                 <button
                     className="bg-[#7bbd4a] text-white px-2 py-[2px] rounded"
                     onClick={handleSave}

@@ -16,7 +16,7 @@ export default function Button({
   
   return (
     <HeroButton
-      className={`rounded-md w-full px-4 py-2 flex items-center justify-center gap-2 transition-all
+      className={`rounded-md w-full px-2 py-1 h-6 flex items-center justify-center gap-2 transition-all
         ${colorClasses[type] || "bg-primary text-white"}
         ${loading ? "opacity-50 cursor-not-allowed" : ""}
         ${className}

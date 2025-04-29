@@ -133,8 +133,9 @@ const Popup = () => {
 			// console.log('Setting cacheUrl in storage:', cacheUrl);
 
 			
+			const environment = await getFromStorage("environment");
 
-			// const newCacheState = !cacheOn;
+			const newCacheState = !cacheOn;
 			// console.log('Toggling cache status from', cacheOn, 'to', newCacheState);
 
 			// setCacheOn(newCacheState);
@@ -143,9 +144,9 @@ const Popup = () => {
 			// Send message to clear cache
 			if(newCacheState) {
 				//Only initiate in LOCAL Environment
-				if(environment === 'local') {
-					setCacheOn(newCacheState);
-					await saveToStorage({ cacheOn: newCacheState });
+				if(environment.includes('localhost')) {
+					setCacheOn(true);
+					await saveToStorage({ cacheOn: true });
 
 					console.log('Sending START_CACHE_INTERVAL message to initiate cache Interval');
 					chrome.runtime.sendMessage({ command: "START_CACHE_INTERVAL" }); //Triggers Interval Alarm
@@ -154,7 +155,7 @@ const Popup = () => {
 				}
 			} else {
 				setCacheOn(false);
-				await saveToStorage({ cacheOn: newCacheState });
+				await saveToStorage({ cacheOn: false });
 
 				console.log('Sending STOP_CACHE_INTERVAL message to initiate cache Interval');
 				chrome.runtime.sendMessage({ command: "STOP_CACHE_INTERVAL" }); 
@@ -194,6 +195,7 @@ const Popup = () => {
 
 		//Modify Labels
 		latestAgo.displayName = `${latestJira.displayName} | ${latestAgo.displayName}`;
+		latestAgo.preserveCustomName = true;
 		console.log('Linking:', latestAgo.displayName, latestAgo);
 
 		await saveToStorage({ agoUrlList });
@@ -346,7 +348,7 @@ const Popup = () => {
 
 	return (
 		<div className="w-full h-full flex flex-col items-center ">
-			<div className="w-full h-4 flex justify-center items-center py-3 gap-x-2 mt-3 mb-5">
+			<div className="w-full h-4 flex justify-center items-center py-3 gap-x-2 mt-2 mb-4">
 				<Dropdown
 					options={REGIONS}
 					onChange={onRegionChange}
@@ -381,10 +383,10 @@ const Popup = () => {
 					onClick={handleCacheClick}
 				/>
 			</div>
-			<div className="flex justify-between w-full mt-3 gap-x-2 overflow-hidden">
+			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden">
 				{/* 35% Width Column */}
 				<div className="w-[35%] h-full" id="scrollable">
-					<a href={JIRA_HEADER_HYPERLINK} target="_self" onClick={(e) => openUrlTab(e, JIRA_HEADER_HYPERLINK)} className="text-primary text-[16px] font-bold pl-3">Jira</a>
+					<a href={JIRA_HEADER_HYPERLINK} target="_self" onClick={(e) => openUrlTab(e, JIRA_HEADER_HYPERLINK)} className="text-primary text-[14px] font-bold pl-3">Jira</a>
 					<div className="border-b-2 border-primary pb-2 mb-2" />
 					<div className="flex flex-col w-full h-full max-h-[400px] overflow-y-auto scrollbar p-0">
 						{jiraDisplayList.map((item, index) => (
@@ -401,7 +403,7 @@ const Popup = () => {
 
 				{/* 65% Width Column */}
 				<div className="w-[65%] h-full" id="scrollable">
-					<a href={AGO_HEADER_HYPERLINK} target="_self" onClick={(e) => openUrlTab(e, AGO_HEADER_HYPERLINK)} className="text-primary text-[16px] font-bold pl-3">Adviser Go</a>
+					<a href={AGO_HEADER_HYPERLINK} target="_self" onClick={(e) => openUrlTab(e, AGO_HEADER_HYPERLINK)} className="text-primary text-[14px] font-bold pl-3">Adviser Go</a>
 					<div className="border-b-2 border-primary pb-2 mb-2" />
 					<div className="flex flex-col w-full h-full max-h-[400px] overflow-y-auto scrollbar">
 						{agoDisplayList.map((item, index) => (
