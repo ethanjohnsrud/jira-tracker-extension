@@ -38,10 +38,7 @@ const Popup = () => {
   const [latestJiraId, setLatestJiraId] = useState("");
   const [agoDisplayList, setAgoDisplayList] = useState([]);
   const [latestAgoId, setLatestAgoId] = useState("");
-  const [nextTime, setNextTime] = useState(
-    new Date(Date.now() + 30000).toISOString()
-  );
-  const [nextTimer, setNextTimer] = useState("00");
+  const [timerSecondsLeft, setTimerSecondsLeft] = useState(0);
   const timerRef = useRef(null);
 
   const openUrlTab = (event, url) => {
@@ -300,42 +297,50 @@ const Popup = () => {
     });
   };
 
-  const loadTime = async () => {
-    const nextTimer = await getFromStorage("nextTimer");
-    if (nextTimer) setNextTime(nextTimer);
+  const fetchNextTimer = async () => {
+    const nextTimerMS = await getFromStorage("nextTimerMS");
+    const now = new Date().getTime();
+    const msLeft = nextTimerMS - now;
+
+	console.log('NEXT SET', msLeft, nextTimerMS, now);
+
+    if (isNaN(nextTimerMS) || isNaN(msLeft) || msLeft <= 0) {
+      // In the past: show 0 and retry every second
+      setTimerSecondsLeft(0);
+      return;
+    }
+
+    setTimerSecondsLeft(Math.ceil(msLeft / 1000));
   };
 
   useEffect(() => {
-	if (nextTime) {
-	  loadCountdown();
-	}
-  }, [nextTime, loadCountdown]);
-  
+    const startCountdown = async () => {
 
-  const loadCountdown = useCallback(() => {
-	if (timerRef.current) clearInterval(timerRef.current);
-  
-	const updateTimer = async () => {
-	  const now = Date.now();
-	  const distance = new Date(nextTime).getTime() - now;
-  
-	  if (distance < 0) {
-		const freshNext = await getFromStorage("nextTimer");
-		if (freshNext) {
-		  setNextTime(freshNext);
-		} else {
-		  setNextTimer("00");
-		}
-		return;
-	  }
-  
-	  const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-	  setNextTimer(seconds.toString().padStart(2, "0"));
-	};
-  
-	updateTimer();
-	timerRef.current = setInterval(updateTimer, 1000);
-  }, [nextTime]);
+		if(cacheOn)
+			await fetchNextTimer();
+
+		timerRef.current = setInterval(() => {
+			setTimerSecondsLeft((prev) => {
+			if (prev <= 1) {
+				fetchNextTimer(); // Re-fetch if expired
+				return 0;
+			}
+
+			return prev - 1;
+			});
+      }, 1000);
+    };
+
+	if(cacheOn) {
+		startCountdown();
+	} else {
+		clearInterval(timerRef.current);
+	}
+
+    return () => {
+      clearInterval(timerRef.current);
+    };
+  }, [cacheOn]);
   
 
   /************************
@@ -346,12 +351,8 @@ const Popup = () => {
     console.log("INITALIZING-POPUP......");
 
     loadDisplayLists();
-    loadTime();
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
-      if (namespace === "local" && changes.nextTimer) {
-        setNextTime(changes.nextTimer.newValue);
-      }
       if (
         namespace === "local" &&
         (changes.jiraUrlList || changes.agoUrlList)
@@ -362,35 +363,24 @@ const Popup = () => {
 
     /* This runs every time the extension icon is clicked and initiated */
     const init = async () => {
-      const { tabOn, cacheOn, region, environment, route } =
+      const { cacheTabId, tabOn, region, environment, route } =
         await getFromStorage([
+          "cacheTabId",
           "tabOn",
-          "cacheOn",
           "environment",
           "region",
           "route",
         ]);
 
-      console.log(
-        "init-popup",
-        tabOn,
-        tabOn === true || tabOn === "true",
-        cacheOn,
-        cacheOn === true || cacheOn === "true"
-      );
-
       setTabOn(tabOn === true || tabOn === "true");
-      setCacheOn(cacheOn === true || cacheOn === "true");
 
+	  const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
 
-      //TODO - Update region, environment, route on open poup.jsx
-      // useEffect(() => {
-      //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      //     if (tabs.length > 0) {
-      //       setCurrentUrl(tabs[0].url);
-      //     }
-      //   });
-      // }, []);
+      setCacheOn(cacheTabId === tab.id);
+
 
       // Validate the values against the predefined lists
       const validRegion =
@@ -432,10 +422,6 @@ const Popup = () => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log("useEffect-loadCountdown");
-    loadCountdown();
-  }, [nextTime, loadCountdown]);
 
   return (
     <div className="w-full h-full flex flex-col items-center ">
@@ -468,7 +454,7 @@ const Popup = () => {
           onClick={handleLinkClick}
         />
         <Button
-          label={cacheOn ? `Cache (${nextTimer})` : "Cache"}
+          label={cacheOn ? `Cache (${timerSecondsLeft})` : "Cache"}
           type={cacheOn ? "primary" : "alternative-background"}
           loading={cacheLoading}
           onClick={handleCacheClick}

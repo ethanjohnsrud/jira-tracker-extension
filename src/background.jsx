@@ -327,7 +327,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
             //Content.jsx can't get it's own tab ID (Used for local cache clearing)
             case "GET_TAB_ID":
-                sendResponse(sender.tab.id);
+                if (sender?.tab?.id !== undefined) {
+                    sendResponse({ tabId: sender.tab.id });
+                } else {
+                    console.warn("GET_TAB_ID: sender.tab is undefined");
+                    sendResponse({ tabId: null, error: "Tab ID not available. Was this sent from a content script?" });
+                }
+                break;
 
             case "SAVE_URL":
                 const { url, jiraSprint, agoClientName } = request;

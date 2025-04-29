@@ -23,18 +23,30 @@ export const removeFromStorage = (keys) => new Promise((resolve, reject) => {
  * If a single key is requested, returns its value or `undefined` if missing. 
  * If multiple keys are requested, returns an object with each key and `undefined` for missing keys.
  */
-export const getFromStorage = (keys) => new Promise((resolve) => {
+export const getFromStorage = (keys) => new Promise((resolve, reject) => {
+  try {
+    // Guard: check if extension context is still valid
+    if (!chrome?.storage?.local || !chrome.runtime?.id) {
+      return reject(new Error("Extension context invalidated"));
+    }
+
     chrome.storage.local.get(keys, (res) => {
-        if (Array.isArray(keys)) {
-            // Ensure all requested keys exist in the returned object (with undefined if missing)
-            const result = keys.reduce((acc, key) => {
-                acc[key] = res.hasOwnProperty(key) ? res[key] : undefined;
-                return acc;
-            }, {});
-            resolve(result);
-        } else {
-            // If a single key is requested, return its value or undefined
-            resolve(res.hasOwnProperty(keys) ? res[keys] : undefined);
-        }
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+
+      if (Array.isArray(keys)) {
+        const result = keys.reduce((acc, key) => {
+          acc[key] = res.hasOwnProperty(key) ? res[key] : undefined;
+          return acc;
+        }, {});
+        resolve(result);
+      } else {
+        resolve(res.hasOwnProperty(keys) ? res[keys] : undefined);
+      }
     });
+  } catch (e) {
+    reject(e);
+  }
 });
+

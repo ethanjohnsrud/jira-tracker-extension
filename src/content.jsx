@@ -9,16 +9,66 @@ import ROUTES from "./constants/routes.json";
 * Runs in current tab, so console.log will be under inspect *
 *************************************************************/
 
+/* Global */
+let currentUrl = '';
+
 /* GLobal Context */
 let thisTabId = null;
 
+/* Interval CLear Cache */
+let cacheInterval;
+let cacheUrl = "";
+
 // Get and cache this tab's ID on content script initialization
-    //Content.jsx does not know it's own tabId, so must proxy from background.jsx
-chrome.runtime.sendMessage({ command: "GET_TAB_ID" }, (tabId) => {
-  thisTabId = tabId;
-  console.log("Tab ID initialized:", thisTabId);
-  // Optionally: you could call initializeLocalClearCache() right here if needed
+//Content.jsx does not know it's own tabId, so must proxy from background.jsx
+chrome.runtime.sendMessage({ command: "GET_TAB_ID" }, (response) => {
+  if (response?.tabId !== undefined) {
+    thisTabId = response.tabId;
+    console.log("Tab ID initialized:", thisTabId);
+  } else {
+    console.warn("Failed to get tab ID:", response?.error);
+  }
 });
+    
+
+const createCacheURL = () => {
+  const url = window.location.href;
+
+  console.log('createCacheURL-cacheClear', url);
+
+  if (!AGO_REGEX.test(url)) {
+    console.log('createCacheURL-NOT AGO', url);
+    return null;
+  }
+
+  const matched = url.match(AGO_REGEX);
+  if (!matched || matched.length < 4) { 
+    console.log('createCacheURL-Regex failed', matched, url, AGO_REGEX);
+    return null;
+  }
+
+  const regionValue = matched[2];
+  const environmentValue = matched[4];
+  const localEnvironmentValue = ENVIRONMENTS.find(l => l.label === "Local")?.value;
+
+  if (environmentValue !== localEnvironmentValue) {
+    console.log('createCacheURL-Not local environment');
+    return null;
+  }
+
+  const cacheRoute = ROUTES.find(r => r.label === "Cache");
+  if (!cacheRoute) {
+    console.error("Cache route not found");
+    return null;
+  }
+
+  cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
+
+  console.log("createCacheURL-Result", cacheUrl, regionValue, environmentValue, cacheRoute, matched);
+
+  return cacheUrl;
+};
+
 
 
 //Used for extracting page after DOM loads
@@ -118,6 +168,9 @@ const saveUrl = async(url) => {
             agoClientName
         });
         // console.log(response);
+
+        if(AGO_REGEX.test(url)) 
+          createCacheURL();
     } else
         console.log('Shipping Save_URL', url);
 };
@@ -201,8 +254,7 @@ const initializeAGOTabRenaming = async () => {
 
 
 
-/* Global */
-let currentUrl = '';
+
 
 const initializeTabURLSaving = async () => {
     setInterval(() => {
@@ -216,8 +268,6 @@ const initializeTabURLSaving = async () => {
 }
 
 /* Interval CLear Cache */
-let cacheInterval;
-let cacheUrl = "";
 
 const clearCache = async () => {
     if (!cacheUrl || cacheUrl.length === 0) {
@@ -254,8 +304,8 @@ const startCachePolling = async() => {
 
         cacheInterval = setInterval(async () => {
             await clearCache();
-            const nextRun = new Date(Date.now() + LOCAL_CACHE_INTERVAL).toISOString();
-            await saveToStorage({ nextTimer: nextRun });
+            const nextDate = new Date(Date.now() + LOCAL_CACHE_INTERVAL);
+            await saveToStorage({ nextTimerMS: nextDate.getTime() });
         }, LOCAL_CACHE_INTERVAL);
 
         //Execute Immediately:
@@ -289,59 +339,16 @@ const startCachePolling = async() => {
   });
   
   
-  //Cache Interval only runs on one tab at a time
-  const initializeLocalClearCache = () => {
-    const url = window.location.href;
 
-    console.log('initializeLocalClearCache-cacheClear', url);
-
-    if(!AGO_REGEX.test(url)) {
-      console.log('initializeLocalClearCache-NOT AGO', url);
-      return;
-    }
-  
-    const matched = url.match(AGO_REGEX);
-    if (!matched || matched.length < 4) { 
-        console.log('initializeLocalClearCache-NOT AGO Regex failed', matched, url, AGO_REGEX);
-
-        return;
-    }
-  
-    //[Group #3] Environment planwithvoyant (integrations/staging/test) | [Group #4] Environment (local)
-    const regionValue = matched[2];
-    const environmentValue = matched[4];
-    const localEnvironmentValue = ENVIRONMENTS.find(l => l.label === "Local")?.value;
-  
-    if (environmentValue !== localEnvironmentValue) {
-        console.log('initializeLocalClearCache-NOT local environemnt');
-
-        return;
-    }
-  
-    const cacheRoute = ROUTES.find(r => r.label === "Cache");
-    if (!cacheRoute) {
-      console.error("Cache route not found");
-      return;
-    }
-  
-  
-    //Saves on Local Tab load regardless
-    cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
-
-    console.log("current-URL-matched", cacheUrl, regionValue, environmentValue, cacheRoute, matched);
-
+ 
   
 
     //Only initiate if matches existing tabId
     chrome.storage.local.get(["cacheTabId"], (result) => {
-        if (result.cacheTabId === thisTabId) {
-          startCachePolling();
-        }
-      });
-  };
-  
-
-
+      if (result.cacheTabId === thisTabId) {
+        startCachePolling();
+      }
+    });
 
 
 
@@ -349,6 +356,6 @@ const startCachePolling = async() => {
 /* Initialize Extension on Chrome Start */
 await initializeAGOTabRenaming();
 await initializeTabURLSaving();
-await initializeLocalClearCache();
+await createCacheURL();
 console.log("Initialized Content Script...");
 
