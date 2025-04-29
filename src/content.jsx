@@ -4,8 +4,11 @@ import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
 
-/* content.jsx is for manipulating the DOM */
-let currentUrl = '';
+/* **********************************************************
+* content.jsx | Used for is for manipulating the DOM        *
+* Runs in current tab, so console.log will be under inspect *
+*************************************************************/
+
 
 const extractJiraSprint = async() => {
     try {
@@ -76,7 +79,8 @@ const saveUrl = async () => {
             agoClientName
         });
         // console.log(response);
-    }
+    } else
+        console.log('Shipping Save_URL', url);
 };
 
 const getListEntryDisplayName = (url) => {
@@ -148,6 +152,9 @@ const initializeAGOTabRenaming = async () => {
 /* Initialize Extension on Chrome Start */
 // initializeAGOTabRenaming();
 saveUrl();
+
+/* Global */
+let currentUrl = '';
 
 setInterval(() => {
     if (currentUrl !== window.location.href) {

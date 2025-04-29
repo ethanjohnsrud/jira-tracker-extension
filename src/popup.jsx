@@ -52,26 +52,26 @@ const Popup = () => {
 	};
 
 	const navigateTabOnChange = (event, config) => {
-		let region = config.region.value.toUpperCase();
-		let environment = config.environment.value.toLowerCase();
-		const route = config.route.value;
+		let regionValue = config.region.value.toUpperCase();
+		let environmentValue = config.environment.value.toLowerCase();
+		const routeValue = config.route.value;
 
 		let domain = '';
-		if (environment === 'local') {
-			domain = `${region}.localhost.tld:8443`;
+		if(environmentValue.includes('localhost')) {
+			domain = `${regionValue.toLowerCase()}.${environmentValue}`;
 
 		} else {
 			//Unique Testing Domains
-			if(environment === 'test') {
-				if(QA_TEST_REGIONS.includes(region)) environment = 'qa';
-				else if(region === 'UNI') region = 'global';
+			if(environmentValue === 'test') {
+				if(QA_TEST_REGIONS.includes(regionValue)) environmentValue = 'qa';
+				else if(regionValue === 'UNI') regionValue = 'global';
 			}
 
-			const tld = (environment === 'test' && UK_HOSTED_TEST_REGIONS.includes(region)) ? 'co.uk' : 'com';
-			domain = `${region.toLowerCase()}-${environment.toLowerCase()}.planwithvoyant.${tld}`;
+			const tld = (environmentValue === 'test' && UK_HOSTED_TEST_REGIONS.includes(regionValue)) ? 'co.uk' : 'com';
+			domain = `${regionValue.toLowerCase()}-${environmentValue.toLowerCase()}.planwithvoyant.${tld}`;
 		}
 
-  		const url = `https://${domain}/${route}`
+  		const url = `https://${domain}/${routeValue}`
 
 
 		console.log('NAVIGATING', url, config);
@@ -80,15 +80,15 @@ const Popup = () => {
 	};
 
 
-	const saveDropDown = (data) => {
-		return saveToStorage({ dropdowns: data });
-	};
+	// const saveDropDown = (data) => {
+	// 	return saveToStorage({ dropdowns: data });
+	// };
 
 	const onRouteChange = async (event, route) => {
 		const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? '').toLowerCase());
 
 		setDropdowns((prev) => ({ ...prev, route: validRoute }));
-		await saveDropDown({ ...dropdowns, route: validRoute });
+		// await saveDropDown({ ...dropdowns, route: validRoute });
 		navigateTabOnChange(event, { ...dropdowns, route: validRoute });
 	};
 
@@ -96,7 +96,7 @@ const Popup = () => {
 		const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase());
 
 		setDropdowns((prev) => ({ ...prev, region: validRegion }));
-		await saveDropDown({ ...dropdowns, region: validRegion });
+		// await saveDropDown({ ...dropdowns, region: validRegion });
 		navigateTabOnChange(event, { ...dropdowns, region: validRegion });
 	};
 
@@ -104,7 +104,7 @@ const Popup = () => {
 		const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? '').toLowerCase());
 
 		setDropdowns((prev) => ({ ...prev, environment: validEnvironment }));
-		await saveDropDown({ ...dropdowns, environment: validEnvironment });
+		// await saveDropDown({ ...dropdowns, environment: validEnvironment });
 		navigateTabOnChange(event, { ...dropdowns, environment: validEnvironment });
 	};
 
@@ -315,7 +315,9 @@ const Popup = () => {
 
 			// Validate the values against the predefined lists
 			const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? '').toLowerCase()) ?? REGIONS[0];
-			const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? '').toLowerCase()) ?? ENVIRONMENTS[1];
+			const validEnvironment = environment === 'local'
+									? ENVIRONMENTS.find(e => e.label.toLowerCase() === 'local')
+									: ENVIRONMENTS.find(e => e.value.toLowerCase() === (environment || '').toLowerCase()) || ENVIRONMENTS[1];		  
 			const validRoute = ROUTES.find((r) => new RegExp(r.regex).test(route)) ?? ROUTES[0];
 
 			console.log('initialize-dropdowns...', region, validRegion, environment, validEnvironment, route, validRoute);

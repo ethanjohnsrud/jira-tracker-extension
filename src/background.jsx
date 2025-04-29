@@ -126,6 +126,8 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
         const regexToUse = isJiraUrl ? JIRA_CAPTURE_SAVE_URL_REGEX : AGO_PLAN_CAPTURE_URL_REGEX;
         let capturedUrl = url.match(regexToUse)?.[1];
 
+        console.log('SaveURL-Captured:', capturedUrl, url.match(regexToUse), regexToUse, url);
+
         if(capturedUrl) {
             /* Save URL as Bookmark List Entry */
             const displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
@@ -133,7 +135,7 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
 
             // Update the URL list if the URL already exists
             let updatedUrlList = [];
-            const existingUrl = urlList.find((u) => u.url === url);
+            const existingUrl = urlList.find((u) => u.url === capturedUrl);
             if(existingUrl) {
                 console.log('**Revisited URL:', existingUrl);
                 existingUrl.lastVisited = new Date().toISOString();
