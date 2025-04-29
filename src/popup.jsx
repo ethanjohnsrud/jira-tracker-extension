@@ -52,9 +52,9 @@ const Popup = () => {
 	};
 
 	const navigateTabOnChange = (event, config) => {
-		const region = config.region.value.toUpperCase();
+		let region = config.region.value.toUpperCase();
 		let environment = config.environment.value.toLowerCase();
-		let route = config.route.value;
+		const route = config.route.value;
 
 		let domain = '';
 		if (environment === 'local') {
@@ -346,14 +346,14 @@ const Popup = () => {
 		<div className="w-full h-full flex flex-col items-center ">
 			<div className="w-full h-4 flex justify-center items-center py-3 gap-x-2 mt-3 mb-5">
 				<Dropdown
-					options={ENVIRONMENTS}
-					onChange={onEnvironmentChange}
-					value={dropdowns.environment.value}
-				/>
-				<Dropdown
 					options={REGIONS}
 					onChange={onRegionChange}
 					value={dropdowns.region.value}
+				/>
+				<Dropdown
+					options={ENVIRONMENTS}
+					onChange={onEnvironmentChange}
+					value={dropdowns.environment.value}
 				/>
 				<Dropdown
 					options={ROUTES}

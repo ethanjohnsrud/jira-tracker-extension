@@ -12,7 +12,11 @@ export const JIRA_REGEX = /^(https:\/\/voyant\.atlassian\.net\/browse\/([a-zA-Z]
 /* AGO URL MATCHING & CAPTURE REGEX */
 // [Group #1] Captures full URL through plan ID but excludes sub-route
 // [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment planwithvoyant (integrations/staging/test) | [Group #4] Environment (local) | [Group #5] 5-chars-ending client ID | [Group #6] 5-chars-ending plan ID
-export const AGO_REGEX = /^(https:\/\/([a-zA-Z]{2,5})[-.](?:([a-z]+)\.planwithvoyant\.(?:co\.uk|com)|(local)host\.tld:[0-9]{4})\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))/;
+export const AGO_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.planwithvoyant\.(?:co\.uk|com)|(local)host\.tld:[0-9]{4})\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))/;
+
+/* VOYANT URL MATCHING */
+// [Group #1] Captures full URL through plan ID but excludes sub-route | [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment planwithvoyant (integrations/staging/test) 
+export const VOYANT_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.planwithvoyant\.(?:co\.uk|com)|(local)host\.tld:[0-9]{4}))/;
 
 
 

@@ -9,7 +9,8 @@ import {
     JIRA_CAPTURE_SAVE_URL_REGEX,
     AGO_PLAN_CAPTURE_URL_REGEX,
     MAX_LIST_LENGTH,
-    AGO_REGEX
+    AGO_REGEX,
+    VOYANT_REGEX
 } from "./constants/constants";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
@@ -111,62 +112,66 @@ const evaluateMaxListLength = (urlList) => {
 // Core saveUrl function
 const saveUrl = async (url, jiraSprint, agoClientName) => {
     // console.log('saveURL-testing', url, JIRA_URL_MATCHING_REGEX, AGO_URL_MATCHING_REGEX);
-    if(!(JIRA_URL_MATCHING_REGEX.test(url) || AGO_REGEX.test(url))) {
-        console.log('**URL did not match', url);
-        return false;
-    }
+    if((JIRA_URL_MATCHING_REGEX.test(url) || AGO_REGEX.test(url))) {
 
-    //TODO refactor into updateOrAddEntry(), maybe with enum type matched
 
-    const isJiraUrl = JIRA_URL_MATCHING_REGEX.test(url);
-    const storageKey = isJiraUrl ? 'jiraUrlList' : 'agoUrlList';
-    let storedList = await getFromStorage(storageKey) || []; //Fetch storage once and ensure it's an array
-    const urlList = Array.isArray(storedList) ? storedList : [];
-    console.log('Current List', storageKey, urlList.length, urlList);
+        //TODO refactor into updateOrAddEntry(), maybe with enum type matched
 
-    const regexToUse = isJiraUrl ? JIRA_CAPTURE_SAVE_URL_REGEX : AGO_PLAN_CAPTURE_URL_REGEX;
-    let capturedUrl = url.match(regexToUse)?.[1];
+        const isJiraUrl = JIRA_URL_MATCHING_REGEX.test(url);
+        const storageKey = isJiraUrl ? 'jiraUrlList' : 'agoUrlList';
+        let storedList = await getFromStorage(storageKey) || []; //Fetch storage once and ensure it's an array
+        const urlList = Array.isArray(storedList) ? storedList : [];
+        console.log('Current List', storageKey, urlList.length, urlList);
 
-    if(!capturedUrl) {
-        console.log('URL Not captures', capturedUrl, regexToUse, url);
-        return false;
-    }
+        const regexToUse = isJiraUrl ? JIRA_CAPTURE_SAVE_URL_REGEX : AGO_PLAN_CAPTURE_URL_REGEX;
+        let capturedUrl = url.match(regexToUse)?.[1];
 
-    /* Save URL as Bookmark List Entry */
-    const displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
-    if(!displayName || displayName.length === 0) return false;
+        if(capturedUrl) {
+            /* Save URL as Bookmark List Entry */
+            const displayName = getListEntryDisplayName(url, jiraSprint, agoClientName);
+            if(!displayName || displayName.length === 0) return false;
 
-    // Update the URL list if the URL already exists
-    let updatedUrlList = [];
-    const existingUrl = urlList.find((u) => u.url === url);
-    if(existingUrl) {
-        console.log('**Revisited URL:', existingUrl);
-        existingUrl.lastVisited = new Date().toISOString();
+            // Update the URL list if the URL already exists
+            let updatedUrlList = [];
+            const existingUrl = urlList.find((u) => u.url === url);
+            if(existingUrl) {
+                console.log('**Revisited URL:', existingUrl);
+                existingUrl.lastVisited = new Date().toISOString();
 
-        if(!existingUrl.preserveCustomName && (isJiraUrl || !existingUrl.favorite))
-            existingUrl.displayName = displayName; //Updates Jira Sprint & AGO last name
-        updatedUrlList = urlList;
+                if(!existingUrl.preserveCustomName && (isJiraUrl || !existingUrl.favorite))
+                    existingUrl.displayName = displayName; //Updates Jira Sprint & AGO last name
+                updatedUrlList = urlList;
+            } else {
+                console.log('**NEW URL:', url, urlList);
+            //TODO refactor to match: AGO_CLIENT_CAPTURE_URL_REGEX
+
+                urlList.push({
+                    id: uuidv4(),
+                    url: capturedUrl,
+                    displayName,
+                    lastVisited: new Date().toISOString(),
+                    favorite: false,
+                });
+
+                updatedUrlList = evaluateMaxListLength(urlList);
+            }
+            // Save the updated list back to storage
+            await saveToStorage({ [storageKey]: updatedUrlList });
+
+            console.log("Saved URL ==> ", isJiraUrl ? 'JIRA' : 'AGO', updatedUrlList.length, updatedUrlList);
+
+        } else
+            console.log('URL Not captures', capturedUrl, regexToUse, url);
+
+
     } else {
-        console.log('**NEW URL:', url, urlList);
-    //TODO refactor to match: AGO_CLIENT_CAPTURE_URL_REGEX
-
-        urlList.push({
-            id: uuidv4(),
-            url: capturedUrl,
-            displayName,
-            lastVisited: new Date().toISOString(),
-            favorite: false,
-        });
-
-        updatedUrlList = evaluateMaxListLength(urlList);
+        console.log('**URL did not for link saving', url);
     }
-    // Save the updated list back to storage
-    await saveToStorage({ [storageKey]: updatedUrlList });
 
 
     /* Save AGO URL parts for Popup Link Dropdowns */
-    if(!isJiraUrl) {
-        const matched = url.match(AGO_REGEX);
+    if(VOYANT_REGEX.test(url)) {
+        const matched = url.match(VOYANT_REGEX);
 
         if(matched && matched.length >= 4) { 
             const route = matched[1];
@@ -204,9 +209,10 @@ const saveUrl = async (url, jiraSprint, agoClientName) => {
 
             // console.log('Initializing cacheUrl', cacheUrl, matched);
         }
+    } else {
+        console.log('**URL did not for dropdown syncing', url);
     }
 
-    console.log("Saved URL ==> ", isJiraUrl ? 'JIRA' : 'AGO', updatedUrlList.length, updatedUrlList);
     return true;
 };
 

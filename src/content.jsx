@@ -1,5 +1,5 @@
 import { getFromStorage } from "./controllers/storageController";
-import { AGO_URL_MATCHING_REGEX, AGO_CAPTURE_NAMING_REGEX } from "./constants/constants";
+import { AGO_URL_MATCHING_REGEX, AGO_CAPTURE_NAMING_REGEX, JIRA_REGEX, VOYANT_REGEX } from "./constants/constants";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
@@ -63,18 +63,20 @@ const extractAGOClientLastName = async() => {
 const saveUrl = async () => {
     const url = window.location.href;
 
-    /* Extract Page Text and pass to background.jsx */
-    const jiraSprint = await extractJiraSprint(); //Empty string when not applicable
-    const agoClientName = await extractAGOClientLastName(); //Empty string when not applicable
-    console.log(`CONTENT SENDING 'SAVE_ULR'`, jiraSprint, agoClientName, url);
+    if(JIRA_REGEX.test(url) || VOYANT_REGEX.test(url)) {
+        /* Extract Page Text and pass to background.jsx */
+        const jiraSprint = await extractJiraSprint(); //Empty string when not applicable
+        const agoClientName = await extractAGOClientLastName(); //Empty string when not applicable
+        console.log(`CONTENT SENDING 'SAVE_ULR'`, jiraSprint, agoClientName, url);
 
-    const response = await chrome.runtime.sendMessage({
-        command: "SAVE_URL",
-        url,
-        jiraSprint,
-        agoClientName
-    });
-    // console.log(response);
+        const response = await chrome.runtime.sendMessage({
+            command: "SAVE_URL",
+            url,
+            jiraSprint,
+            agoClientName
+        });
+        // console.log(response);
+    }
 };
 
 const getListEntryDisplayName = (url) => {
