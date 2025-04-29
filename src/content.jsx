@@ -10,352 +10,244 @@ import ROUTES from "./constants/routes.json";
 *************************************************************/
 
 /* Global */
+let DEBUG_MODE = false;
 let currentUrl = '';
 
-/* GLobal Context */
 let thisTabId = null;
 
-/* Interval CLear Cache */
+/* Interval Clear Cache */
 let cacheInterval;
 let cacheUrl = "";
 
-// Get and cache this tab's ID on content script initialization
-//Content.jsx does not know it's own tabId, so must proxy from background.jsx
-chrome.runtime.sendMessage({ command: "GET_TAB_ID" }, (response) => {
-  if (response?.tabId !== undefined) {
-    thisTabId = response.tabId;
-    console.log("Tab ID initialized:", thisTabId);
-  } else {
-    console.warn("Failed to get tab ID:", response?.error);
-  }
-});
-    
 
-const createCacheURL = () => {
-  const url = window.location.href;
 
-  console.log('createCacheURL-cacheClear', url);
-
-  if (!AGO_REGEX.test(url)) {
-    console.log('createCacheURL-NOT AGO', url);
-    return null;
-  }
-
-  const matched = url.match(AGO_REGEX);
-  if (!matched || matched.length < 4) { 
-    console.log('createCacheURL-Regex failed', matched, url, AGO_REGEX);
-    return null;
-  }
-
-  const regionValue = matched[2];
-  const environmentValue = matched[4];
-  const localEnvironmentValue = ENVIRONMENTS.find(l => l.label === "Local")?.value;
-
-  if (environmentValue !== localEnvironmentValue) {
-    console.log('createCacheURL-Not local environment');
-    return null;
-  }
-
-  const cacheRoute = ROUTES.find(r => r.label === "Cache");
-  if (!cacheRoute) {
-    console.error("Cache route not found");
-    return null;
-  }
-
-  cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
-
-  console.log("createCacheURL-Result", cacheUrl, regionValue, environmentValue, cacheRoute, matched);
-
-  return cacheUrl;
+/*  Create cache URL for local AGO environment */
+const createCacheURL = (url = currentUrl) => {
+    if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] URL:', url);
+    if(!AGO_REGEX.test(url)){
+        if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] Not an AGO URL');
+        return null;
+    }
+    const matched = url.match(AGO_REGEX);
+    if(!matched || matched.length < 4){
+        if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] Regex failed', matched);
+        return null;
+    }
+    const regionValue = matched[2];
+    const environmentValue = matched[4];
+    const localEnvironmentValue = ENVIRONMENTS.find(l => l.label === 'Local')?.value;
+    if(environmentValue !== localEnvironmentValue){
+        if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] Not local environment');
+        return null;
+    }
+    const cacheRoute = ROUTES.find(r => r.label==='Cache');
+    if(!cacheRoute){
+        if(DEBUG_MODE) console.error('[CONTENT][createCacheURL] Cache route not found');
+        return null;
+    }
+    cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
+    if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] cacheUrl:', cacheUrl);
+    return cacheUrl;
 };
 
-
-
-//Used for extracting page after DOM loads
-const waitForDOM = (fetchElement) => {
+/* Wait for a DOM element to appear */
+//Utility used for extracting elements after page loads
+const waitForDOM = fetchElement => {
     return new Promise((resolve, reject) => {
-      const observer = new MutationObserver(() => {
-        const element = fetchElement();
-        if(element) {
-          observer.disconnect();
-          resolve(element);
-        }
-      });
-  
-      observer.observe(document.body, { childList: true, subtree: true });
-  
-      // Timeout logic
-      setTimeout(() => {
-        observer.disconnect();
-        reject(new Error(`Element not found within ${DOM_NAMING_TIMEOUT}ms`));
-      }, DOM_NAMING_TIMEOUT);
-    });
-  };
-
-  
-const extractJiraSprint = async() => {
-    try {
-        let sprintElement = await waitForDOM(() => document.querySelector(JIRA_SPRINT_ELEMENT_SELECTOR));
-
-        //TODO Remove after testing
-        // const options = ["ACTIVE", "February 28th, 2025", "March 5, 2025", "Triage"];
-        // const randomIndex = Math.floor(Math.random() * options.length);
-        // sprintElement = {innerText: options[randomIndex] };
-
-        console.log('CONTENT-extractJiraSprint', sprintElement?.innerText)
-
-        if(!sprintElement?.innerText) {
-            console.log('CONTENT-extractJiraSprint-coulnd\'t identify sprint');
-            return "";
-    }
-
-        const rawText = sprintElement ? sprintElement.innerText.trim() : "";
-        const cleanText = rawText.replace(/(\d+)(st|nd|rd|th)/, '$1'); //Removing the date Ordinals
-        const parsedDate = Date.parse(cleanText);
-        const value = isNaN(parsedDate) ? rawText : new Date(parsedDate);
-
-        if(value instanceof Date && !isNaN(value))
-            return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).replace(',', '').replace(' ', '-');
-        else if(value === "ACTIVE")
-            return "ACT";
-        else if(value === "Backlog" || value === "TRIAGED")
-            return "";
-        else
-            return "";
-    } catch(error) {
-        console.warn('NOTE-ERROR in extractJiraSprint', error)
-        return "";
-    }
-}
-
-const extractAGOClientLastName = async() => { 
-    try {
-        let element = await waitForDOM(() => document.getElementById(AGO_CLIENT_NAME_ELEMENT_ID));
-
-        //TODO Remove after testing
-        // const options = ["Testing", "Hanson, Hannah", "Phillips, Emily", "Sadergaski, Paul"];
-        // const randomIndex = Math.floor(Math.random() * options.length);
-        // element = {innerText: options[randomIndex] };
-
-console.log('CONTENT-extractAGOClientLastName', element?.innerText, element);
-
-
-        if(!element?.innerText) 
-            return "";
-
-        const text = element.innerText.trim();
-        return text.split(",")[0].trim(); 
-    } catch(error) {
-        console.warn('NOTE-ERROR in extractAGOClientLastName', error)
-        return "";
-    }
-};
-
-
-const saveUrl = async(url) => {
-    // const url = window.location.href;
-
-    if(JIRA_REGEX.test(url) || VOYANT_REGEX.test(url)) {
-        /* Extract Page Text and pass to background.jsx */
-        const jiraSprint = JIRA_REGEX.test(url) ? await extractJiraSprint() : ''; //Empty string when not applicable
-        const agoClientName = AGO_REGEX.test(url) ? await extractAGOClientLastName() : ''; //Empty string when not applicable
-        console.log(`CONTENT SENDING 'SAVE_ULR'`, jiraSprint, agoClientName, url);
-
-        const response = await chrome.runtime.sendMessage({
-            command: "SAVE_URL",
-            url,
-            jiraSprint,
-            agoClientName
-        });
-        // console.log(response);
-
-        if(AGO_REGEX.test(url)) 
-          createCacheURL();
-    } else
-        console.log('Shipping Save_URL', url);
-};
-
-// const getListEntryDisplayName = (url) => {
-//     /* AGO List Entries */
-//     if ((AGO_REGEX.test(url))) {
-//         const urlMatchGroups = url.match(AGO_REGEX);
-
-//         if (!urlMatchGroups || urlMatchGroups.length < 5) {
-//             console.log('Invalid AGO Name Match', url, AGO_REGEX, urlMatchGroups);
-//             return 'AGO';
-//         }
-
-//         const region = urlMatchGroups[1].toUpperCase();
-//         const environmentPrefix = (ENVIRONMENTS.find(env => env.value === urlMatchGroups[2])?.prefix || 'ENV').toUpperCase();
-//         const clientSuffix = urlMatchGroups[3];
-//         const planSuffix = urlMatchGroups[4];
-
-//         return `${region}-${environmentPrefix}-${clientSuffix}-${planSuffix}`;
-
-//     } else {
-//         console.error('DisplayName - Did Not Match', url, JIRA_REGEX, AGO_REGEX);
-//         return false;
-//     }
-// };
-
-
-// const renameAGOTab = async (url) => {
-//     //Rename AGO Tabs
-//     if (AGO_REGEX.test(url)) {
-//         const tabOn = await getFromStorage("tabOn");
-//         const displayName = await getListEntryDisplayName(url);
-
-//         if (tabOn && displayName) {
-//             document.title = displayName;
-//             console.log('AGO-renaimg', displayName);
-
-//             setTimeout(() => {
-//                 document.title = displayName;
-//                 console.log('timeout-renaimg', displayName);
-//             }, (10 * 1000)); //Override AGO
-//         }
-//     }
-// }
-
-
-const initializeAGOTabRenaming = async () => {
-
-    const renameAGOTab = async () => {
-        const tabOn = await getFromStorage("tabOn");
-        const url = window.location.href;
-        const matched = url.match(AGO_REGEX);
-
-        console.log('RENAMING-', tabOn, matched, url, AGO_REGEX);
-
-        if(tabOn && matched) {
-            const storedList = await getFromStorage('agoUrlList') || []; //Fetch storage once and ensure it's an array
-            const urlList = Array.isArray(storedList) ? storedList : [];
-            const item = urlList.find((u) => u.url === matched[1]);
-
-            if(item?.displayName) {
-              //Optionally remove REGIONS prefix
-              const parts = item.displayName.split("-");
-              const firstPart = parts[0]?.toLowerCase();
-              const isRegionPrefix = REGIONS.some(r => r.value.toLowerCase() === firstPart);          
-              const displayName = isRegionPrefix ? parts.slice(1).join("-") : item.displayName;
-          
-              document.title = displayName;
+        const observer = new MutationObserver(() => {
+            const element = fetchElement();
+            if(element){
+                observer.disconnect();
+                resolve(element);
             }
-          }
+        });
+        observer.observe(document.body,{childList:true,subtree:true});
+        setTimeout(() => {
+            observer.disconnect();
+            reject(new Error(`Element not found within ${DOM_NAMING_TIMEOUT}ms`));
+        }, DOM_NAMING_TIMEOUT);
+    });
+};
+
+/*  Extract the current JIRA sprint identifier */
+const extractJiraSprint = async() => {
+    try{
+        const sprintElement = await waitForDOM(() => document.querySelector(JIRA_SPRINT_ELEMENT_SELECTOR));
+        if(DEBUG_MODE) console.log('[CONTENT][extractJiraSprint] Element text:', sprintElement?.innerText);
+        const rawText = sprintElement?.innerText?.trim()||'';
+        if(!rawText){
+            if(DEBUG_MODE) console.log('[CONTENT][extractJiraSprint] No sprint found');
+            return '';
+        }
+        const cleanText = rawText.replace(/(\d+)(st|nd|rd|th)/, '$1');
+        const parsed = Date.parse(cleanText);
+        let value = isNaN(parsed)?rawText:new Date(parsed);
+        if(value instanceof Date&&!isNaN(value))
+            return value.toLocaleDateString('en-US', {month:'short',day:'numeric'}).replace(',','').replace(' ','-');
+        if(value==='ACTIVE') return 'ACT';
+        if(value==='Backlog'||value==='TRIAGED') return '';
+        return '';
+    }catch(error){
+        if(DEBUG_MODE) console.warn('[CONTENT][extractJiraSprint] Error:', error);
+        return '';
+    }
+};
+
+/*  Extract AGO client last name from page */
+const extractAGOClientLastName = async() => {
+    try{
+        const element = await waitForDOM(() => document.getElementById(AGO_CLIENT_NAME_ELEMENT_ID));
+        if(DEBUG_MODE) console.log('[CONTENT][extractAGOClientLastName] Element text:', element?.innerText);
+        const text = element?.innerText?.trim() || '';
+        if(!text){
+            if(DEBUG_MODE) console.log('[CONTENT][extractAGOClientLastName] No client name');
+            return '';
+        }
+        return text.split(',')[0].trim();
+    }catch(error){
+        if(DEBUG_MODE) console.warn('[CONTENT][extractAGOClientLastName] Error:', error);
+        return '';
+    }
+};
+
+/*  Send URL save request to background script */
+const saveUrl = async url => {
+    if(JIRA_REGEX.test(url) || VOYANT_REGEX.test(url)){
+        const jiraSprint = JIRA_REGEX.test(url)?await extractJiraSprint() : '';
+        const agoClientName = AGO_REGEX.test(url)?await extractAGOClientLastName() : '';
+        if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_URL', url, jiraSprint, agoClientName);
+        await chrome.runtime.sendMessage({command:'SAVE_URL',url,jiraSprint,agoClientName});
+        if(AGO_REGEX.test(url)) createCacheURL();
+    } else {
+        if(DEBUG_MODE) console.log('[CONTENT][saveUrl] URL not tracked', url);
+    }
+};
+
+/*  Initialize AGO tab renaming based on storage setting */
+const initializeAGOTabRenaming = async() => {
+    const renameAGOTab = async(url = currentUrl) => {
+        const tabOn = await getFromStorage('tabOn');
+        if(DEBUG_MODE) console.log('[CONTENT][renameAGOTab] tabOn:', tabOn, 'URL:', url);
+
+        const matched = url.match(AGO_REGEX);
+        if(tabOn && matched){
+            const storedList = await getFromStorage('agoUrlList')||[];
+            const item = storedList.find(u => u.url===matched[1]);
+            if(item?.displayName){
+                const parts = item.displayName.split('-');
+                const first = parts[0]?.toLowerCase();
+                const isPref = REGIONS.some(r => r.value.toLowerCase()===first);
+                document.title = isPref?parts.slice(1).join('-'):item.displayName;
+                if(DEBUG_MODE) console.log('[CONTENT][renameAGOTab] New title:', document.title);
+            }
+        }
     };
-
-    setInterval(async () => {
-        renameAGOTab();
-    }, AGO_TAB_RENAMING_INTERVAL);
-
+    setInterval(renameAGOTab, AGO_TAB_RENAMING_INTERVAL);
     renameAGOTab();
 };
 
-
-
-
-
-
-const initializeTabURLSaving = async () => {
+/*  Initialize URL-saving interval */
+const initializeTabURLSaving = async() => {
     setInterval(() => {
-        if(currentUrl !== window.location.href) {
+        if(currentUrl !== window.location.href){
             currentUrl = window.location.href;
-            console.log("SAVING NEW URL", currentUrl)
+            if(DEBUG_MODE) console.log('[CONTENT][initializeTabURLSaving] New URL:', currentUrl);
             saveUrl(currentUrl);
-            // renameAGOTab(currentUrl);
         }
     }, URL_SAVING_INTERVAL);
-}
+};
 
-/* Interval CLear Cache */
-
-const clearCache = async () => {
-    if (!cacheUrl || cacheUrl.length === 0) {
-      console.log("clearCache-blocked", cacheUrl);
-      return false;
-    }
-  
-    try {
-      const res = await fetch(cacheUrl, {
-        method: "GET",
-        credentials: "include", // includes cookies automatically from content context
-      });
-  
-      if (res.status !== 200) {
-        console.warn("Clear Cache Unavailable:", res.status, cacheUrl);
+/*  Clear the local cache via fetch */
+const clearCache = async() => {
+    if(!cacheUrl || cacheUrl.length === 0){
+        if(DEBUG_MODE) console.log('[CONTENT][clearCache] Blocked', cacheUrl);
         return false;
-      }
-  
-      console.log("Local Cache Cleared:", res.status, cacheUrl);
-      return true;
-    } catch (e) {
-      console.error("Failed to Clear Cache with:", cacheUrl, e);
-      return false;
     }
-  };
-  
+    try{
+        const res = await fetch(cacheUrl,{method:'GET',credentials:'include'});  // includes cookies automatically from content context
+        if(res.status!==200){
+            if(DEBUG_MODE) console.warn('[CONTENT][clearCache] Unavailable', res.status, cacheUrl);
+            return false;
+        }
+        if(DEBUG_MODE) console.log('[CONTENT][clearCache] Cleared', res.status, cacheUrl);
+        return true;
+    }catch(e){
+        if(DEBUG_MODE) console.error('[CONTENT][clearCache] Error:', e);
+        return false;
+    }
+};
 
-// Starts the cache polling interval
+/*  Start the cache polling interval */
 const startCachePolling = async() => {
     stopCachePolling();
-
-    if(cacheUrl && cacheUrl.length > 10) {  
-        console.log('...starting cacheClear', cacheUrl);
-
-        cacheInterval = setInterval(async () => {
+    if(cacheUrl && cacheUrl.length > 10){
+        if(DEBUG_MODE) console.log('[CONTENT][startCachePolling] Starting', cacheUrl);
+        cacheInterval = setInterval(async() => {
             await clearCache();
             const nextDate = new Date(Date.now() + LOCAL_CACHE_INTERVAL);
-            await saveToStorage({ nextTimerMS: nextDate.getTime() });
+            await saveToStorage({nextTimerMS: nextDate.getTime()});
         }, LOCAL_CACHE_INTERVAL);
 
         //Execute Immediately:
         await clearCache();
-
     } else {
-        console.log('Local Cache Polling blocked with invalid URL:', cacheUrl);
+        if(DEBUG_MODE) console.log('[CONTENT][startCachePolling] Invalid URL', cacheUrl);
     }
-  };
-  
-  // Stops the cache polling interval
-  const stopCachePolling = () => {
-    if (cacheInterval) {
-        console.log('+++stopping cacheClear', cacheUrl);
+};
 
-      clearInterval(cacheInterval);
-      cacheInterval = null;
+/*  Stop the cache polling interval */
+const stopCachePolling = () => {
+    if(cacheInterval){
+        clearInterval(cacheInterval);
+        cacheInterval = null;
+        if(DEBUG_MODE) console.log('[CONTENT][stopCachePolling] Stopped');
     }
-  };
+};
 
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === "local" && changes.cacheTabId) {
-      const newCacheTabId = changes.cacheTabId.newValue;
-  
-      if (newCacheTabId === thisTabId) {
-        startCachePolling();
-      } else {
-        stopCachePolling();
-      }
+// Listen for cacheTabId changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if(namespace === 'local' && changes.cacheTabId){
+        const id = changes.cacheTabId.newValue;
+        if(id === thisTabId) startCachePolling();
+        else stopCachePolling();
     }
-  });
-  
-  
+});
 
- 
-  
 
-    //Only initiate if matches existing tabId
-    chrome.storage.local.get(["cacheTabId"], (result) => {
-      if (result.cacheTabId === thisTabId) {
-        startCachePolling();
-      }
+
+/****************************************************
+ *              Initialize Content Script           *
+ ****************************************************/
+const initialize = async () => {
+    // Set DEBUG_MODE from storage
+    DEBUG_MODE = (await getFromStorage('debug')) === true;
+    if (DEBUG_MODE) console.log('[CONTENT][init] DEBUG_MODE enabled');
+
+    //Set global variables
+    currentUrl = window.location.href;
+    await createCacheURL();
+
+    // Get and cache this tab's ID
+    chrome.runtime.sendMessage({ command: 'GET_TAB_ID' }, (response) => {
+        if (response?.tabId !== undefined) {
+            thisTabId = response.tabId;
+            if (DEBUG_MODE) console.log('[CONTENT][initTabId] Tab ID:', thisTabId);
+
+            // Check if this tab should start polling
+            chrome.storage.local.get(['cacheTabId'], (result) => {
+                if (result.cacheTabId === thisTabId) startCachePolling();
+            });
+        } else {
+            if (DEBUG_MODE) console.warn('[CONTENT][initTabId] Failed to get tab ID:', response?.error);
+        }
     });
 
+    // Run other initializations
+    await initializeAGOTabRenaming();
+    await initializeTabURLSaving(); //Updates currentUrl
 
+    if (DEBUG_MODE) console.log('[CONTENT][init] Content script initialized');
+};
 
-
-/* Initialize Extension on Chrome Start */
-await initializeAGOTabRenaming();
-await initializeTabURLSaving();
-await createCacheURL();
-console.log("Initialized Content Script...");
-
+// Call the initializer
+initialize();
