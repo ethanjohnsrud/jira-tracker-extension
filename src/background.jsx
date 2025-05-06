@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import { getFromStorage, saveToStorage, removeFromStorage } from "./controllers/storageController";
 import {
+    AGO_HEADER_HYPERLINK_DEFAULT,
+	JIRA_HEADER_HYPERLINK_DEFAULT,
     JIRA_REGEX,
     MAX_LIST_LENGTH,
     AGO_REGEX,
@@ -63,7 +65,10 @@ const evaluateMaxListLength = urlList=>{
 /*/ Processes and saves visited URLs into storage lists */
 const saveJiraUrl = async(url, jiraSprint) => {
     const isJiraUrl = JIRA_REGEX.test(url);
-    if(!isJiraUrl) return false;
+    if(!isJiraUrl) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveJiraUrl] Not Jira URL', url, JIRA_REGEX);
+        return false;
+    }
 
     const storageKey = 'jiraUrlList';
     const storedList = await getFromStorage(storageKey) || [];
@@ -111,7 +116,10 @@ const saveJiraUrl = async(url, jiraSprint) => {
 /* Save AGO URL to Storage List and update popup dropdowns */
 const saveAGOUrl = async(url, agoClientName) => {
     const isAgoUrl = AGO_REGEX.test(url);
-    if(!isAgoUrl) return false;
+    if(!isAgoUrl) {
+        if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Not AGO URL', url, AGO_REGEX);
+        return false;
+    }
 
     const storageKey = 'agoUrlList';
     const storedList = await getFromStorage(storageKey) || [];
@@ -152,19 +160,6 @@ const saveAGOUrl = async(url, agoClientName) => {
     await saveToStorage({ [storageKey]: updatedUrlList });
     if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Saved List', updatedUrlList.length);
 
-    // Additional dropdown storage (for popup)
-    if(VOYANT_REGEX.test(url)) {
-        const matched = url.match(VOYANT_REGEX);
-        if(matched && matched.length >= 4) {
-            const route = matched[1];
-            const region = matched[2];
-            const environment = matched[3] || matched[4];
-
-            await saveToStorage({ region, environment, route });
-            if(DEBUG_MODE) console.log('[BACKGROUND][saveAGOUrl] Saved dropdowns:', region, environment, route);
-        }
-    }
-
     return true;
 };
 
@@ -172,23 +167,40 @@ const saveAGOUrl = async(url, agoClientName) => {
 
 /* Handles incoming extension messages */
 chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
-    (async()=>{
+    (async() => {
+        if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] Received:', request.command, request.url);
         switch(request.command){
             case 'GET_TAB_ID':
-                if(sender?.tab?.id!==undefined) sendResponse({tabId:sender.tab.id});
-                else if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] GET_TAB_ID missing sender.tab');
+                try {
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (tab?.id !== undefined) {
+                      sendResponse({ tabId: tab.id });
+                    } else {
+                      if (DEBUG_MODE) console.warn('[BACKGROUND][onMessage] GET_TAB_ID: Could not determine tab ID', tab);
+                      sendResponse({ error: 'Error: GET_TAB_ID | Could not determine tab ID' });
+                    }
+                  } catch(error) {
+                    if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] GET_TAB_ID error:', error);
+                    sendResponse({ error: error.message });
+                  }
                 break;
 
             case 'SAVE_JIRA_URL':
-                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_JIRA_URL',request.url);
-                const savedJira = await saveJiraUrl(request.url,request.jiraSprint);
+                const savedJira = await saveJiraUrl(request.url, request.jiraSprint);
                 if(savedJira) sendResponse({message:'JIRA URL saved'});
+                else {
+                    if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] SAVE_JIRA_URL: Failed to save JIRA URL', request.url, 'jiraSprint:', request.jiraSprint);
+                    sendResponse({ error: 'Failed: SAVE_JIRA_URL' });
+                }
                 break;
         
             case 'SAVE_AGO_URL':
-                if(DEBUG_MODE) console.log('[BACKGROUND][onMessage] SAVE_AGO_URL',request.url);
-                const savedAgo = await saveAGOUrl(request.url,request.agoClientName);
+                const savedAgo = await saveAGOUrl(request.url, request.agoClientName);
                 if(savedAgo) sendResponse({message:'AGO URL saved'});
+                else {
+                    if(DEBUG_MODE) console.warn('[BACKGROUND][onMessage] SAVE_AGO_URL: Failed to save AGO URL', request.url, 'agoClientName:', request.agoClientName);
+                    sendResponse({ error: 'Failed: SAVE_AGO_URL' });
+                }
                 break;           
         }
     })();

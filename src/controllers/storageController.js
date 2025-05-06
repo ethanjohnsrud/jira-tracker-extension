@@ -26,7 +26,7 @@ export const removeFromStorage = (keys) => new Promise((resolve, reject) => {
 export const getFromStorage = (keys) => new Promise((resolve, reject) => {
   try {
     // Guard: check if extension context is still valid
-    if (!chrome?.storage?.local || !chrome.runtime?.id) {
+    if(!chrome || !chrome.runtime || !chrome.runtime.id || !chrome.storage?.local) {
       return reject(new Error("Extension context invalidated"));
     }
 

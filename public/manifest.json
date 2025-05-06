@@ -1,7 +1,7 @@
 {
   "name": "Jira Tracker",
-  "version": "1.0",
-  "description": "",
+  "version": "2.0",
+  "description": "Automatically bookmark Jira tickets and link to AGO plan; including systematic environment navigation to aid development.",
   "manifest_version": 3,
   "content_scripts": [
     {
@@ -15,10 +15,19 @@
       "runAt": "document_start"
     }
   ],
-  "author": "ethan",
+  "author": "Ethan",
   "homepage_url": "https://ethanjohnsrud.com/",
   "action": {
     "default_popup": "popup.html"
+  },
+  "commands": {
+    "activate-extension": {
+      "suggested_key": {
+        "default": "Alt+A",
+        "mac": "Ctrl+A"
+      },
+      "description": "Open the extension popup window"
+    }
   },
   "background": {
     "service_worker": "background.js"
@@ -34,8 +43,7 @@
     "storage",
     "alarms",
     "activeTab",
-    "cookies",
-    "https://*.localhost.tld:8443/"
+    "cookies"
   ],
   "host_permissions": [
     "https://*.localhost.tld:8443/"

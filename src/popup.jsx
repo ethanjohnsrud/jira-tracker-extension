@@ -4,10 +4,12 @@ import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
 import {
+	ROUTE_DEPRIORITIZED_LABELS,
 	AGO_HEADER_HYPERLINK_DEFAULT,
 	JIRA_HEADER_HYPERLINK_DEFAULT,
 	UK_HOSTED_TEST_REGIONS,
 	QA_TEST_REGIONS,
+	AGO_REGEX
 } from "./constants/constants.js";
 
 import Dropdown from "./components/Dropdown.jsx";
@@ -34,6 +36,7 @@ const Popup = () => {
 		environment: ENVIRONMENTS[1],
 		route: ROUTES[0],
 	});
+	const [currentTabURL, setCurrentTabURL] = useState('');
 	const [agoLink, setAgoLink] = useState(AGO_HEADER_HYPERLINK_DEFAULT);
 	const [jiraLink, setJiraLink] = useState(JIRA_HEADER_HYPERLINK_DEFAULT);
 	const [tabOn, setTabOn] = useState(false);
@@ -43,6 +46,7 @@ const Popup = () => {
 	const [latestJiraId, setLatestJiraId] = useState("");
 	const [agoDisplayList, setAgoDisplayList] = useState([]);
 	const [latestAgoId, setLatestAgoId] = useState("");
+
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState(0);
 	const timerRef = useRef(null);
 
@@ -159,6 +163,28 @@ const Popup = () => {
 			if(DEBUG_MODE) console.error('[POPUP][handleCacheClick][ERROR]', error);
 		}
 	};
+
+	//Alternative Manager for Cache Button
+	const handleDynamicButtonClick = async(event) => {
+		const matched = currentTabURL.match(AGO_REGEX);
+
+		//Local Environment -> Auto Cache Button
+		if(currentTabURL.includes('localhost')) {
+			handleCacheClick();
+
+		//Current tab is AGO CLient -> Export
+		} else if(matched) {
+			const exportUrl = `${matched[1]}/client-export`;
+    		if(DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] exportUrl:', exportUrl, matched);
+			openUrlTab(event, exportUrl);
+
+		//Other webpage -> Import	
+		} else {
+			const importRoute = ROUTES.find((r) => r.label === "Import");
+			if(DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] importRoute:', importRoute);
+			navigateTabOnChange(event, { ...dropdowns, route: importRoute});
+		}
+	}
 
 /* Link the most recently visited Jira to AGO and update AGO label */
 	const handleLinkClick = async () => {
@@ -303,17 +329,15 @@ const Popup = () => {
 			setTabOn(tabOn === true || tabOn === 'true');
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			setCacheOn(cacheTabId === tab.id);
+			setCurrentTabURL(tab.url);
 
-			const validRegion =
-				REGIONS.find((r) => r.value.toLowerCase() === (region || '').toLowerCase()) ||
-				REGIONS[0];
-			const validEnvironment =
-				environment === 'local'
-					? ENVIRONMENTS.find((e) => e.label.toLowerCase() === 'local')
-					: ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment || '').toLowerCase()) ||
-					ENVIRONMENTS[1];
-			const validRoute =
-				ROUTES.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0];
+			const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region || '').toLowerCase()) || REGIONS[0];
+
+			const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment || '').toLowerCase()) || ENVIRONMENTS[1];
+
+			//Some have general regex; where could be more specific
+			const validRoute = [...ROUTES].sort((a, b) => ROUTE_DEPRIORITIZED_LABELS.includes(a.label) - ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
+				.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0];
 
 			setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
 			if(DEBUG_MODE)
@@ -344,21 +368,37 @@ const Popup = () => {
 			</div>
 			<div className="flex gap-x-2 justify-start w-full">
 				<Button
-					label={"Tab"}
+					label={"✎ Tab"}
 					type={tabOn ? "primary" : "alternative-background"}
 					onClick={handleTabToggle}
 				/>
 				<Button
-					label={"Link"}
+					label={"☍ Link"}
 					className={"min-w-[50%]"}
 					onClick={handleLinkClick}
 				/>
-				<Button
-					label={cacheOn ? `Cache (${timerSecondsLeft})` : "Cache"}
-					type={cacheOn ? "primary" : "alternative-background"}
-					loading={cacheLoading}
-					onClick={handleCacheClick}
-				/>
+				{currentTabURL.includes('localhost') ? (
+					<Button
+						label={cacheOn ? `✨ Cache (${timerSecondsLeft})` : '✨ Cache'}
+						type={cacheOn ? 'primary' : 'alternative-background'}
+						loading={cacheLoading}
+						onClick={handleCacheClick}
+					/>
+					) : currentTabURL.match(AGO_REGEX) ? (
+					<Button
+						label="⇪ Export"
+						type="primary"
+						loading={false}
+						onClick={handleDynamicButtonClick}
+					/>
+					) : (
+					<Button
+						label="⇩ Import"
+						type="primary"
+						loading={false}
+						onClick={handleDynamicButtonClick}
+					/>
+				)}
 			</div>
 			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden">
 				{/* 35% Width Column */}

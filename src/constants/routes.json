@@ -1,7 +1,7 @@
 [
   { 
     "label": "Adviser Go", 
-    "value": "home/#/login", 
+    "value": "advisergo", 
     "regex": "(home\\/#\\/login|advisergo\\/#\\/)" 
   },
   { 
@@ -18,6 +18,11 @@
     "label": "Version", 
     "value": "voyant/version.txt", 
     "regex": "version\\.txt" 
+  },
+  { 
+    "label": "Release Notes", 
+    "value": "advisergo/#/advisor/clients?releaseNotes=true", 
+    "regex": "releaseNotes=true" 
   },
   { 
     "label": "My User", 

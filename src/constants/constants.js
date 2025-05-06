@@ -16,6 +16,9 @@ export const DOM_NAMING_TIMEOUT = 5000; //ms
 /*  Interval (ms) for local cache polling */
 export const LOCAL_CACHE_INTERVAL = 10000; //ms
 
+/* Deprioritized Route Labels | Some regex are general; so checking more specific routes.json first */
+export const ROUTE_DEPRIORITIZED_LABELS = ["Adviser Go", "My User"]; 
+
 
 /***********************************
  * Environment & Region Constants   

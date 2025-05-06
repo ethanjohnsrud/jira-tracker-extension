@@ -29,7 +29,7 @@ const createCacheURL = (url = currentUrl) => {
         return null;
     }
     const matched = url.match(AGO_REGEX);
-    if(!matched || matched.length < 4){
+    if(!matched || matched.length < 4) {
         if(DEBUG_MODE) console.log('[CONTENT][createCacheURL] Regex failed', matched);
         return null;
     }
@@ -122,22 +122,39 @@ const saveUrl = async (url = currentUrl) => {
         jiraSprint
       });
 
-    } else if(AGO_REGEX.test(url)){
-      const agoClientName = await extractAGOClientLastName();
-      if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_AGO_URL',url,agoClientName);
+    } else if(VOYANT_REGEX.test(url)) {
+        //Dropdown storage (for popup)
+        const matched = url.match(VOYANT_REGEX);
+        if(matched && matched.length >= 4) {
+            const route = matched[1];
+            const region = matched[2];
+            const environment = matched[3] || matched[4];
 
-      await chrome.runtime.sendMessage({
-        command:'SAVE_AGO_URL',
-        url,
-        agoClientName
-      });
+            await saveToStorage({ region, environment, route });
+            if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Saved dropdowns:', region, environment, route);
+        }
 
-      //Update
-      createCacheURL(url);
+        //Save AGO Plan URL
+        if(AGO_REGEX.test(url)) {
+            const agoClientName = await extractAGOClientLastName();
+            if(DEBUG_MODE) console.log('[CONTENT][saveUrl] Sending SAVE_AGO_URL',url,agoClientName);
+
+            await chrome.runtime.sendMessage({
+                command:'SAVE_AGO_URL',
+                url,
+                agoClientName
+            });
+        }
+
+        //Update
+        createCacheURL(url);
 
     } else {
       if(DEBUG_MODE) console.log('[CONTENT][saveUrl] URL not tracked',url);
     }
+
+    //Update regardless
+    currentUrl = window.location.href;
   };
   
 
@@ -242,8 +259,7 @@ const initialize = async () => {
     if(DEBUG_MODE) console.log('[CONTENT][init] DEBUG_MODE enabled');
 
     //Set global variables
-    currentUrl = window.location.href;
-    await createCacheURL();
+    await createCacheURL(window.location.href);
 
     // Get and cache this tab's ID
     chrome.runtime.sendMessage({ command: 'GET_TAB_ID' }, (response) => {
@@ -251,7 +267,7 @@ const initialize = async () => {
             thisTabId = response.tabId;
             if(DEBUG_MODE) console.log('[CONTENT][initTabId] Tab ID:', thisTabId);
 
-            // Check ifthis tab should start polling
+            // Check if this tab should start polling
             chrome.storage.local.get(['cacheTabId'], (result) => {
                 if(result.cacheTabId === thisTabId) startCachePolling();
             });
