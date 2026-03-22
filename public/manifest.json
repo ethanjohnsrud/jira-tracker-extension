@@ -6,9 +6,9 @@
   "content_scripts": [
     {
       "matches": [
-        "https://voyant.atlassian.net/*",
-        "https://*.planwithvoyant.com/*",
-        "https://*.planwithvoyant.co.uk/*",
+        "https://company.atlassian.net/*",
+        "https://*.domain.com/*",
+        "https://*.domain.co.uk/*",
         "https://*.localhost.tld:8443/*"
       ],
       "js": ["content.js"],

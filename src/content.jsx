@@ -1,5 +1,5 @@
 import { getFromStorage, saveToStorage } from "./controllers/storageController";
-import {  JIRA_REGEX, VOYANT_REGEX, AGO_REGEX, DOM_NAMING_TIMEOUT, AGO_CLIENT_NAME_ELEMENT_ID, JIRA_SPRINT_ELEMENT_SELECTOR, URL_SAVING_INTERVAL, AGO_TAB_RENAMING_INTERVAL, LOCAL_CACHE_INTERVAL } from "./constants/constants";
+import {  JIRA_REGEX, COMPANY_REGEX, AGO_REGEX, DOM_NAMING_TIMEOUT, AGO_CLIENT_NAME_ELEMENT_ID, JIRA_SPRINT_ELEMENT_SELECTOR, URL_SAVING_INTERVAL, AGO_TAB_RENAMING_INTERVAL, LOCAL_CACHE_INTERVAL } from "./constants/constants";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";
 import ROUTES from "./constants/routes.json";
@@ -122,9 +122,9 @@ const saveUrl = async (url = currentUrl) => {
         jiraSprint
       });
 
-    } else if(VOYANT_REGEX.test(url)) {
+    } else if(COMPANY_REGEX.test(url)) {
         //Dropdown storage (for popup)
-        const matched = url.match(VOYANT_REGEX);
+        const matched = url.match(COMPANY_REGEX);
         if(matched && matched.length >= 4) {
             const route = matched[1];
             const region = matched[2];

@@ -71,7 +71,7 @@ export interface SETTINGS {
      ********************/
     agoTracking:{
         /*  Matches and captures company app URLs with region and environment */
-        companyTrackingRegex:string;
+        COMPANY_REGEX:string;
 
         /*  Matches and captures base AGO URL, region, environment, client, and plan IDs */
         AGO_REGEX:string;
@@ -151,7 +151,7 @@ export const DEFAULT_SETTINGS:SETTINGS = {
 
     agoTracking:{
         // [Group #1] Captures full URL through plan ID but excludes sub-route | [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test)
-        companyTrackingRegex:'^(https:\\/\\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\\.domain\\.(?:co\\.uk|com)|(localhost\\.tld:[0-9]{4})).+)',
+        COMPANY_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\\.domain\\.(?:co\\.uk|com)|(localhost\\.tld:[0-9]{4})).+)',
 
         // [Group #1] Captures full URL through plan ID but excludes sub-route
         // [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test) | [Group #4] Environment (local) | [Group #5] 5-chars-ending client ID | [Group #6] 5-chars-ending plan ID
@@ -263,11 +263,11 @@ export const validateSettings = (object:Object, debugMode:boolean):boolean => {
     }
 
     try {
-        if(!settings.agoTracking?.companyTrackingRegex) {
+        if(!settings.agoTracking?.COMPANY_REGEX) {
             if(debugMode) console.log('[Settings Validation] Failed: invalid agoTracking.companyTrackingRegex.');
             valid = false;
         } else {
-            new RegExp(settings.agoTracking.companyTrackingRegex);
+            new RegExp(settings.agoTracking.COMPANY_REGEX);
         }
     } catch(error) {
         if(debugMode) console.log('[Settings Validation] Failed: invalid agoTracking.companyTrackingRegex.', error);

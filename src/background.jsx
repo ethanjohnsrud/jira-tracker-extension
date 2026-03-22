@@ -6,7 +6,7 @@ import {
     JIRA_REGEX,
     MAX_LIST_LENGTH,
     AGO_REGEX,
-    VOYANT_REGEX
+    COMPANY_REGEX
 } from "./constants/constants";
 import REGIONS from "./constants/regions.json";
 import ENVIRONMENTS from "./constants/environments.json";

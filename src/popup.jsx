@@ -93,7 +93,7 @@ const Popup = () => {
 			}
 			const tld =
 				environmentValue === 'test' && UK_HOSTED_TEST_REGIONS.includes(regionValue) ? 'co.uk' : 'com';
-			domain = `${regionValue.toLowerCase()}-${environmentValue}.planwithvoyant.${tld}`;
+			domain = `${regionValue.toLowerCase()}-${environmentValue}.domain.${tld}`; //TODO: source domain from settings
 		}
 
 		const url = `https://${domain}/${routeValue}`;
