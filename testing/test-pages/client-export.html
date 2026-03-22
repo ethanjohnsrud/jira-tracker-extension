@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Export Mock Page</title>
+    </head>
+    <body>
+
+        <h1>Export Mock Page</h1>
+
+        <p>Current URL: 
+            <a href="https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/client-export" target="_blank" rel="noopener noreferrer">https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/client-export</a>
+        <p>
+
+        <p>
+            Instruction: detect the export popup, then click the
+            <strong>.VYT Export</strong> button.
+        </p>
+
+        <p>Expected action order:</p>
+        <ul>
+            <li>Identify this page as an export page with route <strong>/client-export</strong></li>
+            <li>Identify this export popup modal</li>
+            <li>Find the <strong>.VYT Export</strong> button</li>
+            <li>Click the <strong>.VYT Export</strong> button</li>
+        </ul>
+
+        <div role="dialog" aria-labelledby="export-modal-title" aria-modal="true" data-test-edit-container-modal="true">
+            <div role="document">
+                <div tabindex="-1">
+
+                    <div class="modal-body">
+                        <div>
+                            <div data-test-collapsible-form="true">
+                                <span>
+                                    Export Options
+                                </span>
+
+                                <div class="preferences-content pt-3" data-test-collapisble-content="true" id="ea123fc0-b897-4ef1-a362-268c7f29048e">
+                                    <div class="row text-nowrap">
+                                        <div class="col">
+                                            <a class="btn btn-primary w-100 mt-2" href="/voyant/main/rest/client/version/96ee96416fdb498a869324eaa784566c" download="">
+                                                .VYT Export
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    const exportOptions = document.querySelector('[data-test-collapisble-content="true"]');
+                                    const exportLink = exportOptions.querySelector('a.btn.btn-primary.w-100.mt-2');
+
+                                    exportLink.addEventListener('click', function (event) {
+                                        event.preventDefault();
+
+                                        const content = 'Mock VYT export file';
+                                        const blob = new Blob([content], { type: 'application/octet-stream' });
+                                        const url = URL.createObjectURL(blob);
+
+                                        const tempLink = document.createElement('a');
+                                        tempLink.href = url;
+                                        tempLink.download = 'export.vyt';
+                                        document.body.appendChild(tempLink);
+                                        tempLink.click();
+                                        tempLink.remove();
+
+                                        URL.revokeObjectURL(url);
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
