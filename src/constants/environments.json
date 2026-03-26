@@ -1,6 +1,6 @@
 [
-  { "label": "Local", "value": "localhost.tld:8443", "prefix": "LOC" },
-  { "label": "Integrations", "value": "integrations", "prefix": "INT" },
-  { "label": "Staging", "value": "staging", "prefix": "STAG" },
-  { "label": "Test", "value": "test", "prefix": "TEST" }
+	{ "label": "Local", "value": "localhost.tld:8443", "prefix": "LOC" },
+	{ "label": "Integrations", "value": "integrations", "prefix": "INT" },
+	{ "label": "Staging", "value": "staging", "prefix": "STAG" },
+	{ "label": "Test", "value": "test", "prefix": "TEST" }
 ]

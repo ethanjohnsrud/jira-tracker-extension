@@ -1,6 +1,3 @@
-
-
-
 /***************************************************
  * URL SELECTION TYPES                             *
  * These are for URL Parsing & Dropdown Selections *
@@ -12,50 +9,50 @@
 
 /* Dropdowns */
 export interface RegionSelection {
-  label: string;
-  value: string;
+	label: string;
+	value: string;
 }
 
 export interface EnvironmentSelectionOption extends RegionSelection {
-  prefix: string;
+	prefix: string;
 }
 
 export interface RouteSelection extends RegionSelection {
-  regex: string;
+	regex: string;
 }
-
 
 /* Auto Login */
 type LoginCredentials = {
-  region:string;
-  environment:string;
+	region: string;
+	environment: string;
 
-  username:string;
-  password:string;
-}
-
+	username: string;
+	password: string;
+};
 
 /* Validate Jira  URL List on Import */
-export const validateCredentials = (credentialsList:Object[], debugMode:boolean):boolean => {
-    let valid = true;
-    const list = credentialsList as LoginCredentials[];
+export const validateCredentials = (credentialsList: Object[], debugMode: boolean): boolean => {
+	let valid = true;
+	const list = credentialsList as LoginCredentials[];
 
-    if(!Array.isArray(list)) {
-        if(debugMode) console.log('[Credentials Validation] Failed: invalid credentials list.');
-        return false;
-    }
+	if (!Array.isArray(list)) {
+		if (debugMode) console.log("[Credentials Validation] Failed: invalid credentials list.");
+		return false;
+	}
 
-    for(const item of list) {
-        try {
-            if(!item.region || !item.environment || !item.username || !item.password) throw new Error('Invalid LoginCredentials.');
-            if((list.filter((credential) => credential?.username === item.username).length > 1)) throw new Error('Duplicate username.');
-        } catch(error) {
-            if(debugMode) console.log('[Credentials Validation] Failed: invalid LoginCredentials item.', item, error);
-            valid = false;
-        }
-    }
+	for (const item of list) {
+		try {
+			if (!item.region || !item.environment || !item.username || !item.password)
+				throw new Error("Invalid LoginCredentials.");
+			if (list.filter((credential) => credential?.username === item.username).length > 1)
+				throw new Error("Duplicate username.");
+		} catch (error) {
+			if (debugMode) console.log("[Credentials Validation] Failed: invalid LoginCredentials item.", item, error);
+			valid = false;
+		}
+	}
 
-    if(debugMode) console.log(`[Credentials Validation] ${valid ? 'Passed' : 'Failed'}`);
+	if (debugMode) console.log(`[Credentials Validation] ${valid ? "Passed" : "Failed"}`);
 
-    return valid;
+	return valid;
 };

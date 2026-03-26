@@ -1,573 +1,714 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Jira Chrome Extension Testing</title>
-    </head>
-    <body>
-        <h1>Jira Chrome Extension Testing</h1>
-        <em>
-            Many of these links will not resolve, that is fine you should still be able to extract the necessary information from the URL.  
-            I found disabling my computer internet helped by stopping the browser from further redirecting to test extension recognition of URL's.
-        </em>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Jira Chrome Extension Testing</title>
+	</head>
+	<body>
+		<h1>Jira Chrome Extension Testing</h1>
+		<em>
+			Many of these links will not resolve, that is fine you should still be able to extract the necessary information
+			from the URL. I found disabling my computer internet helped by stopping the browser from further redirecting to
+			test extension recognition of URL's.
+		</em>
 
-        <hr/>
+		<hr />
 
-        <h2>On Page Load Triggers</h2>
+		<h2>On Page Load Triggers</h2>
 
-        <p>
-            Navigates to a mock standard single-step login page where both username and password
-            fields are visible and editable on initial page load. The extension should identify both fields,
-            fill the provided credentials, click the Login button, and continue to the next page without requiring
-            any additional intermediate step.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/login.html'">
-                Go to Login Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock standard single-step login page where both username and password fields are visible and
+			editable on initial page load. The extension should identify both fields, fill the provided credentials, click the
+			Login button, and continue to the next page without requiring any additional intermediate step.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/login.html'">Go to Login Page</button>
+		</div>
 
-        <p>
-            Navigates to a mock two-step login page where only the username field is available on
-            initial page load. The extension should detect the first-step username form, fill the username,
-            click Continue, wait for the password step to render, identify the password field, fill it, and then
-            click the Login button on the second step.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/login_2_step.html'">
-                Go to Two Step Login Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock two-step login page where only the username field is available on initial page load. The
+			extension should detect the first-step username form, fill the username, click Continue, wait for the password
+			step to render, identify the password field, fill it, and then click the Login button on the second step.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/login_2_step.html'">
+				Go to Two Step Login Page
+			</button>
+		</div>
 
-        <p>
-            Navigates to a mock localhost login page used to test localhost environment matching and
-            login automation together. The extension should recognize that the page is part of the localhost flow,
-            identify the username and password fields, fill both values, click Login, and proceed into the mocked
-            localhost AdviserGo route.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/localhost-login.html'">
-                Go to Localhost Login Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock localhost login page used to test localhost environment matching and login automation
+			together. The extension should recognize that the page is part of the localhost flow, identify the username and
+			password fields, fill both values, click Login, and proceed into the mocked localhost AdviserGo route.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/localhost-login.html'">
+				Go to Localhost Login Page
+			</button>
+		</div>
 
-        <p>
-            Navigates to a mock localhost protected interstitial page that simulates a browser security
-            warning before reaching the application. The extension should identify this page type, click the
-            Advanced button, wait for the additional details section to appear, and then click the proceed link to
-            continue to the localhost destination.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/localhost-protected.html'">
-                Go to Localhost Protected Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock localhost protected interstitial page that simulates a browser security warning before
+			reaching the application. The extension should identify this page type, click the Advanced button, wait for the
+			additional details section to appear, and then click the proceed link to continue to the localhost destination.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/localhost-protected.html'">
+				Go to Localhost Protected Page
+			</button>
+		</div>
 
-        <p>
-            Navigates to a mock client import flow. On page load, the extension should identify the
-            import page, click the .VYT File import option, trigger the Choose File action, detect when a file has
-            been selected, and then click Upload File once the upload button becomes enabled.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/client-import.html'">
-                Go to Import Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock client import flow. On page load, the extension should identify the import page, click the
+			.VYT File import option, trigger the Choose File action, detect when a file has been selected, and then click
+			Upload File once the upload button becomes enabled.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/client-import.html'">Go to Import Page</button>
+		</div>
 
-        <p>
-            Navigates to a mock client export flow. On page load, the extension should identify the
-            export page, recognize the export modal or popup, locate the .VYT Export action within the export
-            options section, and click that button to trigger a browser download of the mock export file.
-        </p>
-        <div>
-            <button type="button" onclick="window.location.href='test-pages/client-export.html'">
-                Go to Export Page
-            </button>
-        </div>
+		<p>
+			Navigates to a mock client export flow. On page load, the extension should identify the export page, recognize the
+			export modal or popup, locate the .VYT Export action within the export options section, and click that button to
+			trigger a browser download of the mock export file.
+		</p>
+		<div>
+			<button type="button" onclick="window.location.href = 'test-pages/client-export.html'">Go to Export Page</button>
+		</div>
 
-        <hr />
+		<hr />
 
-        <!-- JIRA Test Links -->
-        <h2>Jira Test Links</h2>
+		<!-- JIRA Test Links -->
+		<h2>Jira Test Links</h2>
 
-        <p>
-            Instruction: extract the Jira code from the URL when each site is navigated too.
-            Some links contain the issue reference in the path and some contain it in the
-            <code>selectedIssue</code> query parameter.
-        </p>
+		<p>
+			Instruction: extract the Jira code from the URL when each site is navigated too. Some links contain the issue
+			reference in the path and some contain it in the
+			<code>selectedIssue</code> query parameter.
+		</p>
 
-        <div>
-            <a href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>UK-22</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/UK-22</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>UK-22</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/UK-22</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>AGO-560</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/AGO-560</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>AGO-560</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/AGO-560</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>IE-1634</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/IE-1634</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>IE-1634</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/IE-1634</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/CA-719" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/CA-719
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>CA-719</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/CA-719</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/CA-719" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/CA-719
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>CA-719</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/CA-719</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/AGO-3065" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/AGO-3065
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>AGO-3065</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/AGO-3065</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/AGO-3065" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/AGO-3065
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>AGO-3065</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/AGO-3065</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/VC-4409" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/VC-4409
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>VC-4409</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/VC-4409</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/VC-4409" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/VC-4409
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>VC-4409</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/VC-4409</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/HOME-297" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/HOME-297
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>HOME-297</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/HOME-297</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/HOME-297" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/HOME-297
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>HOME-297</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/HOME-297</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/AGO-847" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/AGO-847
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>AGO-847</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/AGO-847</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/AGO-847" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/AGO-847
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>AGO-847</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/AGO-847</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://company.atlassian.net/browse/SO-4421" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/browse/SO-4421
-            </a>
-            <ul>
-                <li>Extract <strong>jiraCode</strong>: <strong>SO-4421</strong></li>
-                <li>Link to save: <strong>https://company.atlassian.net/browse/SO-4421</strong></li>
-                <li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a href="https://company.atlassian.net/browse/SO-4421" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/browse/SO-4421
+			</a>
+			<ul>
+				<li>Extract <strong>jiraCode</strong>: <strong>SO-4421</strong></li>
+				<li>Link to save: <strong>https://company.atlassian.net/browse/SO-4421</strong></li>
+				<li>Extract from Page (see below): <strong>title, sprint, status</strong></li>
+			</ul>
+		</div>
 
-        <hr />
+		<hr />
 
+		<!-- AGO Links -->
+		<h2>AGO Test Links</h2>
 
-        <!-- AGO Links -->
-        <h2>AGO Test Links</h2>
+		<p>
+			Instruction: extract the region from each link hostname and save the normalized AGO link. These examples include
+			UK, CA, and AU environments across integrations, staging, test, and localhost-style domains.
+		</p>
 
-        <p>
-            Instruction: extract the region from each link hostname and save the normalized AGO link.
-            These examples include UK, CA, and AU environments across integrations, staging,
-            test, and localhost-style domains.
-        </p>
+		<div>
+			<a
+				href="https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/overview/legacy"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/overview/legacy
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>UK</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>integrations</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>b2751254ba1849cdba0be1a7cede860e</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>1999537e7f0000013120f5b28e39c259</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/overview/legacy" target="_blank" rel="noopener noreferrer">
-                https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/overview/legacy
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>UK</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>integrations</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>b2751254ba1849cdba0be1a7cede860e</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>1999537e7f0000013120f5b28e39c259</strong></li>
-                <li>Link to save: <strong>https://uk-integrations.domain.com/advisergo/#/b2751254ba1849cdba0be1a7cede860e/1999537e7f0000013120f5b28e39c259/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/dashboard"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/dashboard
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>CA</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>integrations</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>f1ade8937f000001610c8883e32bd22a</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>7f27cb917f00000149d2d53e7b4631be</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/dashboard" target="_blank" rel="noopener noreferrer">
-                https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/dashboard
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>CA</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>integrations</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>f1ade8937f000001610c8883e32bd22a</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>7f27cb917f00000149d2d53e7b4631be</strong></li>
-                <li>Link to save: <strong>https://ca-integrations.domain.com/advisergo/#/f1ade8937f000001610c8883e32bd22a/7f27cb917f00000149d2d53e7b4631be/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/edit/db23a147f5834ca9950641e5fd2c1a36/basics"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/edit/db23a147f5834ca9950641e5fd2c1a36/basics
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>AU</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>staging</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>96ee96416fdb498a869324eaa784566c</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>af277dd87f000001027c3ef4c294c66a</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/edit/db23a147f5834ca9950641e5fd2c1a36/basics" target="_blank" rel="noopener noreferrer">
-                https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/edit/db23a147f5834ca9950641e5fd2c1a36/basics
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>AU</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>staging</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>96ee96416fdb498a869324eaa784566c</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>af277dd87f000001027c3ef4c294c66a</strong></li>
-                <li>Link to save: <strong>https://au-staging.domain.com/advisergo/#/96ee96416fdb498a869324eaa784566c/af277dd87f000001027c3ef4c294c66a/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>IE</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>qa</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>8f24b7c16e00000152a9d4e38b7c104f</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile" target="_blank" rel="noopener noreferrer">
-                https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>IE</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>qa</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>8f24b7c16e00000152a9d4e38b7c104f</strong></li>
-                <li>Link to save: <strong>https://ie-qa.domain.com/advisergo/#/7c91a4e28f3d4b6a9c0d1e2f3a4b5c6d/8f24b7c16e00000152a9d4e38b7c104f/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>UK</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>test</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>8c8f08167f000001645312360a9a702e</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>326345e67f00000157e43e38502a19a1</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1" target="_blank" rel="noopener noreferrer">
-                https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>UK</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>test</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>8c8f08167f000001645312360a9a702e</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>326345e67f00000157e43e38502a19a1</strong></li>
-                <li>Link to save: <strong>https://uk-test.domain.co.uk/advisergo/#/8c8f08167f000001645312360a9a702e/326345e67f00000157e43e38502a19a1/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>UK</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>ff7947f3fe2d438ab405606e369828be</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>8ca8c3067f0000010773a06f62323f99</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99" target="_blank" rel="noopener noreferrer">
-                https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>UK</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>ff7947f3fe2d438ab405606e369828be</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>8ca8c3067f0000010773a06f62323f99</strong></li>
-                <li>Link to save: <strong>https://uk.localhost.tld:8443/advisergo/#/ff7947f3fe2d438ab405606e369828be/8ca8c3067f0000010773a06f62323f99/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>CA</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>staging</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>53298503c87d40dabba39f2d421dfb5f</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c" target="_blank" rel="noopener noreferrer">
-                https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>CA</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>staging</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>53298503c87d40dabba39f2d421dfb5f</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
-                <li>Link to save: <strong>https://ca-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/e8be64117f0000010f05dc009fc4487c/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>CA</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>8ca327267f0000016e2dafd5c3f3d1f2</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c" target="_blank" rel="noopener noreferrer">
-                https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>CA</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>8ca327267f0000016e2dafd5c3f3d1f2</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
-                <li>Link to save: <strong>https://ca.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>UNI</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>8ca327267f0000016e2dafd5c3f3d1f2</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c" target="_blank" rel="noopener noreferrer">
-                https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>UNI</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>localhost.tld:8443</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>8ca327267f0000016e2dafd5c3f3d1f2</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>e8be64117f0000010f05dc009fc4487c</strong></li>
-                <li>Link to save: <strong>https://uni.localhost.tld:8443/advisergo/#/8ca327267f0000016e2dafd5c3f3d1f2/e8be64117f0000010f05dc009fc4487c/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<div>
+			<a
+				href="https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a
+			</a>
+			<ul>
+				<li>Extract <strong>region</strong>: <strong>UNI</strong></li>
+				<li>Extract <strong>environment</strong>: <strong>test</strong></li>
+				<li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+				<li>Extract <strong>clientID</strong>: <strong>53298503c87d40dabba39f2d421dfb5f</strong></li>
+				<li>Extract <strong>planID</strong>: <strong>8c9fa4027f00000157dfb3daeb94978a</strong></li>
+				<li>
+					Link to save:
+					<strong
+						>https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a/profile</strong
+					>
+				</li>
+				<li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
+			</ul>
+		</div>
 
-        <div>
-            <a href="https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a" target="_blank" rel="noopener noreferrer">
-                https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a
-            </a>
-            <ul>
-                <li>Extract <strong>region</strong>: <strong>UNI</strong></li>
-                <li>Extract <strong>environment</strong>: <strong>test</strong></li>
-                <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
-                <li>Extract <strong>clientID</strong>: <strong>53298503c87d40dabba39f2d421dfb5f</strong></li>
-                <li>Extract <strong>planID</strong>: <strong>8c9fa4027f00000157dfb3daeb94978a</strong></li>
-                <li>Link to save: <strong>https://global-test.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a/profile</strong></li>
-                <li>Extract from Page (see below): <strong>planName, clientFullName, clientLastName</strong></li>
-            </ul>
-        </div>
+		<hr />
 
-        <hr />
+		<!-- Links to Ignore (Not Match) -->
+		<h2>Links to Ignore (Not Match)</h2>
 
-        <!-- Links to Ignore (Not Match) -->
-        <h2>Links to Ignore (Not Match)</h2>
+		<p>Instruction: these links should not match Regex site identifiers.</p>
 
-        <p>Instruction: these links should not match Regex site identifiers.</p>
+		<p>
+			<a
+				href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog
+			</a>
+		</p>
 
-        <p>
-            <a href="https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog
-            </a>
-        </p>
+		<p>
+			<a href="https://company.atlassian.net/issues/?jql=project%20%3D%20MAS" target="_blank" rel="noopener noreferrer">
+				https://company.atlassian.net/issues/?jql=project%20%3D%20MAS
+			</a>
+		</p>
 
-        <p>
-            <a href="https://company.atlassian.net/issues/?jql=project%20%3D%20MAS" target="_blank" rel="noopener noreferrer">
-                https://company.atlassian.net/issues/?jql=project%20%3D%20MAS
-            </a>
-        </p>
+		<p>
+			<a href="https://uk-integrations.domain.com/" target="_blank" rel="noopener noreferrer">
+				https://uk-integrations.domain.com/
+			</a>
+		</p>
 
-        <p>
-            <a href="https://uk-integrations.domain.com/" target="_blank" rel="noopener noreferrer">
-                https://uk-integrations.domain.com/
-            </a>
-        </p>
+		<p>
+			<a href="https://example.com/not-jira/AGO-3065" target="_blank" rel="noopener noreferrer">
+				https://example.com/not-jira/AGO-3065
+			</a>
+		</p>
 
-        <p>
-            <a href="https://example.com/not-jira/AGO-3065" target="_blank" rel="noopener noreferrer">
-                https://example.com/not-jira/AGO-3065
-            </a>
-        </p>
+		<hr />
 
-        <hr />
+		<!-- DOM Extraction Blocks -->
+		<h2>DOM Extraction Blocks</h2>
 
-        <!-- DOM Extraction Blocks -->
-        <h2>DOM Extraction Blocks</h2>
+		<p>
+			Below are snippets of HTML from the rendered page, please use context to extract the relevant text from the DOM.
+		</p>
 
-        <p>
-            Below are snippets of HTML from the rendered page, please use context to extract the relevant text from the DOM.
-        </p>
+		<hr />
 
-        <hr />
+		<!-- Extract Plan Name -->
+		<h2>Extract AGO: <strong>planName</strong></h2>
+		<p>From snippet below, extract text: <strong>Base Plan</strong></p>
+		<p>
+			<button
+				type="button"
+				onclick="
+					window.location.href =
+						'test-pages/ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a'
+				"
+			>
+				Open AGO Mock Page
+			</button>
+		</p>
 
-        <!-- Extract Plan Name -->
-        <h2>Extract AGO: <strong>planName</strong></h2>
-        <p>From snippet below, extract text: <strong>Base Plan</strong></p>
-        <p><button type="button" onclick="window.location.href='test-pages/ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a'">Open AGO Mock Page</button></p>
+		<div class="nav-header-section collapsible">
+			<div class="top-nav-dropdown">
+				<div class="ember-view btn-group">
+					<button
+						aria-expanded="false"
+						class="btn dropdown-toggle hide-arrow ellipsize d-inline-block"
+						aria-haspopup="menu"
+						id="plan-management-dropdown"
+						title="Base Plan"
+						data-test-plan-dropdown="true"
+						type="button"
+					>
+						<span>
+							<span class="help-wrapper-yield focus-ring">
+								<span aria-hidden="true" class="icon icon-nav_my-plans tiny left-icon"></span>
+								<strong class="brand-bar-text"> Base Plan </strong>
+							</span>
+							<button class="btn btn-nostyle p-0" type="button">
+								<span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
+							</button>
+						</span>
+					</button>
+				</div>
+			</div>
+		</div>
 
-        <div class="nav-header-section collapsible">
-            <div class="top-nav-dropdown">
-                <div class="ember-view btn-group">
-                    <button
-                        aria-expanded="false"
-                        class="btn dropdown-toggle hide-arrow ellipsize d-inline-block"
-                        aria-haspopup="menu"
-                        id="plan-management-dropdown"
-                        title="Base Plan"
-                        data-test-plan-dropdown="true"
-                        type="button"
-                    >
-                        <span>
-                            <span class="help-wrapper-yield focus-ring">
-                                <span aria-hidden="true" class="icon icon-nav_my-plans tiny left-icon"></span>
-                                <strong class="brand-bar-text">
-                                    Base Plan
-                                </strong>
-                            </span>
-                            <button class="btn btn-nostyle p-0" type="button">
-                                <span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
-                            </button>
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </div>
+		<hr />
 
-        <hr />
+		<!-- Extract Client Name -->
+		<h2>Extract AGO: <strong>clientFullName, clientLastName</strong></h2>
+		<p>
+			From snippet below, extract text: <strong>Campbell, John &amp; Julia</strong> and save as
+			<strong>clientFullName</strong>
+		</p>
+		<p>From snippet below, extract text: <strong>Campbell</strong> and save as <strong>clientLastName</strong></p>
+		<p>
+			<button
+				type="button"
+				onclick="
+					window.location.href =
+						'test-pages/ago-mock.html#/uk.localhost.tld:8443/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a'
+				"
+			>
+				Open AGO Mock Page
+			</button>
+		</p>
 
-        <!-- Extract Client Name -->
-        <h2>Extract AGO: <strong>clientFullName, clientLastName</strong></h2>
-        <p>From snippet below, extract text: <strong>Campbell, John &amp; Julia</strong> and save as <strong>clientFullName</strong></p>
-        <p>From snippet below, extract text: <strong>Campbell</strong> and save as <strong>clientLastName</strong></p>
-        <p><button type="button" onclick="window.location.href='test-pages/ago-mock.html#/uk.localhost.tld:8443/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a'">Open AGO Mock Page</button></p>
+		<strong class="brand-bar-text">
+			<span>
+				<span class="help-wrapper-yield focus-ring"> Campbell, John &amp; Julia </span>
+				<button class="btn btn-nostyle p-0" type="button">
+					<span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
+				</button>
+			</span>
+		</strong>
 
-        <strong class="brand-bar-text">
-            <span>
-                <span class="help-wrapper-yield focus-ring">
-                    Campbell, John &amp; Julia
-                </span>
-                <button class="btn btn-nostyle p-0" type="button">
-                    <span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
-                </button>
-            </span>
-        </strong>
+		<hr />
 
-        <hr />
+		<!-- JIRA Status Extract -->
+		<h2>Extract Jira: <strong>status</strong></h2>
+		<p>
+			From snippet below, extract text: <strong>Ready for Merge to Staging</strong> then reduce to acronym
+			<strong>RFMTS</strong> and save as <strong>status</strong>
+		</p>
+		<p>
+			<button
+				type="button"
+				onclick="window.location.href = 'test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'"
+			>
+				Open Jira Mock Page
+			</button>
+		</p>
 
-        <!-- JIRA Status Extract -->
-        <h2>Extract Jira: <strong>status</strong></h2>
-        <p>From snippet below, extract text: <strong>Ready for Merge to Staging</strong> then reduce to acronym <strong>RFMTS</strong> and save as <strong>status</strong></p>
-        <p><button type="button" onclick="window.location.href='test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'">Open Jira Mock Page</button></p>
+		<div data-testid="issue.views.issue-base.foundation.status.status-field-wrapper">
+			<div data-testid="ref-spotlight-target-status-spotlight">
+				<div>
+					<div>
+						<div>
+							<div role="presentation">
+								<div>
+									<button
+										id="issue.fields.status-view.status-button"
+										aria-label="Ready for Merge to Staging - Change status"
+										aria-expanded="false"
+										data-ssr-placeholder="status-button"
+										data-testid="issue-field-status.ui.status-view.status-button.status-button"
+										tabindex="0"
+										type="button"
+									>
+										<span>Ready for Merge to Staging</span>
+										<span>
+											<span aria-hidden="true">
+												<svg fill="none" viewBox="0 0 16 16" role="presentation">
+													<path
+														fill="currentcolor"
+														d="m14.53 6.03-6 6a.75.75 0 0 1-1.004.052l-.056-.052-6-6 1.06-1.06L8 10.44l5.47-5.47z"
+													></path>
+												</svg>
+											</span>
+										</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div data-testid="issue.views.issue-base.foundation.status.status-field-wrapper">
-            <div data-testid="ref-spotlight-target-status-spotlight">
-                <div>
-                    <div>
-                        <div>
-                            <div role="presentation">
-                                <div>
-                                    <button
-                                        id="issue.fields.status-view.status-button"
-                                        aria-label="Ready for Merge to Staging - Change status"
-                                        aria-expanded="false"
-                                        data-ssr-placeholder="status-button"
-                                        data-testid="issue-field-status.ui.status-view.status-button.status-button"
-                                        tabindex="0"
-                                        type="button"
-                                    >
-                                        <span>Ready for Merge to Staging</span>
-                                        <span>
-                                            <span aria-hidden="true">
-                                                <svg fill="none" viewBox="0 0 16 16" role="presentation">
-                                                    <path
-                                                        fill="currentcolor"
-                                                        d="m14.53 6.03-6 6a.75.75 0 0 1-1.004.052l-.056-.052-6-6 1.06-1.06L8 10.44l5.47-5.47z"
-                                                    ></path>
-                                                </svg>
-                                            </span>
-                                        </span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<hr />
 
-        <hr />
+		<!-- JIRA Sprint Extract -->
+		<h2>Extract Jira: <strong>sprint</strong></h2>
+		<p>
+			From snippet below, extract text: <strong>March 27th, 2026</strong> then reduce to <strong>Mar-27</strong> and
+			save as <strong>sprint</strong>
+		</p>
+		<p>
+			<button
+				type="button"
+				onclick="window.location.href = 'test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'"
+			>
+				Open Jira Mock Page
+			</button>
+		</p>
 
-        <!-- JIRA Sprint Extract -->
-        <h2>Extract Jira: <strong>sprint</strong></h2>
-        <p>From snippet below, extract text: <strong>March 27th, 2026</strong> then reduce to <strong>Mar-27</strong> and save as <strong>sprint</strong></p>
-        <p><button type="button" onclick="window.location.href='test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'">Open Jira Mock Page</button></p>
+		<div>
+			<div>
+				<div
+					data-testid="issue-field-inline-edit-read-view-container.ui.container"
+					data-vc="issue-field-inline-edit-read-view-container"
+					role="presentation"
+					data-vc-nvs="true"
+				>
+					<button aria-label="Edit Sprint" aria-hidden="false" type="button"></button>
+					<div>
+						<div data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content">
+							<a
+								data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content-link"
+								href="/secure/GHGoToBoard.jspa?sprintId=2244"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								March 27th, 2026
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div>
-            <div>
-                <div
-                    data-testid="issue-field-inline-edit-read-view-container.ui.container"
-                    data-vc="issue-field-inline-edit-read-view-container"
-                    role="presentation"
-                    data-vc-nvs="true"
-                >
-                    <button
-                        aria-label="Edit Sprint"
-                        aria-hidden="false"
-                        type="button"
-                    ></button>
-                    <div>
-                        <div data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content">
-                            <a
-                                data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content-link"
-                                href="/secure/GHGoToBoard.jspa?sprintId=2244"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                March 27th, 2026
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<hr />
 
-        <hr />
+		<!-- JIRA Title Extract -->
+		<h2>Extract Jira : <strong>title</strong></h2>
+		<p>
+			From snippet below, extract text: <strong>Important & Immediate Action Needed: Fix Production Bug</strong> and
+			save as <strong>title</strong>
+		</p>
+		<p>
+			<button
+				type="button"
+				onclick="window.location.href = 'test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'"
+			>
+				Open Jira Mock Page
+			</button>
+		</p>
 
-        <!-- JIRA Title Extract -->
-        <h2>Extract Jira : <strong>title</strong></h2>
-        <p>From snippet below, extract text: <strong>Important & Immediate Action Needed: Fix Production Bug</strong> and save as <strong>title</strong></p>
-        <p><button type="button" onclick="window.location.href='test-pages/jira-mock.html#/company.atlassian.net/browse/HOME-297'">Open Jira Mock Page</button></p>
-
-        <div
-            data-testid="issue-view-product-templates-default.ui.foundation-content.foundation-content-wrapper"
-            data-ssr-placeholder="issue-foundation-content-default"
-        >
-            <div>
-                <div>
-                    <div>
-                        <div data-testid="issue-field-summary.ui.issue-field-summary-inline-edit--container">
-                            <form role="presentation" class="dont-default-focus">
-                                <div>
-                                    <div>
-                                        <button
-                                            aria-label="Important &amp; Immediate Action Needed: Fix Production Bug- Summary, edit"
-                                            type="button"
-                                        ></button>
-                                        <div role="presentation" data-read-view-fit-container-width="true">
-                                            <div data-testid="issue-field-single-line-text-inline-edit-heading.ui.single-line-text-heading.read-view">
-                                                <h1 data-testid="issue.views.issue-base.foundation.summary.heading">
-                                                    Important &amp; Immediate Action Needed: Fix Production Bug
-                                                </h1>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </body>
+		<div
+			data-testid="issue-view-product-templates-default.ui.foundation-content.foundation-content-wrapper"
+			data-ssr-placeholder="issue-foundation-content-default"
+		>
+			<div>
+				<div>
+					<div>
+						<div data-testid="issue-field-summary.ui.issue-field-summary-inline-edit--container">
+							<form role="presentation" class="dont-default-focus">
+								<div>
+									<div>
+										<button
+											aria-label="Important &amp; Immediate Action Needed: Fix Production Bug- Summary, edit"
+											type="button"
+										></button>
+										<div role="presentation" data-read-view-fit-container-width="true">
+											<div
+												data-testid="issue-field-single-line-text-inline-edit-heading.ui.single-line-text-heading.read-view"
+											>
+												<h1 data-testid="issue.views.issue-base.foundation.summary.heading">
+													Important &amp; Immediate Action Needed: Fix Production Bug
+												</h1>
+											</div>
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
 </html>

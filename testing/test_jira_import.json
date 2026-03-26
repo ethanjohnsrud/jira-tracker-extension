@@ -1,85 +1,85 @@
 [
-    {
-        "id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed001",
-        "url": "https://company.atlassian.net/browse/UK-22",
-        "originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22",
-        "displayName": "* UK-22 UI Update",
-        "preserveCustomName": true,
-        "favorite": true,
-        "collectionName": "Archived",
-        "lastVisitedMS": 1773843731000,
-        "additionalLinks": [
-            {
-                "name": "User interface",
-                "link": "https://en.wikipedia.org/wiki/User_interface"
-            },
-            {
-                "name": "Software testing",
-                "link": "https://en.wikipedia.org/wiki/Software_testing"
-            }
-        ],
-        "jiraCode": "UK-22",
-        "title": "Update display behavior for profile summary page",
-        "sprint": "April 12, 2026",
-        "status": "In Progress",
-        "targetDateMS": 1776013200000
-    },
-    {
-        "id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed002",
-        "url": "https://company.atlassian.net/browse/AGO-560",
-        "originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560",
-        "displayName": "AGO-560",
-        "preserveCustomName": false,
-        "favorite": false,
-        "lastVisitedMS": 1773911444000,
-        "additionalLinks": [],
-        "jiraCode": "AGO-560",
-        "title": "Fix route handling after import redirect",
-        "sprint": "TRIAGE",
-        "status": "RFMTS"
-    },
-    {
-        "id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed003",
-        "url": "https://company.atlassian.net/browse/IE-1634",
-        "originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634",
-        "displayName": "* IE-1634 Profile Review",
-        "preserveCustomName": true,
-        "favorite": true,
-        "collectionName": "Archived",
-        "lastVisitedMS": 1773938042000,
-        "additionalLinks": [],
-        "jiraCode": "IE-1634",
-        "title": "Validate profile rendering across region-specific scenarios",
-        "sprint": "April 12, 2026",
-        "status": "Done",
-        "targetDateMS": 1775754000000
-    },
-    {
-        "id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed004",
-        "url": "https://company.atlassian.net/browse/VC-4409",
-        "originalUrl": "https://company.atlassian.net/browse/VC-4409",
-        "displayName": "VC-4409",
-        "preserveCustomName": false,
-        "favorite": false,
-        "lastVisitedMS": 1774007551000,
-        "additionalLinks": [],
-        "jiraCode": "VC-4409",
-        "title": "Normalize display name after manual edits",
-        "sprint": "",
-        "status": "In Progress"
-    },
-    {
-        "id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed005",
-        "url": "https://company.atlassian.net/browse/SO-4421",
-        "originalUrl": "https://company.atlassian.net/browse/SO-4421",
-        "displayName": "SO-4421",
-        "preserveCustomName": false,
-        "favorite": false,
-        "lastVisitedMS": 1774030135000,
-        "additionalLinks": [],
-        "jiraCode": "SO-4421",
-        "title": "Correct calculation results for demo scenario",
-        "sprint": "",
-        "status": "RFMTS"
-    }
+	{
+		"id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed001",
+		"url": "https://company.atlassian.net/browse/UK-22",
+		"originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/99/backlog?selectedIssue=UK-22",
+		"displayName": "* UK-22 UI Update",
+		"preserveCustomName": true,
+		"favorite": true,
+		"collectionName": "Archived",
+		"lastVisitedMS": 1773843731000,
+		"additionalLinks": [
+			{
+				"name": "User interface",
+				"link": "https://en.wikipedia.org/wiki/User_interface"
+			},
+			{
+				"name": "Software testing",
+				"link": "https://en.wikipedia.org/wiki/Software_testing"
+			}
+		],
+		"jiraCode": "UK-22",
+		"title": "Update display behavior for profile summary page",
+		"sprint": "April 12, 2026",
+		"status": "In Progress",
+		"targetDateMS": 1776013200000
+	},
+	{
+		"id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed002",
+		"url": "https://company.atlassian.net/browse/AGO-560",
+		"originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/61/backlog?selectedIssue=AGO-560",
+		"displayName": "AGO-560",
+		"preserveCustomName": false,
+		"favorite": false,
+		"lastVisitedMS": 1773911444000,
+		"additionalLinks": [],
+		"jiraCode": "AGO-560",
+		"title": "Fix route handling after import redirect",
+		"sprint": "TRIAGE",
+		"status": "RFMTS"
+	},
+	{
+		"id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed003",
+		"url": "https://company.atlassian.net/browse/IE-1634",
+		"originalUrl": "https://company.atlassian.net/jira/software/c/projects/MAS/boards/14/backlog?selectedIssue=IE-1634",
+		"displayName": "* IE-1634 Profile Review",
+		"preserveCustomName": true,
+		"favorite": true,
+		"collectionName": "Archived",
+		"lastVisitedMS": 1773938042000,
+		"additionalLinks": [],
+		"jiraCode": "IE-1634",
+		"title": "Validate profile rendering across region-specific scenarios",
+		"sprint": "April 12, 2026",
+		"status": "Done",
+		"targetDateMS": 1775754000000
+	},
+	{
+		"id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed004",
+		"url": "https://company.atlassian.net/browse/VC-4409",
+		"originalUrl": "https://company.atlassian.net/browse/VC-4409",
+		"displayName": "VC-4409",
+		"preserveCustomName": false,
+		"favorite": false,
+		"lastVisitedMS": 1774007551000,
+		"additionalLinks": [],
+		"jiraCode": "VC-4409",
+		"title": "Normalize display name after manual edits",
+		"sprint": "",
+		"status": "In Progress"
+	},
+	{
+		"id": "8d0f6df0-9ec2-4f56-a4ce-1d5a9ffed005",
+		"url": "https://company.atlassian.net/browse/SO-4421",
+		"originalUrl": "https://company.atlassian.net/browse/SO-4421",
+		"displayName": "SO-4421",
+		"preserveCustomName": false,
+		"favorite": false,
+		"lastVisitedMS": 1774030135000,
+		"additionalLinks": [],
+		"jiraCode": "SO-4421",
+		"title": "Correct calculation results for demo scenario",
+		"sprint": "",
+		"status": "RFMTS"
+	}
 ]

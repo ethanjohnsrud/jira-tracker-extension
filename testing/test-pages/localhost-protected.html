@@ -1,73 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Localhost Protected Login</title>
-        <style>
-            .hidden {
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Localhost Protected Login</title>
+		<style>
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Localhost Protected Login</h1>
 
-        <h1>Localhost Protected Login</h1>
+		<p>
+			Instruction: detect this localhost protected warning page, click the
+			<strong>Advanced</strong> button, then click the proceed link.
+		</p>
 
-        <p>
-            Instruction: detect this localhost protected warning page, click the
-            <strong>Advanced</strong> button, then click the proceed link.
-        </p>
+		<p>
+			Current URL:
+			<a href="https://uk.localhost.tld:8443/advisergo/login" target="_blank" rel="noopener noreferrer"
+				>https://uk.localhost.tld:8443/advisergo/login</a
+			>
+		</p>
 
-        <p>Current URL: 
-            <a href="https://uk.localhost.tld:8443/advisergo/login" target="_blank" rel="noopener noreferrer">https://uk.localhost.tld:8443/advisergo/login</a>
-        </p>
+		<p>Expected action order:</p>
+		<ul>
+			<li>Identify this page as a localhost protected interstitial</li>
+			<li>Click <strong>Advanced</strong></li>
+			<li>Click <strong>Proceed to uk.localhost.tld (unsafe)</strong></li>
+		</ul>
 
-        <p>Expected action order:</p>
-        <ul>
-            <li>Identify this page as a localhost protected interstitial</li>
-            <li>Click <strong>Advanced</strong></li>
-            <li>Click <strong>Proceed to uk.localhost.tld (unsafe)</strong></li>
-        </ul>
+		<div class="interstitial-wrapper">
+			<div class="nav-wrapper">
+				<button id="details-button" aria-expanded="false">Advanced</button>
+			</div>
 
-        <div class="interstitial-wrapper">
-            <div class="nav-wrapper">
-                <button id="details-button" aria-expanded="false">
-                    Advanced
-                </button>
-            </div>
+			<div id="details" class="hidden">
+				<p>
+					This server could not prove that it is
+					<strong>uk.localhost.tld</strong>; its security certificate is not trusted.
+				</p>
+				<p id="final-paragraph">
+					<a href="localhost-login.html" id="proceed-link"> Proceed to uk.localhost.tld (unsafe) </a>
+				</p>
+			</div>
+		</div>
 
-            <div id="details" class="hidden">
-                <p>
-                    This server could not prove that it is
-                    <strong>uk.localhost.tld</strong>; its security certificate is not trusted.
-                </p>
-                <p id="final-paragraph">
-                    <a href="localhost-login.html" id="proceed-link">
-                        Proceed to uk.localhost.tld (unsafe)
-                    </a>
-                </p>
-            </div>
-        </div>
+		<script>
+			const detailsButton = document.getElementById("details-button");
+			const details = document.getElementById("details");
 
-        <script>
-            const detailsButton = document.getElementById("details-button");
-            const details = document.getElementById("details");
+			detailsButton.addEventListener("click", function () {
+				const isExpanded = detailsButton.getAttribute("aria-expanded") === "true";
 
-            detailsButton.addEventListener("click", function () {
-                const isExpanded = detailsButton.getAttribute("aria-expanded") === "true";
-
-                if (isExpanded) {
-                    detailsButton.setAttribute("aria-expanded", "false");
-                    detailsButton.textContent = "Advanced";
-                    details.classList.add("hidden");
-                } else {
-                    detailsButton.setAttribute("aria-expanded", "true");
-                    detailsButton.textContent = "Hide advanced";
-                    details.classList.remove("hidden");
-                }
-            });
-        </script>
-
-    </body>
+				if (isExpanded) {
+					detailsButton.setAttribute("aria-expanded", "false");
+					detailsButton.textContent = "Advanced";
+					details.classList.add("hidden");
+				} else {
+					detailsButton.setAttribute("aria-expanded", "true");
+					detailsButton.textContent = "Hide advanced";
+					details.classList.remove("hidden");
+				}
+			});
+		</script>
+	</body>
 </html>

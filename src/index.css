@@ -3,57 +3,59 @@
 @tailwind utilities;
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 html {
-  overflow-y: hidden;
+	overflow-y: hidden;
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 10px;
-  transition: background 0.3s, color 0.3s;
-  min-width: 500px;
-  height: 540px;
-  overflow: hidden;
-  border: none;
+	font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+	padding: 10px;
+	transition:
+		background 0.3s,
+		color 0.3s;
+	min-width: 500px;
+	height: 540px;
+	overflow: hidden;
+	border: none;
 
-  /* Main Extension Background Color to Match Chrome Toolbar */
-  background: #353535;
-  color: white;
+	/* Main Extension Background Color to Match Chrome Toolbar */
+	background: #353535;
+	color: white;
 }
 
 #react-target {
-  height: 600px;
+	height: 600px;
 }
 @layer utilities {
-  .scrollbar::-webkit-scrollbar {
-    width: 2px;
-    height: 4px;
-  }
+	.scrollbar::-webkit-scrollbar {
+		width: 2px;
+		height: 4px;
+	}
 
-  .scrollbar::-webkit-scrollbar-track {
-    border-radius: 100vh;
-    background: transparent;
-    max-height: 4px;
-  }
+	.scrollbar::-webkit-scrollbar-track {
+		border-radius: 100vh;
+		background: transparent;
+		max-height: 4px;
+	}
 
-  .scrollbar::-webkit-scrollbar-thumb {
-    background: #7bbd4a;
-    border-radius: 100vh;
-  }
+	.scrollbar::-webkit-scrollbar-thumb {
+		background: #7bbd4a;
+		border-radius: 100vh;
+	}
 
-  .scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #7bbd4a;
-  }
+	.scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #7bbd4a;
+	}
 
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none; 
-  }
-  
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+	.hide-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.hide-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
 }

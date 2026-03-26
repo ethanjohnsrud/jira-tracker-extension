@@ -1,62 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Simple Login</title>
-    </head>
-    <body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Simple Login</title>
+	</head>
+	<body>
+		<h1>Simple Login</h1>
 
-        <h1>Simple Login</h1>
+		<p>Instruction: identify the username and password fields, fill both fields, then click Login.</p>
 
-        <p>
-            Instruction: identify the username and password fields, fill both fields,
-            then click Login.
-        </p>
+		<p>
+			Current URL:
+			<a href="https://uk-integrations.domain.com/advisergo/login" target="_blank" rel="noopener noreferrer"
+				>https://uk-integrations.domain.com/advisergo/login</a
+			>
+		</p>
 
-        <p>Current URL: 
-            <a href="https://uk-integrations.domain.com/advisergo/login" target="_blank" rel="noopener noreferrer">https://uk-integrations.domain.com/advisergo/login</a>
-        <p>
+		<p></p>
 
-        <p>Expected action order:</p>
-        <ul>
-            <li>Identify username field</li>
-            <li>Identify password field</li>
-            <li>Fill both fields</li>
-            <li>Click <strong>Login</strong></li>
-            <li>Navigate to the localhost AGO page</li>
-        </ul>
+		<p>Expected action order:</p>
+		<ul>
+			<li>Identify username field</li>
+			<li>Identify password field</li>
+			<li>Fill both fields</li>
+			<li>Click <strong>Login</strong></li>
+			<li>Navigate to the localhost AGO page</li>
+		</ul>
 
-        <form class="login-form" id="login-form">
+		<form class="login-form" id="login-form">
+			<div class="form-group" data-test-username="true">
+				<label class="col-form-label" for="id"> Username </label>
 
-            <div class="form-group" data-test-username="true">
-                <label class="col-form-label" for="id">
-                    Username
-                </label>
+				<input id="id" class="ember-text-field ember-view form-control test-login-userName" type="text" />
+			</div>
 
-                <input id="id" class="ember-text-field ember-view form-control test-login-userName" type="text">
-            </div>
+			<div class="form-group" data-test-password="true">
+				<label class="col-form-label" for="pw"> Password </label>
 
-            <div class="form-group" data-test-password="true">
-                <label class="col-form-label" for="pw">
-                    Password
-                </label>
+				<input id="pw" class="ember-text-field ember-view form-control test-login-password" type="password" />
+			</div>
 
-                <input id="pw" class="ember-text-field ember-view form-control test-login-password" type="password">
-            </div>
+			<button
+				class="btn btn-primary test-login-loginButton w-100 my-1"
+				tabindex="0"
+				data-test-login="true"
+				type="submit"
+			>
+				Login
+			</button>
+		</form>
 
-            <button class="btn btn-primary test-login-loginButton w-100 my-1" tabindex="0" data-test-login="true" type="submit">
-                Login
-            </button>
-
-        </form>
-
-        <script>
-            document.getElementById("login-form").addEventListener("submit", function (event) {
-                event.preventDefault();
-                window.location.href = "ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
-            });
-        </script>
-
-    </body>
+		<script>
+			document.getElementById("login-form").addEventListener("submit", function (event) {
+				event.preventDefault();
+				window.location.href =
+					"ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
+			});
+		</script>
+	</body>
 </html>
