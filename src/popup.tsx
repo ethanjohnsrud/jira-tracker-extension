@@ -28,7 +28,7 @@ import TableItem from "./components/TableItem.jsx";
 let DEBUG_MODE = false;
 
 /**************************************************
- * popup.jsx is the React extension popup display *
+ * popup.tsx is the React extension popup display *
  **************************************************/
 const Popup = () => {
 	const [dropdowns, setDropdowns] = useState({
@@ -55,41 +55,41 @@ const Popup = () => {
 		(async () => {
 			const storedAgo = await getFromStorage('ago_header_link');
 			const storedJira = await getFromStorage('jira_header_link');
-			if(storedAgo) setAgoLink(storedAgo);
-			if(storedJira) setJiraLink(storedJira);
+			if (storedAgo) setAgoLink(storedAgo);
+			if (storedJira) setJiraLink(storedJira);
 		})();
 	}, []);
 
 	/* Open URL in new or current tab */
 	const openUrlTab = (event, url) => {
-    // event.preventDefault();
+		// event.preventDefault();
 
-	      // Check if Ctrl (Windows/Linux) or Cmd (Mac) key is held down
-	if(event.ctrlKey || event.metaKey) {
+		// Check if Ctrl (Windows/Linux) or Cmd (Mac) key is held down
+		if (event.ctrlKey || event.metaKey) {
 			chrome.tabs.create({ url }); //Redirect current Tab
-			if(DEBUG_MODE) console.log('[POPUP][openUrlTab] New tab:', url);
+			if (DEBUG_MODE) console.log('[POPUP][openUrlTab] New tab:', url);
 		} else {
 			chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 				chrome.tabs.update(tabs[0].id, { url });
-				if(DEBUG_MODE) console.log('[POPUP][openUrlTab] Updated tab:', url);
+				if (DEBUG_MODE) console.log('[POPUP][openUrlTab] Updated tab:', url);
 			});
 		}
 	};
 
 	/* Navigate based on dropdown config */
 	const navigateTabOnChange = (event, config) => {
-		const regionValue = config.region.value.toUpperCase();
+		let regionValue = config.region.value.toUpperCase();
 		let environmentValue = config.environment.value.toLowerCase();
 		const routeValue = config.route.value;
 		let domain = '';
 
-		if(environmentValue.includes('localhost')) {
+		if (environmentValue.includes('localhost')) {
 			domain = `${regionValue.toLowerCase()}.${environmentValue}`;
 
 		} else { //Unique Testing Domains
-			if(environmentValue === 'test') {
+			if (environmentValue === 'test') {
 				if (QA_TEST_REGIONS.includes(regionValue)) environmentValue = "qa";
-        		else if (regionValue === "UNI") regionValue = "global";
+				else if (regionValue === "UNI") regionValue = "global";
 			}
 			const tld =
 				environmentValue === 'test' && UK_HOSTED_TEST_REGIONS.includes(regionValue) ? 'co.uk' : 'com';
@@ -97,7 +97,7 @@ const Popup = () => {
 		}
 
 		const url = `https://${domain}/${routeValue}`;
-		if(DEBUG_MODE) console.log('[POPUP][navigateTabOnChange] Navigating to:', url, config);
+		if (DEBUG_MODE) console.log('[POPUP][navigateTabOnChange] Navigating to:', url, config);
 		return openUrlTab(event, url);
 	};
 
@@ -107,7 +107,7 @@ const Popup = () => {
 			(r) => r.value.toLowerCase() === (route ?? '').toLowerCase()
 		);
 		setDropdowns((prev) => ({ ...prev, route: validRoute }));
-		if(DEBUG_MODE) console.log('[POPUP][onRouteChange] New route:', validRoute);
+		if (DEBUG_MODE) console.log('[POPUP][onRouteChange] New route:', validRoute);
 		navigateTabOnChange(event, { ...dropdowns, route: validRoute });
 	};
 
@@ -117,7 +117,7 @@ const Popup = () => {
 			(r) => r.value.toLowerCase() === (region ?? '').toLowerCase()
 		);
 		setDropdowns((prev) => ({ ...prev, region: validRegion }));
-		if(DEBUG_MODE) console.log('[POPUP][onRegionChange] New region:', validRegion);
+		if (DEBUG_MODE) console.log('[POPUP][onRegionChange] New region:', validRegion);
 		navigateTabOnChange(event, { ...dropdowns, region: validRegion });
 	};
 
@@ -127,7 +127,7 @@ const Popup = () => {
 			(e) => e.value.toLowerCase() === (environment ?? '').toLowerCase()
 		);
 		setDropdowns((prev) => ({ ...prev, environment: validEnvironment }));
-		if(DEBUG_MODE) console.log('[POPUP][onEnvironmentChange] New environment:', validEnvironment);
+		if (DEBUG_MODE) console.log('[POPUP][onEnvironmentChange] New environment:', validEnvironment);
 		navigateTabOnChange(event, { ...dropdowns, environment: validEnvironment });
 	};
 
@@ -136,7 +136,7 @@ const Popup = () => {
 		const newTabOn = !tabOn;
 		setTabOn(newTabOn);
 		await saveToStorage({ tabOn: newTabOn });
-		if(DEBUG_MODE) console.log('[POPUP][handleTabToggle] tabOn:', newTabOn);
+		if (DEBUG_MODE) console.log('[POPUP][handleTabToggle] tabOn:', newTabOn);
 	};
 
 	/* Toggle cache polling on/off */
@@ -146,47 +146,47 @@ const Popup = () => {
 			const newCacheState = !cacheOn;
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-			if(newCacheState) {
-				if(environment.includes('localhost')) {
+			if (newCacheState) {
+				if (environment.includes('localhost')) {
 					setCacheOn(true);
 					await saveToStorage({ cacheTabId: tab.id });
-					if(DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling started');
+					if (DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling started');
 				} else {
-					if(DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling Blocked outside localhost');
+					if (DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling Blocked outside localhost');
 				}
 			} else {
 				setCacheOn(false);
 				await removeFromStorage('cacheTabId');
-				if(DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling stopped');
+				if (DEBUG_MODE) console.log('[POPUP][handleCacheClick] Cache polling stopped');
 			}
 		} catch (error) {
-			if(DEBUG_MODE) console.error('[POPUP][handleCacheClick][ERROR]', error);
+			if (DEBUG_MODE) console.error('[POPUP][handleCacheClick][ERROR]', error);
 		}
 	};
 
 	//Alternative Manager for Cache Button
-	const handleDynamicButtonClick = async(event) => {
+	const handleDynamicButtonClick = async (event) => {
 		const matched = currentTabURL.match(AGO_REGEX);
 
 		//Local Environment -> Auto Cache Button
-		if(currentTabURL.includes('localhost')) {
+		if (currentTabURL.includes('localhost')) {
 			handleCacheClick();
 
-		//Current tab is AGO CLient -> Export
-		} else if(matched) {
+			//Current tab is AGO CLient -> Export
+		} else if (matched) {
 			const exportUrl = `${matched[1]}/client-export`;
-    		if(DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] exportUrl:', exportUrl, matched);
+			if (DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] exportUrl:', exportUrl, matched);
 			openUrlTab(event, exportUrl);
 
-		//Other webpage -> Import	
+			//Other webpage -> Import	
 		} else {
 			const importRoute = ROUTES.find((r) => r.label === "Import");
-			if(DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] importRoute:', importRoute);
-			navigateTabOnChange(event, { ...dropdowns, route: importRoute});
+			if (DEBUG_MODE) console.log('[CONTENT][handleDynamicButtonClick] importRoute:', importRoute);
+			navigateTabOnChange(event, { ...dropdowns, route: importRoute });
 		}
-	}
+	};
 
-/* Link the most recently visited Jira to AGO and update AGO label */
+	/* Link the most recently visited Jira to AGO and update AGO label */
 	const handleLinkClick = async () => {
 		try {
 			const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage([
@@ -195,17 +195,17 @@ const Popup = () => {
 			]);
 			const latestJira = jiraUrlList.reduce((latest, current) =>
 				new Date(current.lastVisited) > new Date(latest.lastVisited)
-				  ? current : latest,
+					? current : latest,
 				jiraUrlList[0]
-			  );
-		  
-			  const latestAgo = agoUrlList.reduce((latest, current) =>
+			);
+
+			const latestAgo = agoUrlList.reduce((latest, current) =>
 				new Date(current.lastVisited) > new Date(latest.lastVisited)
-				  ? current : latest,
+					? current : latest,
 				agoUrlList[0]
-			  );
-			if(!latestJira || !latestAgo) {
-				if(DEBUG_MODE) console.log("[popup:handleLinkClick] Missing URLs:", { latestJiraId, latestJira, latestAgoId, latestAgo });
+			);
+			if (!latestJira || !latestAgo) {
+				if (DEBUG_MODE) console.log("[popup:handleLinkClick] Missing URLs:", { latestJiraId, latestJira, latestAgoId, latestAgo });
 				return;
 			}
 
@@ -213,9 +213,9 @@ const Popup = () => {
 			latestAgo.preserveCustomName = true;
 			await saveToStorage({ agoUrlList });
 
-			if(DEBUG_MODE) console.log('[POPUP][handleLinkClick] Linked:', latestAgo.displayName);
+			if (DEBUG_MODE) console.log('[POPUP][handleLinkClick] Linked:', latestAgo.displayName);
 		} catch (error) {
-			if(DEBUG_MODE) console.error('[POPUP][handleLinkClick][ERROR]', error);
+			if (DEBUG_MODE) console.error('[POPUP][handleLinkClick][ERROR]', error);
 		}
 	};
 
@@ -227,45 +227,45 @@ const Popup = () => {
 				'agoUrlList',
 			]);
 
-	const sortByRecentAndFavorite = (a, b) => {
-		if (a.favorite && !b.favorite) return -1;
-		if (!a.favorite && b.favorite) return 1;
-		return new Date(b.lastVisited) - new Date(a.lastVisited);
-		};
+			const sortByRecentAndFavorite = (a, b) => {
+				if (a.favorite && !b.favorite) return -1;
+				if (!a.favorite && b.favorite) return 1;
+				return new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime();
+			};
 
-    const jiraSortedList = jiraUrlList.sort(sortByRecentAndFavorite);
-    const agoSortedList = agoUrlList.sort(sortByRecentAndFavorite);
+			const jiraSortedList = jiraUrlList.sort(sortByRecentAndFavorite);
+			const agoSortedList = agoUrlList.sort(sortByRecentAndFavorite);
 
 			setJiraDisplayList(jiraSortedList);
 			setAgoDisplayList(agoSortedList);
 
 			/* Determine Link Ready URLs */
-			if(jiraSortedList.length > 0) {
+			if (jiraSortedList.length > 0) {
 				const latest = jiraSortedList.reduce((latest, current) =>
-				  new Date(current.lastVisited) > new Date(latest.lastVisited)
-					? current
-					: latest,
-				  jiraSortedList[0]
+					new Date(current.lastVisited) > new Date(latest.lastVisited)
+						? current
+						: latest,
+					jiraSortedList[0]
 				);
 				setLatestJiraId(latest.id);
-			  }
-		  
-			  if(agoSortedList.length > 0) {
+			}
+
+			if (agoSortedList.length > 0) {
 				const latest = agoSortedList.reduce((latest, current) =>
-				  new Date(current.lastVisited) > new Date(latest.lastVisited)
-					? current
-					: latest,
-				  agoSortedList[0]
+					new Date(current.lastVisited) > new Date(latest.lastVisited)
+						? current
+						: latest,
+					agoSortedList[0]
 				);
 				setLatestAgoId(latest.id);
-			  }
-		  
-			  if(DEBUG_MODE)
-				console.log("[popup:loadDisplayLists] Lists loaded", {jiraSortedList, agoSortedList,});
-			} catch (error) {
-			  if(DEBUG_MODE) console.error("[popup:loadDisplayLists] Error:", error);
 			}
-		  };
+
+			if (DEBUG_MODE)
+				console.log("[popup:loadDisplayLists] Lists loaded", { jiraSortedList, agoSortedList, });
+		} catch (error) {
+			if (DEBUG_MODE) console.error("[popup:loadDisplayLists] Error:", error);
+		}
+	};
 
 	/* Fetch next timer from storage and compute seconds left */
 	const fetchNextTimer = async () => {
@@ -275,20 +275,20 @@ const Popup = () => {
 			const msLeft = nextTimerMS - now;
 			const seconds = msLeft > 0 ? Math.ceil(msLeft / 1000) : 0;
 			setTimerSecondsLeft(seconds);
-			if(DEBUG_MODE) console.log('[POPUP][fetchNextTimer] Seconds left:', seconds);
+			if (DEBUG_MODE) console.log('[POPUP][fetchNextTimer] Seconds left:', seconds);
 		} catch (error) {
-			if(DEBUG_MODE) console.error('[POPUP][fetchNextTimer][ERROR]', error);
+			if (DEBUG_MODE) console.error('[POPUP][fetchNextTimer][ERROR]', error);
 		}
 	};
 
 	/* Manage cache polling countdown */
 	useEffect(() => {
-		if(cacheOn) {
+		if (cacheOn) {
 			const startCountdown = async () => {
 				await fetchNextTimer();
 				timerRef.current = setInterval(async () => {
 					setTimerSecondsLeft((prev) => {
-						if(prev <= 1) {
+						if (prev <= 1) {
 							fetchNextTimer();
 							return 0;
 						}
@@ -307,12 +307,12 @@ const Popup = () => {
 	useEffect(() => {
 		const init = async () => {
 			DEBUG_MODE = (await getFromStorage('debug')) == true;
-			if(DEBUG_MODE) console.log('[POPUP][init] Debug mode enabled');
+			if (DEBUG_MODE) console.log('[POPUP][init] Debug mode enabled');
 
 			loadDisplayLists();
 
 			chrome.storage.onChanged.addListener((changes, namespace) => {
-				if(namespace === 'local' && (changes.jiraUrlList || changes.agoUrlList)) {
+				if (namespace === 'local' && (changes.jiraUrlList || changes.agoUrlList)) {
 					loadDisplayLists();
 				}
 			});
@@ -336,11 +336,11 @@ const Popup = () => {
 			const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment || '').toLowerCase()) || ENVIRONMENTS[1];
 
 			//Some have general regex; where could be more specific
-			const validRoute = [...ROUTES].sort((a, b) => ROUTE_DEPRIORITIZED_LABELS.includes(a.label) - ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
+			const validRoute = [...ROUTES].sort((a, b) => Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label)))
 				.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0];
 
 			setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
-			if(DEBUG_MODE)
+			if (DEBUG_MODE)
 				console.log('[POPUP][init] Dropdowns set:', validRegion, validEnvironment, validRoute);
 		};
 		init();
@@ -384,14 +384,14 @@ const Popup = () => {
 						loading={cacheLoading}
 						onClick={handleCacheClick}
 					/>
-					) : currentTabURL.match(AGO_REGEX) ? (
+				) : currentTabURL.match(AGO_REGEX) ? (
 					<Button
 						label="⇪ Export"
 						type="primary"
 						loading={false}
 						onClick={handleDynamicButtonClick}
 					/>
-					) : (
+				) : (
 					<Button
 						label="⇩ Import"
 						type="primary"

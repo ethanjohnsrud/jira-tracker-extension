@@ -5,6 +5,7 @@
 
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 .env
 .pem
 .DS_Store

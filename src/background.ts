@@ -54,7 +54,7 @@ const getListEntryDisplayName = (url,jiraSprint,agoClientName)=>{
 /*/ Trims URL list to MAX_LIST_LENGTH removing oldest non-favorites */
 const evaluateMaxListLength = urlList=>{
     if(urlList.length>MAX_LIST_LENGTH) {
-        urlList.sort((a,b)=>new Date(a.lastVisited)-new Date(b.lastVisited));
+        urlList.sort((a,b)=>new Date(a.lastVisited).getTime()-new Date(b.lastVisited).getTime());
         const idx=urlList.findIndex(u=>u.favorite===false);
         if(idx!==-1) urlList.splice(idx,1);
     }
