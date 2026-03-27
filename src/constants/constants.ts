@@ -1,5 +1,6 @@
 /************************************
  * Configuration & Timing Constants *
+ * TODO: replace constants with dynamic values from storage
  ************************************/
 /*  Maximum number of stored URLs (favorites never removed) */
 export const MAX_LIST_LENGTH = 100;

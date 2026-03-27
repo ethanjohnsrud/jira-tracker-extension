@@ -8,9 +8,7 @@ import {
 	AGO_REGEX,
 	COMPANY_REGEX,
 } from "./constants/constants";
-import REGIONS from "./constants/regions.json";
-import ENVIRONMENTS from "./constants/environments.json";
-import ROUTES from "./constants/routes.json";
+import ENVIRONMENTS from "./constants/environments";
 
 /*********************************************************************************************************************
  * background.jsx is for the service worker which is always running in the background; however cannot access the DOM  *

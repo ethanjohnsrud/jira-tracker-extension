@@ -1,4 +1,6 @@
-[
+import { RegionSelection } from "../types/dropdown-types";
+
+export const REGIONS: RegionSelection[] = [
 	{ "label": "UK", "value": "uk" },
 	{ "label": "IE", "value": "ie" },
 	{ "label": "CA", "value": "ca" },
@@ -13,4 +15,6 @@
 	{ "label": "BARC", "value": "barc" },
 	{ "label": "SPW", "value": "spw" },
 	{ "label": "BOI", "value": "boi" }
-]
+];
+
+export default REGIONS;

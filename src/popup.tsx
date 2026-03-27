@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./index.css";
-import REGIONS from "./constants/regions.json";
-import ENVIRONMENTS from "./constants/environments.json";
-import ROUTES from "./constants/routes.json";
+import REGIONS from "./constants/regions";
+import ENVIRONMENTS from "./constants/environments";
+import ROUTES from "./constants/routes";
 import {
 	ROUTE_DEPRIORITIZED_LABELS,
 	AGO_HEADER_HYPERLINK_DEFAULT,
@@ -10,7 +10,7 @@ import {
 	UK_HOSTED_TEST_REGIONS,
 	QA_TEST_REGIONS,
 	AGO_REGEX,
-} from "./constants/constants.js";
+} from "./constants/constants";
 
 import Dropdown from "./components/Dropdown.jsx";
 import Button from "./components/Button.jsx";

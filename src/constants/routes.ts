@@ -1,4 +1,6 @@
-[
+import { RouteSelection } from "../types/dropdown-types";
+
+export const ROUTES: RouteSelection[] = [
 	{
 		"label": "Adviser Go",
 		"value": "advisergo",
@@ -40,3 +42,5 @@
 		"regex": "voyant\\/main\\/admin\\/view\\/ehcache"
 	}
 ]
+
+export default ROUTES;
