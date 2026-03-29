@@ -14,16 +14,16 @@
         const host = window.location.hostname;
         const hash = window.location.hash || "";
 
-        let fileToLoad = "/testing/test-pages/ago-mock.html";
+        let fileToLoad = "/test-pages/ago-mock.html";
 
         if (host.endsWith(".localhost.ethanjohnsrud.com")) {
-            fileToLoad = "/testing/test-pages/ago-localhost-mock.html";
+            fileToLoad = "/test-pages/ago-localhost-mock.html";
 
         } else if (hash.includes("#/advisor/integration")) {
-            fileToLoad = "/testing/test-pages/client-import.html";
+            fileToLoad = "/test-pages/client-import.html";
             
         } else if (/\/client-export(?:\/|$)/.test(hash)) {
-            fileToLoad = "/testing/test-pages/client-export.html";
+            fileToLoad = "/test-pages/client-export.html";
         }
 
         fetch(fileToLoad, { cache: "no-store" })
