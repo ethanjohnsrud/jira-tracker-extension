@@ -2,13 +2,14 @@ import { AGO_REGEX, LOCAL_CACHE_INTERVAL } from "../constants/constants";
 import { saveToStorage } from "../controllers/storageController";
 import ROUTES from "../constants/routes";
 import ENVIRONMENTS from "../constants/environments";
+import { DEBUG_MODE } from "./state";
 
 /* Interval Clear Cache */
 let cacheInterval: ReturnType<typeof setInterval> | null = null;
 let cacheUrl: string = "";
 
 /** Create cache URL for local AGO environment */
-export async function createCacheURL(url: string, DEBUG_MODE = false): Promise<string> {
+export async function createCacheURL(url: string): Promise<string | null> {
   if (DEBUG_MODE) console.log("[CONTENT][createCacheURL] URL:", url);
   if (!AGO_REGEX.test(url)) {
     if (DEBUG_MODE) console.log("[CONTENT][createCacheURL] Not an AGO URL");
@@ -40,7 +41,7 @@ export async function createCacheURL(url: string, DEBUG_MODE = false): Promise<s
  * Clears the local cache by making a GET request to the cache URL.
  * @returns True if cache was cleared, false otherwise
  */
-export async function clearCache(DEBUG_MODE = false): Promise<boolean> {
+export async function clearCache(): Promise<boolean> {
   if (!cacheUrl || cacheUrl.length === 0) {
     if (DEBUG_MODE) console.log("[CONTENT][clearCache] Blocked", cacheUrl);
     return false;
@@ -60,7 +61,7 @@ export async function clearCache(DEBUG_MODE = false): Promise<boolean> {
 };
 
 /** Start the cache polling interval */
-export async function startCachePolling(DEBUG_MODE = false): Promise<void> {
+export async function startCachePolling(): Promise<void> {
   stopCachePolling();
   if (cacheUrl && cacheUrl.length > 10) {
     if (DEBUG_MODE) console.log("[CONTENT][startCachePolling] Starting", cacheUrl);
@@ -78,7 +79,7 @@ export async function startCachePolling(DEBUG_MODE = false): Promise<void> {
 };
 
 /** Stop the cache polling interval */
-export async function stopCachePolling(DEBUG_MODE = false): Promise<void> {
+export async function stopCachePolling(): Promise<void> {
   if (cacheInterval) {
     clearInterval(cacheInterval);
     cacheInterval = null;

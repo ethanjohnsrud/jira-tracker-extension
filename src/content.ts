@@ -9,17 +9,15 @@ import {
 import REGIONS from "./constants/regions";
 import { extractAGOClientLastName, extractJiraSprint } from "./utils/dom-extractor";
 import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cache";
+import { DEBUG_MODE, stateInitPromise } from "./utils/state";
 
 /* **********************************************************
  * content.jsx | Used for is for manipulating the DOM        *
  * Runs in current tab, so console.log will be under inspect *
  *************************************************************/
 
-/* Global */
-let DEBUG_MODE = true;
 let currentUrl = "";
-
-let thisTabId = null;
+let thisTabId: number | null = null;
 
 /** Send URL save request to background script */
 const saveUrl = async (url: string = currentUrl): Promise<void> => {
@@ -57,7 +55,7 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 		}
 
 		//Update
-		createCacheURL(url, DEBUG_MODE);
+		createCacheURL(url);
 	} else {
 		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] URL not tracked", url);
 	}
@@ -104,8 +102,8 @@ const initializeTabURLSaving = async (): Promise<void> => {
 chrome.storage.onChanged.addListener((changes, namespace) => {
 	if (namespace === "local" && changes.cacheTabId) {
 		const id = changes.cacheTabId.newValue;
-		if (id === thisTabId) startCachePolling(DEBUG_MODE);
-		else stopCachePolling(DEBUG_MODE);
+		if (id === thisTabId) startCachePolling();
+		else stopCachePolling();
 	}
 });
 
@@ -113,10 +111,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
  *              Initialize Content Script           *
  ****************************************************/
 const initialize = async () => {
-	// Set DEBUG_MODE from storage
-	const { debug } = await getFromStorage("debug");
-	DEBUG_MODE = debug === true;
-	if (DEBUG_MODE) console.log("[CONTENT][init] DEBUG_MODE enabled");
+	if (stateInitPromise) await stateInitPromise;
 
 	//Set global variables
 	await createCacheURL(window.location.href);
