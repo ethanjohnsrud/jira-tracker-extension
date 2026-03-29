@@ -69,13 +69,13 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 /** Initialize AGO tab renaming based on storage setting */
 const initializeAGOTabRenaming = async (): Promise<void> => {
 	const renameAGOTab = async (url = currentUrl): Promise<void> => {
-		const tabOn = await getFromStorage("tabOn");
+		const { tabOn } = await getFromStorage("tabOn");
 		if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] tabOn:", tabOn, "URL:", url);
 
 		const matched = url.match(AGO_REGEX);
 		if (tabOn && matched) {
-			const storedList = (await getFromStorage("agoUrlList")) || [];
-			const item = storedList.find((u) => u.url === matched[1]);
+			const { agoUrlList = [] } = await getFromStorage("agoUrlList");
+			const item = agoUrlList.find((u) => u.url === matched[1]);
 			if (item?.displayName) {
 				const parts = item.displayName.split("-");
 				const first = parts[0]?.toLowerCase();
@@ -114,7 +114,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
  ****************************************************/
 const initialize = async () => {
 	// Set DEBUG_MODE from storage
-	DEBUG_MODE = (await getFromStorage("debug")) === true;
+	const { debug } = await getFromStorage("debug");
+	DEBUG_MODE = debug === true;
 	if (DEBUG_MODE) console.log("[CONTENT][init] DEBUG_MODE enabled");
 
 	//Set global variables

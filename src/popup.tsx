@@ -15,9 +15,10 @@ import {
 import Dropdown from "./components/Dropdown.jsx";
 import Button from "./components/Button.jsx";
 
-import { saveToStorage, getFromStorage, removeFromStorage } from "./controllers/storageController.js";
+import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import { createRoot } from "react-dom/client";
 import TableItem from "./components/TableItem.jsx";
+import { AgoUrlListItem, JiraUrlListItem, UrlListItem } from "./types/storage-types";
 
 //Global Setting
 let DEBUG_MODE = false;
@@ -31,28 +32,27 @@ const Popup = () => {
 		environment: ENVIRONMENTS[1],
 		route: ROUTES[0],
 	});
-	const [currentTabURL, setCurrentTabURL] = useState("");
-	const [agoLink, setAgoLink] = useState(AGO_HEADER_HYPERLINK_DEFAULT);
-	const [jiraLink, setJiraLink] = useState(JIRA_HEADER_HYPERLINK_DEFAULT);
-	const [tabOn, setTabOn] = useState(false);
-	const [cacheOn, setCacheOn] = useState(false);
-	const [cacheLoading, setCacheLoading] = useState(false);
-	const [jiraDisplayList, setJiraDisplayList] = useState([]);
-	const [latestJiraId, setLatestJiraId] = useState("");
-	const [agoDisplayList, setAgoDisplayList] = useState([]);
-	const [latestAgoId, setLatestAgoId] = useState("");
+	const [currentTabURL, setCurrentTabURL] = useState<string>("");
+	const [agoLink, setAgoLink] = useState<string>(AGO_HEADER_HYPERLINK_DEFAULT);
+	const [jiraLink, setJiraLink] = useState<string>(JIRA_HEADER_HYPERLINK_DEFAULT);
+	const [tabOn, setTabOn] = useState<boolean>(false);
+	const [cacheOn, setCacheOn] = useState<boolean>(false);
+	const [cacheLoading, setCacheLoading] = useState<boolean>(false);
+	const [jiraDisplayList, setJiraDisplayList] = useState<JiraUrlListItem[]>([]);
+	const [latestJiraId, setLatestJiraId] = useState<string>("");
+	const [agoDisplayList, setAgoDisplayList] = useState<AgoUrlListItem[]>([]);
+	const [latestAgoId, setLatestAgoId] = useState<string>("");
 
-	const [timerSecondsLeft, setTimerSecondsLeft] = useState(0);
-	const timerRef = useRef(null);
+	const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
+	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	/* Initialize Header Button Links */
 	useEffect(() => {
-		(async () => {
-			const storedAgo = await getFromStorage("ago_header_link");
-			const storedJira = await getFromStorage("jira_header_link");
-			if (storedAgo) setAgoLink(storedAgo);
-			if (storedJira) setJiraLink(storedJira);
-		})();
+		getFromStorage(["ago_header_link", "jira_header_link"])
+			.then(({ ago_header_link, jira_header_link }) => {
+				if (ago_header_link) setAgoLink(ago_header_link);
+				if (jira_header_link) setJiraLink(jira_header_link);
+			});
 	}, []);
 
 	/* Open URL in new or current tab */
@@ -130,7 +130,7 @@ const Popup = () => {
 	/* Toggle cache polling on/off */
 	const handleCacheClick = async () => {
 		try {
-			const environment = await getFromStorage("environment");
+			const { environment } = await getFromStorage("environment");
 			const newCacheState = !cacheOn;
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -208,7 +208,7 @@ const Popup = () => {
 		try {
 			const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage(["jiraUrlList", "agoUrlList"]);
 
-			const sortByRecentAndFavorite = (a, b) => {
+			const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
 				if (a.favorite && !b.favorite) return -1;
 				if (!a.favorite && b.favorite) return 1;
 				return new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime();
@@ -246,7 +246,7 @@ const Popup = () => {
 	/* Fetch next timer from storage and compute seconds left */
 	const fetchNextTimer = async () => {
 		try {
-			const nextTimerMS = await getFromStorage("nextTimerMS");
+			const { nextTimerMS } = await getFromStorage("nextTimerMS");
 			const now = Date.now();
 			const msLeft = nextTimerMS - now;
 			const seconds = msLeft > 0 ? Math.ceil(msLeft / 1000) : 0;
@@ -282,7 +282,8 @@ const Popup = () => {
 	/* Initialize popup state and storage listeners */
 	useEffect(() => {
 		const init = async () => {
-			DEBUG_MODE = (await getFromStorage("debug")) == true;
+			const { debug } = await getFromStorage("debug");
+			DEBUG_MODE = debug == true;
 			if (DEBUG_MODE) console.log("[POPUP][init] Debug mode enabled");
 
 			loadDisplayLists();

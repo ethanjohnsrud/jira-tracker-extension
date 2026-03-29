@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getFromStorage, saveToStorage, removeFromStorage } from "./controllers/storageController";
+import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import {
 	AGO_HEADER_HYPERLINK_DEFAULT,
 	JIRA_HEADER_HYPERLINK_DEFAULT,
@@ -9,6 +9,7 @@ import {
 	COMPANY_REGEX,
 } from "./constants/constants";
 import ENVIRONMENTS from "./constants/environments";
+import { JiraUrlListItem, StorageKey, StorageSchema } from "./types/storage-types";
 
 /*********************************************************************************************************************
  * background.jsx is for the service worker which is always running in the background; however cannot access the DOM  *
@@ -78,9 +79,9 @@ const saveJiraUrl = async (url, jiraSprint) => {
 		return false;
 	}
 
-	const storageKey = "jiraUrlList";
-	const storedList = (await getFromStorage(storageKey)) || [];
-	const urlList = Array.isArray(storedList) ? storedList : [];
+	const storageKey: StorageKey = "jiraUrlList";
+	const { jiraUrlList } = await getFromStorage(storageKey);
+	const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
 	const capturedUrl = url.match(JIRA_REGEX)?.[1];
 	if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Captured:", capturedUrl);
@@ -126,9 +127,9 @@ const saveAGOUrl = async (url, agoClientName) => {
 		return false;
 	}
 
-	const storageKey = "agoUrlList";
-	const storedList = (await getFromStorage(storageKey)) || [];
-	const urlList = Array.isArray(storedList) ? storedList : [];
+	const storageKey: StorageKey = "agoUrlList";
+	const { agoUrlList } = await getFromStorage(storageKey);
+	const urlList = Array.isArray(agoUrlList) ? agoUrlList : [];
 
 	const capturedUrl = url.match(AGO_REGEX)?.[1];
 	if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Captured:", capturedUrl);
@@ -224,23 +225,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 /*/ Initializes background service worker and settings on install */
 chrome.runtime.onInstalled.addListener(async () => {
 	// Initialize DEBUG_MODE after potentially saving it
-	DEBUG_MODE = (await getFromStorage("debug")) === true;
+	const { debug } = await getFromStorage("debug");
+	DEBUG_MODE = debug === true;
 	if (DEBUG_MODE) console.log("[BACKGROUND][onInstalled] DEBUG_MODE enabled");
 
 	//Only set default values if not present
-	const defaults = {
+	const defaults: Partial<StorageSchema> = {
 		debug: false,
 		jira_header_link: JIRA_HEADER_HYPERLINK_DEFAULT,
 		ago_header_link: AGO_HEADER_HYPERLINK_DEFAULT,
 	};
 
+	const defaultKeys = Object.keys(defaults) as StorageKey[];
+	const existingDefaults = await getFromStorage(defaultKeys);
+
+	const defaultsToSave: Partial<StorageSchema> = {};
 	for (const key in defaults) {
-		const existing = await getFromStorage(key);
-		if (existing === undefined) {
-			await saveToStorage({ [key]: defaults[key] });
-			if (DEBUG_MODE) console.log(`[BACKGROUND][onInstalled] Set default: ${key} = ${defaults[key]}`);
+		if (existingDefaults[key] === undefined) {
+			defaultsToSave[key] = defaults[key];
 		}
 	}
+	await saveToStorage(defaultsToSave);
+	if (DEBUG_MODE) console.log("[BACKGROUND][onInstalled] Defaults saved", defaultsToSave);
 
 	//Reset on CHrome restart
 	await removeFromStorage("cacheTabId");
