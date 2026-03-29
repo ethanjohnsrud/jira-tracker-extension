@@ -96,7 +96,7 @@ export const DEFAULT_SETTINGS:SETTINGS = {
     },
 
     ENVIRONMENTS:[
-        {label:'Local', value:'localhost.tld:8443', prefix:'LOC'},
+        {label:'Local', value:'localhost', prefix:'LOC'},
         {label:'Integrations', value:'integrations', prefix:'INT'},
         {label:'Staging', value:'staging', prefix:'STAG'},
         {label:'Test', value:'test', prefix:'TEST'},
@@ -138,10 +138,10 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         QA_TEST_REGIONS:['IE', 'AU'],
     },
 
-    jiraTracking:{
-        JIRA_SEARCH_URL_PREFIX:"https://company.atlassian.net/browse/",
+        jiraTracking:{
+        JIRA_SEARCH_URL_PREFIX:"https://jira.ethanjohnsrud.com/browse/",
 
-        JIRA_REGEX:'^(https:\\/\\/company\\.atlassian\\.net\\/browse\\/([a-zA-Z]{2,5}-[0-9]{3,4}))',
+        JIRA_REGEX:'^https:\\/\\/jira\\.ethanjohnsrud\\.com\\/(?:browse\\/|jira\\/software\\/c\\/projects\\/[^/?#]+\\/boards\\/\\d+\\/backlog\\?selectedIssue=)([A-Z]{2,5}-\\d{2,5})$',
 
         //Extract Sprint for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
         JIRA_SPRINT_ELEMENT_SELECTOR:'[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a',
@@ -150,12 +150,12 @@ export const DEFAULT_SETTINGS:SETTINGS = {
     },
 
     agoTracking:{
-        // [Group #1] Captures full URL through plan ID but excludes sub-route | [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test)
-        COMPANY_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\\.domain\\.(?:co\\.uk|com)|(localhost\\.tld:[0-9]{4})).+)',
+        // [Group #1] Captures full matched URL | [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] Localhost marker
+        COMPANY_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})(?:-([a-z]+)\\.ethanjohnsrud\\.com|\\.localhost\\.ethanjohnsrud\\.com).+)',
 
         // [Group #1] Captures full URL through plan ID but excludes sub-route
-        // [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test) | [Group #4] Environment (local) | [Group #5] 5-chars-ending client ID | [Group #6] 5-chars-ending plan ID
-        AGO_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\\.domain\\.(?:co\\.uk|com)|(localhost\\.tld:[0-9]{4}))\\/advisergo\\/#\\/[a-f0-9]{27}([a-f0-9]{5})\\/[a-f0-9]{27}([a-f0-9]{5}))',
+        // [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] 5-chars-ending client ID | [Group #5] 5-chars-ending plan ID
+        AGO_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})(?:-([a-z]+)\\.ethanjohnsrud\\.com|\\.localhost\\.ethanjohnsrud\\.com)\\/advisergo\\/#\\/[a-f0-9]{27}([a-f0-9]{5})\\/[a-f0-9]{27}([a-f0-9]{5}))',
         
         //Extract Client Last Name for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
         AGO_CLIENT_NAME_ELEMENT_ID:'client-actions-dropdown',

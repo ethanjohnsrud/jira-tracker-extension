@@ -71,7 +71,7 @@ const saveJiraUrl = async(url, jiraSprint) => {
     }
 
     const storageKey = 'jiraUrlList';
-    const storedList = await getFromStorage(storageKey) || [];
+    const storedList = await getFromStorage(storageKey) ?? [];
     const urlList = Array.isArray(storedList) ? storedList : [];
 
     const capturedUrl = url.match(JIRA_REGEX)?.[1];
@@ -122,7 +122,7 @@ const saveAGOUrl = async(url, agoClientName) => {
     }
 
     const storageKey = 'agoUrlList';
-    const storedList = await getFromStorage(storageKey) || [];
+    const storedList = await getFromStorage(storageKey) ?? [];
     const urlList = Array.isArray(storedList) ? storedList : [];
 
     const capturedUrl = url.match(AGO_REGEX)?.[1];

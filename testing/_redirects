@@ -1,0 +1,18 @@
+# Root
+/                        /testing/test-links.html                 200
+
+# AGO Login pages
+/login             /testing/test-pages/login-random.html          200
+
+/login-basic        /testing/test-pages/login-basic.html          200
+/login_2_step            /testing/test-pages/login_2_step.html    200
+/localhost-login         /testing/test-pages/localhost-login.html 200
+/localhost-protected-login     /testing/test-pages/localhost-protected.html 200
+
+# AdviserGo Router to direct to /import & /export
+/advisergo/*             /testing/test-pages/ago-router.html      200
+
+# Jira routes
+/browse/*                /testing/test-pages/jira-mock.html       200
+/jira/software/*         /testing/test-pages/jira-mock.html       200
+

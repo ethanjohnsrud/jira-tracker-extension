@@ -10,7 +10,7 @@ import ROUTES from "./constants/routes.json";
 *************************************************************/
 
 /* Global */
-let DEBUG_MODE = false;
+let DEBUG_MODE = true;
 let currentUrl = '';
 
 let thisTabId = null;

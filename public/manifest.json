@@ -6,13 +6,11 @@
   "content_scripts": [
     {
       "matches": [
-        "https://company.atlassian.net/*",
-        "https://*.domain.com/*",
-        "https://*.domain.co.uk/*",
-        "https://*.localhost.tld:8443/*"
+        "https://jira.ethanjohnsrud.com/*",
+        "https://*.ethanjohnsrud.com/*"
       ],
       "js": ["content.js"],
-      "runAt": "document_start"
+      "run_at": "document_start"
     }
   ],
   "author": "Ethan",
@@ -46,6 +44,7 @@
     "cookies"
   ],
   "host_permissions": [
-    "https://*.localhost.tld:8443/"
+    "https://jira.ethanjohnsrud.com/*",
+    "https://*.ethanjohnsrud.com/*"
   ]
 }
