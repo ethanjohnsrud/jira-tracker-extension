@@ -32,6 +32,19 @@
             .then((html) => {
                 document.getElementById("router-status").textContent = `Serving: ${selected.name}`;
                 document.getElementById("app").innerHTML = html;
+
+                const scripts = document.getElementById("app").querySelectorAll("script");
+                scripts.forEach((oldScript) => {
+                    const newScript = document.createElement("script");
+
+                    for (const attr of oldScript.attributes) {
+                        newScript.setAttribute(attr.name, attr.value);
+                    }
+
+                    newScript.textContent = oldScript.textContent;
+                    oldScript.replaceWith(newScript);
+                });
+
                 console.log("[LOGIN_ROUTER] route:", selected.name);
                 console.log("[LOGIN_ROUTER] file:", selected.file);
             })
