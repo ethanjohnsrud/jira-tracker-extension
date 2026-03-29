@@ -85,7 +85,7 @@ export interface SETTINGS {
 
 export const DEFAULT_SETTINGS:SETTINGS = {
 
-    CONSTANTS:{
+    CONSTANTS: {
         MAX_LIST_LENGTH:100,
         URL_SAVING_INTERVAL:1000,
         AGO_TAB_RENAMING_INTERVAL:10000,
@@ -95,14 +95,14 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         AGO_HEADER_HYPERLINK:'https://www.yahoo.com/',
     },
 
-    ENVIRONMENTS:[
+    ENVIRONMENTS: [
         {label:'Local', value:'localhost', prefix:'LOC'},
         {label:'Integrations', value:'integrations', prefix:'INT'},
         {label:'Staging', value:'staging', prefix:'STAG'},
         {label:'Test', value:'test', prefix:'TEST'},
     ],
 
-    REGIONS:[
+    REGIONS: [
         {label:'UK', value:'uk'},
         {label:'IE', value:'ie'},
         {label:'CA', value:'ca'},
@@ -111,7 +111,7 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         {label:'UNI', value:'uni'},
     ],
 
-    ROUTES:[
+    ROUTES: [
         {
             label:'Adviser Go',
             value:'advisergo',
@@ -129,7 +129,7 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         },
     ],
 
-    routePreferences:{
+    routePreferences: {
         ROUTE_DEPRIORITIZED_LABELS:['Adviser Go', 'My User'],
     },
 
@@ -138,10 +138,10 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         QA_TEST_REGIONS:['IE', 'AU'],
     },
 
-        jiraTracking:{
+    jiraTracking: {
         JIRA_SEARCH_URL_PREFIX:"https://jira.ethanjohnsrud.com/browse/",
 
-        JIRA_REGEX:'^https:\\/\\/jira\\.ethanjohnsrud\\.com\\/(?:browse\\/|jira\\/software\\/c\\/projects\\/[^\/?#]+\\/boards\\/\\d+\\/backlog\\?selectedIssue=)([A-Z]{2,5}-\\d{2,5})$',
+        JIRA_REGEX:'^(https:\/\/jira\.ethanjohnsrud\.com\/(?:browse\/|jira\/software\/c\/projects\/[^\/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5}))$',
 
         //Extract Sprint for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
         JIRA_SPRINT_ELEMENT_SELECTOR:'[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a',
@@ -149,13 +149,13 @@ export const DEFAULT_SETTINGS:SETTINGS = {
 
     },
 
-    agoTracking:{
+    agoTracking: {
         // [Group #1] Captures full matched URL | [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] Localhost marker
-        COMPANY_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})(?:-([a-z]+)\\.ethanjohnsrud\\.com|\\.localhost\\.ethanjohnsrud\\.com).+)',
+        COMPANY_REGEX:'^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com)).+)',
 
         // [Group #1] Captures full URL through plan ID but excludes sub-route
         // [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] 5-chars-ending client ID | [Group #5] 5-chars-ending plan ID
-        AGO_REGEX:'^(https:\\/\\/([a-zA-Z]{2,7})(?:-([a-z]+)\\.ethanjohnsrud\\.com|\\.localhost\\.ethanjohnsrud\\.com)\\/advisergo\\/#\\/[a-f0-9]{27}([a-f0-9]{5})\\/[a-f0-9]{27}([a-f0-9]{5}))',
+        AGO_REGEX:'^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com))\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))',
         
         //Extract Client Last Name for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
         AGO_CLIENT_NAME_ELEMENT_ID:'client-actions-dropdown',
