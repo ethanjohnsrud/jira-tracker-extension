@@ -1,96 +1,85 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Localhost Login</title>
-	</head>
-	<body>
-		<h1>Localhost Login</h1>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Localhost Login</title>
+    </head>
+    <body>
 
-		<p>Instruction: fill in username and password, then click Login. This mock page does not need real credentials.</p>
+        <h1>Localhost Login</h1>
 
-		<p>
-			Current URL:
-			<a href="https://uk.localhost.tld:8443/advisergo/login" target="_blank" rel="noopener noreferrer"
-				>https://uk.localhost.tld:8443/advisergo/login</a
-			>
-		</p>
+        <p>
+            Instruction: fill in username and password, then click Login.
+            This mock page does not need real credentials.
+        </p>
 
-		<p>Expected action order:</p>
-		<ul>
-			<li>Identify username field</li>
-			<li>Identify password field</li>
-			<li>Fill both fields</li>
-			<li>Click Login</li>
-			<li>Navigate to the localhost AGO page</li>
-		</ul>
+        <p>Current URL: 
+            <a href="https://uk.localhost.ethanjohnsrud.com/localhost-login" target="_blank" rel="noopener noreferrer">https://uk.localhost.ethanjohnsrud.com/login</a>
+        </p>
 
-		<div class="content">
-			<div class="row">
-				<div class="col-xs-12 pageHeader">
-					<h1>Sign In</h1>
-				</div>
-			</div>
+        <p>
+            Expected action order:
+        </p>
+        <ul>
+            <li>Identify username field</li>
+            <li>Identify password field</li>
+            <li>Fill both fields</li>
+            <li>Click Login</li>
+            <li>Navigate to the localhost AGO page</li>
+        </ul>
 
-			<div class="row">
-				<div class="messages"></div>
-			</div>
+        <div class="content">
+            <div class="row">
+                <div class="col-xs-12 pageHeader">
+                    <h1>Sign In</h1>
+                </div>
+            </div>
 
-			<div class="row">
-				<div class="col-xs-12 main">
-					<div class="row">
-						<div class="col-xs-8">
-							<div class="row">
-								<form class="form-horizontal" id="loginForm">
-									<div class="form-group">
-										<label for="j_username" class="col-xs-4 control-label required">Username</label>
-										<div class="col-xs-8">
-											<input
-												type="text"
-												class="text medium"
-												name="j_username"
-												id="j_username"
-												tabindex="0"
-												autocomplete="off"
-											/>
-										</div>
-									</div>
+            <div class="row">
+                <div class="messages"></div>
+            </div>
 
-									<div class="form-group">
-										<label for="j_password" class="col-xs-4 control-label required">Password</label>
-										<div class="col-xs-8">
-											<input
-												type="password"
-												class="text medium"
-												name="j_password"
-												id="j_password"
-												tabindex="0"
-												autocomplete="off"
-											/>
-										</div>
-									</div>
+            <div class="row">
+                <div class="col-xs-12 main">
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="row">
+                                <form class="form-horizontal" id="loginForm">
+                                    <div class="form-group">
+                                        <label for="j_username" class="col-xs-4 control-label required">Username</label>
+                                        <div class="col-xs-8">
+                                            <input type="text" class="text medium" name="j_username" id="j_username" tabindex="0" autocomplete="off">
+                                        </div>
+                                    </div>
 
-									<div class="form-group">
-										<div class="col-xs-4"></div>
-										<div class="col-xs-8">
-											<input class="btn" type="submit" name="login" tabindex="0" value="Login" />
-										</div>
-									</div>
-								</form>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                                    <div class="form-group">
+                                        <label for="j_password" class="col-xs-4 control-label required">Password</label>
+                                        <div class="col-xs-8">
+                                            <input type="password" class="text medium" name="j_password" id="j_password" tabindex="0" autocomplete="off">
+                                        </div>
+                                    </div>
 
-		<script>
-			document.getElementById("loginForm").addEventListener("submit", function (event) {
-				event.preventDefault();
-				window.location.href =
-					"ago-mock.html#/uk.localhost.tld:8443/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
-			});
-		</script>
-	</body>
+                                    <div class="form-group">
+                                        <div class="col-xs-4"></div>
+                                        <div class="col-xs-8">
+                                            <input class="btn" type="submit" name="login" tabindex="0" value="Login">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("loginForm").addEventListener("submit", function (event) {
+                event.preventDefault();
+                window.location.href = "https://uk.localhost.ethanjohnsrud.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
+            });
+        </script>
+
+    </body>
 </html>

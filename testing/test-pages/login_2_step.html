@@ -1,175 +1,170 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Two Step Login</title>
-		<style>
-			.hidden {
-				display: none;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>Two Step Login</h1>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Two Step Login</title>
+        <style>
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
 
-		<p>Instruction: enter username, click Continue, then enter password and click Login.</p>
+        <h1>Two Step Login</h1>
 
-		<p>
-			Current URL:
-			<a href="https://uk-integrations.domain.com/advisergo/login" target="_blank" rel="noopener noreferrer"
-				>https://uk-integrations.domain.com/advisergo/login</a
-			>
-		</p>
+        <p>
+            Instruction: enter username, click Continue, then enter password and click Login.
+        </p>
 
-		<p>Expected action order:</p>
-		<ul>
-			<li>Identify username field</li>
-			<li>Fill username</li>
-			<li>Click <strong>Continue</strong></li>
-			<li>Identify password field</li>
-			<li>Fill password</li>
-			<li>Click <strong>Login</strong></li>
-		</ul>
+        <p>Current URL: 
+            <a href="https://uk-integrations.ethanjohnsrud.com/login_2_step" target="_blank" rel="noopener noreferrer">https://uk-integrations.ethanjohnsrud.com/advisergo/login</a>
+        <p>
 
-		<div class="card-body p-4 p-md-5">
-			<div class="brand-logo"></div>
+        Expected action order:
+        </p>
+        <ul>
+            <li>Identify username field</li>
+            <li>Fill username</li>
+            <li>Click <strong>Continue</strong></li>
+            <li>Identify password field</li>
+            <li>Fill password</li>
+            <li>Click <strong>Login</strong></li>
+        </ul>
 
-			<form class="bi-form" bi-data-formid="login-step-1" id="login-step-1-form">
-				<div class="bi-form-group" bi-data-formgroupfor="form-login-step-1-username" bi-data-property="username">
-					<div class="form-group-label align-items-center">
-						<label class="form-label" for="form-login-step-1-username" id="input-label-form-login-step-1-username">
-							Enter Username
-						</label>
-					</div>
+        <div class="card-body p-4 p-md-5">
 
-					<div>
-						<div class="input-group">
-							<input
-								id="form-login-step-1-username"
-								class="ember-text-field ember-view form-control bi-text"
-								autocomplete="username"
-								aria-invalid="false"
-								aria-describedby="input-help-form-login-step-1-username input-errors-form-login-step-1-username"
-								type="text"
-							/>
-						</div>
+            <div class="brand-logo"></div>
 
-						<div class="form-text" id="input-help-form-login-step-1-username">
-							Your username may be your e-mail address
-						</div>
+            <form class="bi-form" bi-data-formid="login-step-1" id="login-step-1-form">
 
-						<div class="invalid-feedback" id="input-errors-form-login-step-1-username"></div>
-					</div>
-				</div>
+                <div class="bi-form-group" bi-data-formgroupfor="form-login-step-1-username" bi-data-property="username">
+                    <div class="form-group-label align-items-center">
+                        <label class="form-label" for="form-login-step-1-username" id="input-label-form-login-step-1-username">
+                            Enter Username
+                        </label>
+                    </div>
 
-				<button class="bc-btn btn btn-primary position-relative w-100" data-test-get-auth-info="true" type="submit">
-					<span class="d-flex align-items-center justify-content-center text-nowrap">
-						<span class="btn-text" data-text="Continue">Continue</span>
-					</span>
-				</button>
-			</form>
+                    <div>
+                        <div class="input-group">
+                            <input
+                                id="form-login-step-1-username"
+                                class="ember-text-field ember-view form-control bi-text"
+                                autocomplete="username"
+                                aria-invalid="false"
+                                aria-describedby="input-help-form-login-step-1-username input-errors-form-login-step-1-username"
+                                type="text"
+                            >
+                        </div>
 
-			<div id="login-step-2-wrapper" class="hidden">
-				<div>
-					<form class="bi-form" bi-data-formid="login-default-step-2" id="login-step-2-form">
-						<div
-							class="bi-form-group"
-							bi-data-formgroupfor="form-login-default-step-2-username"
-							bi-data-property="username"
-						>
-							<div class="form-group-label align-items-center">
-								<label
-									class="form-label"
-									for="form-login-default-step-2-username"
-									id="input-label-form-login-default-step-2-username"
-								>
-									Username
-								</label>
-							</div>
+                        <div class="form-text" id="input-help-form-login-step-1-username">
+                            Your username may be your e-mail address
+                        </div>
 
-							<div>
-								<div class="input-group">
-									<input
-										id="form-login-default-step-2-username"
-										class="ember-text-field ember-view form-control bi-text"
-										disabled
-										autocomplete="off"
-										aria-invalid="false"
-										aria-describedby="input-errors-form-login-default-step-2-username"
-										type="text"
-									/>
-								</div>
+                        <div class="invalid-feedback" id="input-errors-form-login-step-1-username"></div>
+                    </div>
+                </div>
 
-								<div class="invalid-feedback" id="input-errors-form-login-default-step-2-username"></div>
-							</div>
-						</div>
+                <button class="bc-btn btn btn-primary position-relative w-100" data-test-get-auth-info="true" type="submit">
+                    <span class="d-flex align-items-center justify-content-center text-nowrap">
+                        <span class="btn-text" data-text="Continue">Continue</span>
+                    </span>
+                </button>
 
-						<div class="bi-form-group" bi-data-formgroupfor="form-login-default-step-2-pw" bi-data-property="pw">
-							<div class="form-group-label align-items-center">
-								<label
-									class="form-label"
-									for="form-login-default-step-2-pw"
-									id="input-label-form-login-default-step-2-pw"
-								>
-									Password
-								</label>
-							</div>
+            </form>
 
-							<div>
-								<div class="input-group">
-									<input
-										id="form-login-default-step-2-pw"
-										class="ember-text-field ember-view form-control bi-text"
-										autocomplete="current-password"
-										aria-invalid="false"
-										aria-describedby="input-errors-form-login-default-step-2-pw"
-										type="password"
-									/>
-								</div>
+            <div id="login-step-2-wrapper" class="hidden">
+                <div>
+                    <form class="bi-form" bi-data-formid="login-default-step-2" id="login-step-2-form">
 
-								<div class="invalid-feedback" id="input-errors-form-login-default-step-2-pw"></div>
-							</div>
-						</div>
+                        <div class="bi-form-group" bi-data-formgroupfor="form-login-default-step-2-username" bi-data-property="username">
+                            <div class="form-group-label align-items-center">
+                                <label class="form-label" for="form-login-default-step-2-username" id="input-label-form-login-default-step-2-username">
+                                    Username
+                                </label>
+                            </div>
 
-						<button class="bc-btn btn btn-primary position-relative w-100 mt-2" data-test-login="true" type="submit">
-							<span class="d-flex align-items-center justify-content-center text-nowrap">
-								<span class="btn-text" data-text="Login">Login</span>
-							</span>
-						</button>
-					</form>
-				</div>
+                            <div>
+                                <div class="input-group">
+                                    <input
+                                        id="form-login-default-step-2-username"
+                                        class="ember-text-field ember-view form-control bi-text"
+                                        disabled
+                                        autocomplete="off"
+                                        aria-invalid="false"
+                                        aria-describedby="input-errors-form-login-default-step-2-username"
+                                        type="text"
+                                    >
+                                </div>
 
-				<div class="text-center py-3"></div>
-			</div>
-		</div>
+                                <div class="invalid-feedback" id="input-errors-form-login-default-step-2-username"></div>
+                            </div>
+                        </div>
 
-		<script>
-			const step1Form = document.getElementById("login-step-1-form");
-			const step2Wrapper = document.getElementById("login-step-2-wrapper");
-			const step1Username = document.getElementById("form-login-step-1-username");
-			const step2Username = document.getElementById("form-login-default-step-2-username");
-			const step2Form = document.getElementById("login-step-2-form");
-			const differentUserButton = document.getElementById("different-user-button");
+                        <div class="bi-form-group" bi-data-formgroupfor="form-login-default-step-2-pw" bi-data-property="pw">
+                            <div class="form-group-label align-items-center">
+                                <label class="form-label" for="form-login-default-step-2-pw" id="input-label-form-login-default-step-2-pw">
+                                    Password
+                                </label>
+                            </div>
 
-			step1Form.addEventListener("submit", function (event) {
-				event.preventDefault();
-				step2Username.value = step1Username.value;
-				step1Form.classList.add("hidden");
-				step2Wrapper.classList.remove("hidden");
-			});
+                            <div>
+                                <div class="input-group">
+                                    <input
+                                        id="form-login-default-step-2-pw"
+                                        class="ember-text-field ember-view form-control bi-text"
+                                        autocomplete="current-password"
+                                        aria-invalid="false"
+                                        aria-describedby="input-errors-form-login-default-step-2-pw"
+                                        type="password"
+                                    >
+                                </div>
 
-			step2Form.addEventListener("submit", function (event) {
-				event.preventDefault();
-				window.location.href =
-					"ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
-			});
+                                <div class="invalid-feedback" id="input-errors-form-login-default-step-2-pw"></div>
+                            </div>
+                        </div>
 
-			differentUserButton.addEventListener("click", function () {
-				step2Wrapper.classList.add("hidden");
-				step1Form.classList.remove("hidden");
-				step1Username.focus();
-			});
-		</script>
-	</body>
+                        <button class="bc-btn btn btn-primary position-relative w-100 mt-2" data-test-login="true" type="submit">
+                            <span class="d-flex align-items-center justify-content-center text-nowrap">
+                                <span class="btn-text" data-text="Login">Login</span>
+                            </span>
+                        </button>
+
+                    </form>
+                </div>
+
+                <div class="text-center py-3"></div>
+            </div>
+
+        </div>
+
+        <script>
+            const step1Form = document.getElementById("login-step-1-form");
+            const step2Wrapper = document.getElementById("login-step-2-wrapper");
+            const step1Username = document.getElementById("form-login-step-1-username");
+            const step2Username = document.getElementById("form-login-default-step-2-username");
+            const step2Form = document.getElementById("login-step-2-form");
+            const differentUserButton = document.getElementById("different-user-button");
+
+            step1Form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                step2Username.value = step1Username.value;
+                step1Form.classList.add("hidden");
+                step2Wrapper.classList.remove("hidden");
+            });
+
+            step2Form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                window.location.href = "https://uk-staging.ethanjohnsrud.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
+            });
+
+            differentUserButton.addEventListener("click", function () {
+                step2Wrapper.classList.add("hidden");
+                step1Form.classList.remove("hidden");
+                step1Username.focus();
+            });
+        </script>
+
+    </body>
 </html>

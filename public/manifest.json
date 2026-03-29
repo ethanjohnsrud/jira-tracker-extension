@@ -1,44 +1,50 @@
 {
-	"name": "Jira Tracker",
-	"version": "2.0",
-	"description": "Automatically bookmark Jira tickets and link to AGO plan; including systematic environment navigation to aid development.",
-	"manifest_version": 3,
-	"content_scripts": [
-		{
-			"matches": [
-				"https://company.atlassian.net/*",
-				"https://*.domain.com/*",
-				"https://*.domain.co.uk/*",
-				"https://*.localhost.tld:8443/*"
-			],
-			"js": ["content.js"],
-			"runAt": "document_start"
-		}
-	],
-	"author": "Ethan",
-	"homepage_url": "https://ethanjohnsrud.com/",
-	"action": {
-		"default_popup": "popup.html"
-	},
-	"commands": {
-		"activate-extension": {
-			"suggested_key": {
-				"default": "Alt+A",
-				"mac": "Ctrl+A"
-			},
-			"description": "Open the extension popup window"
-		}
-	},
-	"background": {
-		"service_worker": "background.js"
-	},
-	"icons": {
-		"16": "./assets/icons/16.png",
-		"32": "./assets/icons/32.png",
-		"48": "./assets/icons/48.png",
-		"64": "./assets/icons/64.png",
-		"128": "./assets/icons/128.png"
-	},
-	"permissions": ["storage", "alarms", "activeTab", "cookies"],
-	"host_permissions": ["https://*.localhost.tld:8443/"]
+  "name": "Jira Tracker",
+  "version": "2.0",
+  "description": "Automatically bookmark Jira tickets and link to AGO plan; including systematic environment navigation to aid development.",
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+      "matches": [
+        "https://jira.ethanjohnsrud.com/*",
+        "https://*.ethanjohnsrud.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "author": "Ethan",
+  "homepage_url": "https://ethanjohnsrud.com/",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "activate-extension": {
+      "suggested_key": {
+        "default": "Alt+A",
+        "mac": "Ctrl+A"
+      },
+      "description": "Open the extension popup window"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "./assets/icons/16.png",
+    "32": "./assets/icons/32.png",
+    "48": "./assets/icons/48.png",
+    "64": "./assets/icons/64.png",
+    "128": "./assets/icons/128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "activeTab",
+    "cookies"
+  ],
+  "host_permissions": [
+    "https://jira.ethanjohnsrud.com/*",
+    "https://*.ethanjohnsrud.com/*"
+  ]
 }

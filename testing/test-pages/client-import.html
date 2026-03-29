@@ -1,163 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Import Mock Page</title>
-		<style>
-			.hidden {
-				display: none;
-			}
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Import Mock Page</title>
+        <style>
+            .hidden {
+                display: none;
+            }
 
-			.d-none {
-				display: none;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>Import Mock Page</h1>
+            .d-none {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
 
-		<p>
-			Current URL:
-			<a href="https://au-staging.domain.com/advisergo/#/advisor/integration" target="_blank" rel="noopener noreferrer"
-				>https://au-staging.domain.com/advisergo/#/advisor/integration</a
-			>
-		</p>
+        <h1>Import Mock Page</h1>
 
-		<p></p>
+        <p>Current URL: 
+            <a href="https://au-staging.ethanjohnsrud.com/advisergo/#/advisor/integration" target="_blank" rel="noopener noreferrer">https://au-staging.ethanjohnsrud.com/advisergo/#/advisor/integration</a>
+        <p>
 
-		<p>Instruction: complete the import flow in this order.</p>
+        <p>
+            Instruction: complete the import flow in this order.
+        </p>
 
-		<ul>
-			<li>Click <strong>.VYT File import</strong></li>
-			<li>Click <strong>Choose File</strong></li>
-			<li>After Browser Popup to select file</li>
-			<li>Click <strong>Upload File</strong></li>
-		</ul>
+        <ul>
+            <li>Click <strong>.VYT File import</strong></li>
+            <li>Click <strong>Choose File</strong></li>
+            <li>After Browser Popup to select file</li>
+            <li>Click <strong>Upload File</strong></li>
+        </ul>
 
-		<div id="import-step-1">
-			<div class="container-xl my-3">
-				<div class="mt-4">
-					<div>
-						<div>
-							<h2 class="fs-6 mb-4">Select Import Method:</h2>
+        <div id="import-step-1">
+            <div class="container-xl my-3">
+                <div class="mt-4">
+                    <div>
+                        <div>
+                            <h2 class="fs-6 mb-4">
+                                Select Import Method:
+                            </h2>
 
-							<div class="list-group" role="list">
-								<button
-									class="list-group-item list-group-preset d-flex align-items-center bc-hover-parent list-group-item-action"
-									role="listitem"
-									type="button"
-									id="vyt-import-button"
-								>
-									<div class="flex-grow-1">
-										<div class="list-group-item-title">
-											<span class="me-2">.VYT File import</span>
-										</div>
-										<div class="list-group-item-description text-muted fw-light">
-											<small></small>
-										</div>
-									</div>
+                            <div class="list-group" role="list">
+                                <button
+                                    class="list-group-item list-group-preset d-flex align-items-center bc-hover-parent list-group-item-action"
+                                    role="listitem"
+                                    type="button"
+                                    id="vyt-import-button"
+                                >
+                                    <div class="flex-grow-1">
+                                        <div class="list-group-item-title">
+                                            <span class="me-2">.VYT File import</span>
+                                        </div>
+                                        <div class="list-group-item-description text-muted fw-light">
+                                            <small></small>
+                                        </div>
+                                    </div>
 
-									<i class="icon text-primary text-end larger icon-control_caret-right" aria-hidden="true"></i>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                                    <i class="icon text-primary text-end larger icon-control_caret-right" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<div id="import-step-2" class="hidden">
-			<div class="container-xl my-3">
-				<div class="d-flex align-items-center justify-content-between">
-					<h1 class="fs-5 d-flex align-items-center gap-2 mb-0">
-						<span class="icon icon-control_import text-primary" aria-hidden="true"></span>
-						<strong>.VYT File import</strong>
-					</h1>
-				</div>
+        <div id="import-step-2" class="hidden">
+            <div class="container-xl my-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h1 class="fs-5 d-flex align-items-center gap-2 mb-0">
+                        <span class="icon icon-control_import text-primary" aria-hidden="true"></span>
+                        <strong>.VYT File import</strong>
+                    </h1>
+                </div>
 
-				<div class="mt-4">
-					<div>
-						<div>
-							<hr />
+                <div class="mt-4">
+                    <div>
+                        <div>
+                            <hr>
 
-							<div>
-								<div>
-									<h2 class="fs-6 mb-3">Select File:</h2>
+                            <div>
+                                <div>
+                                    <h2 class="fs-6 mb-3">
+                                        Select File:
+                                    </h2>
 
-									<div class="file-uploader" id="file-uploader">
-										<input
-											id="mock-file-input"
-											class="form-control"
-											accept=".xml,.vyt"
-											aria-label="Drag and drop or select a file"
-											type="file"
-											style="display: none"
-										/>
+                                    <div class="file-uploader" id="file-uploader">
+                                        <input id="mock-file-input" class="form-control" accept=".xml,.vyt" aria-label="Drag and drop or select a file" type="file" style="display: none;">
 
-										<div class="uploader-display text-center">
-											<button
-												class="btn btn-primary"
-												data-test-choose-investment-file="true"
-												tabindex="-1"
-												type="button"
-												id="choose-file-button"
-											>
-												Choose File
-											</button>
-										</div>
-									</div>
+                                        <div class="uploader-display text-center">
+                                            <button
+                                                class="btn btn-primary"
+                                                data-test-choose-investment-file="true"
+                                                tabindex="-1"
+                                                type="button"
+                                                id="choose-file-button"
+                                            >
+                                                Choose File
+                                            </button>
+                                        </div>
+                                    </div>
 
-									<button
-										class="btn btn-primary d-flex align-items-center justify-content-center gap-2 mt-3 w-100"
-										disabled
-										type="button"
-										id="upload-file-button"
-									>
-										<span class="icon-control_upload fs-6" aria-hidden="true"></span>
-										Upload File
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                                    <button
+                                        class="btn btn-primary d-flex align-items-center justify-content-center gap-2 mt-3 w-100"
+                                        disabled
+                                        type="button"
+                                        id="upload-file-button"
+                                    >
+                                        <span class="icon-control_upload fs-6" aria-hidden="true"></span>
+                                        Upload File
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<script>
-			const importStep1 = document.getElementById("import-step-1");
-			const importStep2 = document.getElementById("import-step-2");
-			const vytImportButton = document.getElementById("vyt-import-button");
-			const chooseFileButton = document.getElementById("choose-file-button");
-			const mockFileInput = document.getElementById("mock-file-input");
-			const uploadFileButton = document.getElementById("upload-file-button");
+        <script>
+            const importStep1 = document.getElementById("import-step-1");
+            const importStep2 = document.getElementById("import-step-2");
+            const vytImportButton = document.getElementById("vyt-import-button");
+            const chooseFileButton = document.getElementById("choose-file-button");
+            const mockFileInput = document.getElementById("mock-file-input");
+            const uploadFileButton = document.getElementById("upload-file-button");
 
-			vytImportButton.addEventListener("click", function () {
-				importStep1.classList.add("hidden");
-				importStep2.classList.remove("hidden");
-			});
+            vytImportButton.addEventListener("click", function () {
+                importStep1.classList.add("hidden");
+                importStep2.classList.remove("hidden");
+            });
 
-			chooseFileButton.addEventListener("click", function () {
-				mockFileInput.click();
-			});
+            chooseFileButton.addEventListener("click", function () {
+                mockFileInput.click();
+            });
 
-			mockFileInput.addEventListener("change", function () {
-				if (mockFileInput.files && mockFileInput.files.length > 0) {
-					uploadFileButton.disabled = false;
-				} else {
-					uploadFileButton.disabled = true;
-				}
-			});
+            mockFileInput.addEventListener("change", function () {
+                if (mockFileInput.files && mockFileInput.files.length > 0) {
+                    uploadFileButton.disabled = false;
+                } else {
+                    uploadFileButton.disabled = true;
+                }
+            });
 
-			uploadFileButton.addEventListener("click", function () {
-				if (uploadFileButton.disabled) {
-					return;
-				}
+            uploadFileButton.addEventListener("click", function () {
+                if (uploadFileButton.disabled) {
+                    return;
+                }
 
-				window.location.href =
-					"ago-mock.html#/uk-staging.domain.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
-			});
-		</script>
-	</body>
+                window.location.href = "https://uk-integrations.ethanjohnsrud.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a";
+            });
+        </script>
+
+    </body>
 </html>

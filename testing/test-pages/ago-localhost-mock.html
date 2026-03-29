@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AGO Mock Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Welcome to AGO Mock Page</h1>
+
+    <p><strong>Current Local URL:</strong></p>
+    <pre>uk.localhost.ethanjohnsrud.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a</pre>
+
+    <h2>Extract from the URL:</h2>
+    <ul>
+        <li>Extract <strong>region</strong>: <strong>UK</strong></li>
+        <li>Extract <strong>environment</strong>: <strong>localhost</strong></li>
+        <li>Extract <strong>route</strong>: <strong>advisergo</strong></li>
+        <li>Extract <strong>clientID</strong>: <strong>53298503c87d40dabba39f2d421dfb5f</strong></li>
+        <li>Extract <strong>planID</strong>: <strong>8c9fa4027f00000157dfb3daeb94978a</strong></li>
+        <li>Local Link to save:
+            <strong>https://uk.localhost.ethanjohnsrud.com/advisergo/#/53298503c87d40dabba39f2d421dfb5f/8c9fa4027f00000157dfb3daeb94978a</strong>
+        </li>
+    </ul>
+
+    <h2>Extract from the DOM:</h2>
+    <ul>
+        <li>Extract <strong>planName</strong>: <strong>Base Plan</strong></li>
+        <li>Extract <strong>clientFullName</strong>: <strong>Campbell, John &amp; Julia</strong></li>
+        <li>Extract <strong>clientLastName</strong>: <strong>Campbell</strong></li>
+    </ul>
+
+    <hr />
+
+    <!-- Extract Plan Name -->
+    <h2>Extract AGO <strong>planName</strong></h2>
+    <p>From snippet below, extract text: <strong>Base Plan</strong></p>
+
+    <div class="nav-header-section collapsible">
+        <div class="top-nav-dropdown">
+            <div class="ember-view btn-group">
+                <button aria-expanded="false" class="btn dropdown-toggle hide-arrow ellipsize d-inline-block"
+                    aria-haspopup="menu" id="plan-management-dropdown" title="Base Plan" data-test-plan-dropdown="true"
+                    type="button">
+                    <span>
+                        <span class="help-wrapper-yield focus-ring">
+                            <span aria-hidden="true" class="icon icon-nav_my-plans tiny left-icon"></span>
+                            <strong class="brand-bar-text">
+                                Base Plan
+                            </strong>
+                        </span>
+                        <button class="btn btn-nostyle p-0" type="button">
+                            <span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Extract Client Name -->
+    <h2>Extract AGO <strong>clientFullName, clientLastName</strong></h2>
+    <p>From snippet below, extract text: <strong>Campbell, John &amp; Julia</strong> and save as
+        <strong>clientFullName</strong></p>
+    <p>From snippet below, extract text: <strong>Campbell</strong> and save as <strong>clientLastName</strong></p>
+
+    <strong class="brand-bar-text">
+        <span>
+            <span class="help-wrapper-yield focus-ring">
+                Campbell, John &amp; Julia
+            </span>
+            <button class="btn btn-nostyle p-0" type="button">
+                <span class="fs-6 icon-control_question help-link-subdued" aria-hidden="true"></span>
+            </button>
+        </span>
+    </strong>
+
+    <hr/>
+
+    <div style="margin-top: 100px;">
+            <button type="button" onclick="window.location.href='/'">
+                Return to Test Page
+            </button>
+    </div>
+</body>
+
+</html>

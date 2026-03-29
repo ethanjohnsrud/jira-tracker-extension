@@ -31,12 +31,17 @@ export const QA_TEST_REGIONS = ["IE", "AU"]; //Uses ie-qa instead of ie-test
  * JIRA URL TRACKING *
  *********************/
 /*  Matches and captures base JIRA issue URL and ticket ID */
-export const JIRA_REGEX = /^(https:\/\/company\.atlassian\.net\/browse\/([a-zA-Z]{2,5}-[0-9]{3,4}))/;
+// export const JIRA_REGEX = /^https:\/\/company\.atlassian\.net\/(?:browse\/|jira\/software\/c\/projects\/[^/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5})$/;
+export const JIRA_REGEX = /^(https:\/\/jira\.ethanjohnsrud\.com\/(?:browse\/|jira\/software\/c\/projects\/[^\/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5}))$/;
+
 
 /*  Selector for the JIRA sprint element in the issue view */
 //Extract Sprint for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
-export const JIRA_SPRINT_ELEMENT_SELECTOR =
-	'[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a';
+export const JIRA_SPRINT_ELEMENT_SELECTOR = '[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a';
+
+//TODO Support ?selectedIssue=
+// export const JIRA_REGEX = /^(?:https:\/\/company\.atlassian\.net\/browse\/([A-Z]{2,5}-\d{2,5})|https:\/\/company\.atlassian\.net\/jira\/software\/c\/projects\/[^/?#]+\/boards\/\d+\/backlog\?selectedIssue=([A-Z]{2,5}-\d{2,5}))$/;
+
 
 /********************
  * AGO URL Tracking *
@@ -44,8 +49,9 @@ export const JIRA_SPRINT_ELEMENT_SELECTOR =
 /*  Matches and captures base AGO URL, region, environment, client, and plan IDs */
 // [Group #1] Captures full URL through plan ID but excludes sub-route
 // [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test) | [Group #4] Environment (local) | [Group #5] 5-chars-ending client ID | [Group #6] 5-chars-ending plan ID
-export const AGO_REGEX =
-	/^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.domain\.(?:co\.uk|com)|(localhost\.tld:[0-9]{4}))\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))/;
+// export const AGO_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.domain\.(?:co\.uk|com)|(localhost\.tld:[0-9]{4}))\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))/;
+export const AGO_REGEX = /^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com))\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))/;
+
 
 /*  Element ID for fetching AGO client name from the page */
 //Extract Client Last Name for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
@@ -55,9 +61,10 @@ export const AGO_CLIENT_NAME_ELEMENT_ID = "client-actions-dropdown";
  * company URL Tracking *
  ***********************/
 /*  Matches and captures company app URLs with region and environment */
-// [Group #1] Captures full URL through plan ID but excludes sub-route | [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test)
-export const COMPANY_REGEX =
-	/^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.domain\.(?:co\.uk|com)|(localhost\.tld:[0-9]{4})).+)/;
+// [Group #1] Captures full URL through plan ID but excludes sub-route | [Group #2] Region (CA/UK/IE/US/AU) | [Group #3] Environment domain (integrations/staging/test) 
+// export const COMPANY_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.domain\.(?:co\.uk|com)|(localhost\.tld:[0-9]{4})).+)/;
+export const COMPANY_REGEX = /^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com)).+)/;
+
 
 /*********************
  * Header Hyperlinks *

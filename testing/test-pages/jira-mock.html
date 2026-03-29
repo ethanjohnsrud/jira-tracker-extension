@@ -19,23 +19,14 @@
 			</em>
 		</p>
 
-		<p><strong>Current Jira URL:</strong></p>
-		<pre>https://company.atlassian.net/browse/HOME-297</pre>
+    <p><strong>Current Jira URL:</strong></p>
+    <pre>https://jira.ethanjohnsrud.com/browse/HOME-297</pre>
 
-		<h2>Extract from the URL:</h2>
-		<ol>
-			<li>Extract <strong>jiraCode</strong>: <strong>HOME-297</strong></li>
-			<li>Link to save: <strong>https://company.atlassian.net/browse/HOME-297</strong></li>
-		</ol>
-
-		<h2>Extract from Page:</h2>
-		<ol>
-			<li>
-				Extract <strong>title</strong>: <strong>Important &amp; Immediate Action Needed: Fix Production Bug</strong>
-			</li>
-			<li>Extract <strong>sprint</strong>: <strong>Mar-27</strong></li>
-			<li>Extract <strong>status</strong>: <strong>RFMTS</strong></li>
-		</ol>
+    <h2>Extract from the URL:</h2>
+    <ol>
+        <li>Extract <strong>jiraCode</strong>: <strong>HOME-297</strong></li>
+        <li>Link to save: <strong>https://jira.ethanjohnsrud.com/browse/HOME-297</strong></li>
+    </ol>
 
 		<hr />
 
@@ -92,8 +83,24 @@
 			save as <strong>title</strong>
 		</p>
 
-		<div data-testid="issue-field-summary.ui.issue-field-summary-inline-edit--container">
-			<h1>Important &amp; Immediate Action Needed: Fix Production Bug</h1>
-		</div>
-	</body>
+    <!-- Extract Title -->
+    <h2>Extract Jira: <strong>title</strong></h2>
+    <p>From snippet below, extract text: <strong>Important &amp; Immediate Action Needed: Fix Production Bug</strong> and save as <strong>title</strong></p>
+
+    <div data-testid="issue-field-summary.ui.issue-field-summary-inline-edit--container">
+        <h1>
+            Important &amp; Immediate Action Needed: Fix Production Bug
+        </h1>
+    </div>
+
+    <hr/>
+
+    <div style="margin-top: 100px;">
+            <button type="button" onclick="window.location.href='/'">
+                Return to Test Page
+            </button>
+    </div>
+
+</body>
+
 </html>
