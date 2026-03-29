@@ -1,7 +1,15 @@
 import React from "react";
-import { Button as HeroButton, ButtonGroup } from "@heroui/react";
+import { Button as HeroButton, PressEvent } from "@heroui/react";
 
-export default function Button({ label, onClick, className = "", loading = false, type = "primary" }) {
+interface ButtonProps {
+	label: string;
+	onClick: (e: PressEvent) => void;
+	className?: string;
+	loading?: boolean;
+	type?: "primary" | "secondary" | "alternative-background";
+}
+
+export default function Button({ label, onClick, className = "", loading = false, type = "primary" }: ButtonProps) {
 	const colorClasses = {
 		primary: "bg-primary text-white hover:bg-primary/80",
 		secondary: "bg-gray-600 text-white hover:bg-gray-700",

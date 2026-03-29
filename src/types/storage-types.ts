@@ -31,3 +31,8 @@ export interface StorageSchema {
 }
 
 export type StorageKey = keyof StorageSchema;
+
+export type StorageChangeCallback = (
+  changes: { [key in StorageKey]: chrome.storage.StorageChange },
+  areaName: chrome.storage.AreaName
+) => void;

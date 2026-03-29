@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./index.css";
 import REGIONS from "./constants/regions";
 import ENVIRONMENTS from "./constants/environments";
@@ -12,13 +12,21 @@ import {
 	AGO_REGEX,
 } from "./constants/constants";
 
-import Dropdown from "./components/Dropdown.jsx";
-import Button from "./components/Button.jsx";
+import Dropdown from "./components/Dropdown";
+import Button from "./components/Button";
 
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import { createRoot } from "react-dom/client";
-import TableItem from "./components/TableItem.jsx";
-import { AgoUrlListItem, JiraUrlListItem, UrlListItem } from "./types/storage-types";
+import TableItem from "./components/TableItem";
+import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback, UrlListItem } from "./types/storage-types";
+import { PressEvent } from "@heroui/react";
+import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
+
+interface DropdownSelections {
+	region: RegionSelection;
+	environment: EnvironmentSelectionOption;
+	route: RouteSelection;
+}
 
 //Global Setting
 let DEBUG_MODE = false;
@@ -27,7 +35,7 @@ let DEBUG_MODE = false;
  * popup.tsx is the React extension popup display *
  **************************************************/
 const Popup = () => {
-	const [dropdowns, setDropdowns] = useState({
+	const [dropdowns, setDropdowns] = useState<DropdownSelections>({
 		region: REGIONS[0],
 		environment: ENVIRONMENTS[1],
 		route: ROUTES[0],
@@ -46,6 +54,10 @@ const Popup = () => {
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+	const updateDropdowns = (dropdowns: Partial<DropdownSelections>) => {
+		setDropdowns((prev) => ({ ...prev, ...dropdowns }));
+	};
+
 	/* Initialize Header Button Links */
 	useEffect(() => {
 		getFromStorage(["ago_header_link", "jira_header_link"])
@@ -56,7 +68,7 @@ const Popup = () => {
 	}, []);
 
 	/* Open URL in new or current tab */
-	const openUrlTab = (event, url) => {
+	const openUrlTab = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent> | PressEvent, url: string) => {
 		// event.preventDefault();
 
 		// Check if Ctrl (Windows/Linux) or Cmd (Mac) key is held down
@@ -72,7 +84,7 @@ const Popup = () => {
 	};
 
 	/* Navigate based on dropdown config */
-	const navigateTabOnChange = (event, config) => {
+	const navigateTabOnChange = (event: PressEvent, config: DropdownSelections) => {
 		let regionValue = config.region.value.toUpperCase();
 		let environmentValue = config.environment.value.toLowerCase();
 		const routeValue = config.route.value;
@@ -96,25 +108,25 @@ const Popup = () => {
 	};
 
 	/* Handle route dropdown change */
-	const onRouteChange = async (event, route) => {
+	const onRouteChange = async (event: PressEvent, route: string) => {
 		const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase());
-		setDropdowns((prev) => ({ ...prev, route: validRoute }));
+		updateDropdowns({ route: validRoute });
 		if (DEBUG_MODE) console.log("[POPUP][onRouteChange] New route:", validRoute);
 		navigateTabOnChange(event, { ...dropdowns, route: validRoute });
 	};
 
 	/* Handle region dropdown change */
-	const onRegionChange = async (event, region) => {
+	const onRegionChange = async (event: PressEvent, region: string) => {
 		const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase());
-		setDropdowns((prev) => ({ ...prev, region: validRegion }));
+		updateDropdowns({ region: validRegion });
 		if (DEBUG_MODE) console.log("[POPUP][onRegionChange] New region:", validRegion);
 		navigateTabOnChange(event, { ...dropdowns, region: validRegion });
 	};
 
 	/* Handle environment dropdown change */
-	const onEnvironmentChange = async (event, environment) => {
+	const onEnvironmentChange = async (event: PressEvent, environment: string) => {
 		const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase());
-		setDropdowns((prev) => ({ ...prev, environment: validEnvironment }));
+		updateDropdowns({ environment: validEnvironment });
 		if (DEBUG_MODE) console.log("[POPUP][onEnvironmentChange] New environment:", validEnvironment);
 		navigateTabOnChange(event, { ...dropdowns, environment: validEnvironment });
 	};
@@ -281,26 +293,22 @@ const Popup = () => {
 
 	/* Initialize popup state and storage listeners */
 	useEffect(() => {
+		const onStorageChange: StorageChangeCallback = (changes, namespace) => {
+			if (namespace === "local" && (changes.jiraUrlList || changes.agoUrlList)) {
+				loadDisplayLists();
+			}
+		};
+
 		const init = async () => {
-			const { debug } = await getFromStorage("debug");
+			const { debug, cacheTabId, tabOn, environment, region, route }
+				= await getFromStorage(["debug", "cacheTabId", "tabOn", "environment", "region", "route"]);
+
 			DEBUG_MODE = debug == true;
 			if (DEBUG_MODE) console.log("[POPUP][init] Debug mode enabled");
 
 			loadDisplayLists();
 
-			chrome.storage.onChanged.addListener((changes, namespace) => {
-				if (namespace === "local" && (changes.jiraUrlList || changes.agoUrlList)) {
-					loadDisplayLists();
-				}
-			});
-
-			const { cacheTabId, tabOn, environment, region, route } = await getFromStorage([
-				"cacheTabId",
-				"tabOn",
-				"environment",
-				"region",
-				"route",
-			]);
+			chrome.storage.onChanged.addListener(onStorageChange);
 
 			setTabOn(tabOn === true || tabOn === "true");
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -326,6 +334,8 @@ const Popup = () => {
 			if (DEBUG_MODE) console.log("[POPUP][init] Dropdowns set:", validRegion, validEnvironment, validRoute);
 		};
 		init();
+
+		return () => chrome.storage.onChanged.removeListener(onStorageChange);
 	}, []);
 
 	return (

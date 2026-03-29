@@ -1,7 +1,15 @@
 import React from "react";
 import { Button } from "@heroui/react";
 
-export default function StarButton({ fill = "currentColor", size, height, width, ...props }) {
+interface StarButtonProps {
+	fill?: string;
+	size?: number;
+	height?: number;
+	width?: number;
+	[key: string]: any;
+}
+
+export default function StarButton({ fill = "currentColor", size, height, width, ...props }: StarButtonProps) {
 	return (
 		<Button isIconOnly aria-label="Favorite" className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent`}>
 			<svg

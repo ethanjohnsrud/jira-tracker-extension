@@ -1,7 +1,19 @@
-import React, { use, useEffect } from "react";
-import { Dropdown as HeroDropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
+import React from "react";
+import {
+	Dropdown as HeroDropdown,
+	DropdownTrigger,
+	DropdownMenu,
+	DropdownItem
+} from "@heroui/dropdown";
+import { PressEvent } from "@heroui/react";
 
-export default function Dropdown({ onChange, value, options }) {
+interface DropdownProps {
+	onChange: (event: PressEvent, value: string) => void;
+	value: string;
+	options: { label: string; value: string }[];
+}
+
+export default function Dropdown({ onChange, value, options }: DropdownProps) {
 	return (
 		<HeroDropdown className="w-full border border-primary rounded-md shadow-sm bg-background">
 			<DropdownTrigger className="w-full outline-none focus:outline-none border-[#7bbd4a] hover:bg-[#A3E063] transition duration-300 ease-in-out">
