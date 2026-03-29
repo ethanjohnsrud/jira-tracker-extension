@@ -21,6 +21,8 @@
 
         } else if (hash.includes("#/advisor/integration")) {
             fileToLoad = "/test-pages/client-import.html";
+            window.location.replace("/test-pages/client-import.html");
+            return;
             
         } else if (/\/client-export(?:\/|$)/.test(hash)) {
             fileToLoad = "/test-pages/client-export.html";

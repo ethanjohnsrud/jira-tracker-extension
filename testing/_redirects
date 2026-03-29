@@ -11,6 +11,9 @@
 # AdviserGo Router to direct to /import & /export
 /advisergo/*                        /test-pages/ago-router.html               200
 
+# Download export.vyt
+/voyant/main/rest/client/version/*  /test-pages/export.vyt    200
+
 # Jira routes
 /browse/*                           /test-pages/jira-mock.html                200
 /jira/software/*                    /test-pages/jira-mock.html                200
