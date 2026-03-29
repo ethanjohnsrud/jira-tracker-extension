@@ -33,7 +33,7 @@ export const QA_TEST_REGIONS = ['IE', 'AU']; //Uses ie-qa instead of ie-test
  *********************/
 /*  Matches and captures base JIRA issue URL and ticket ID */
 // export const JIRA_REGEX = /^https:\/\/company\.atlassian\.net\/(?:browse\/|jira\/software\/c\/projects\/[^/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5})$/;
-export const JIRA_REGEX = /^https:\/\/jira\.ethanjohnsrud\.com\/(?:browse\/|jira\/software\/c\/projects\/[^/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5})$/;
+export const JIRA_REGEX = /^https:\/\/jira\.ethanjohnsrud\.com\/(?:browse\/|jira\/software\/c\/projects\/[^\/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5})$/;
 
 
 /*  Selector for the JIRA sprint element in the issue view */

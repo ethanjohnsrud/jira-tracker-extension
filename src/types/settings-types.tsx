@@ -141,7 +141,7 @@ export const DEFAULT_SETTINGS:SETTINGS = {
         jiraTracking:{
         JIRA_SEARCH_URL_PREFIX:"https://jira.ethanjohnsrud.com/browse/",
 
-        JIRA_REGEX:'^https:\\/\\/jira\\.ethanjohnsrud\\.com\\/(?:browse\\/|jira\\/software\\/c\\/projects\\/[^/?#]+\\/boards\\/\\d+\\/backlog\\?selectedIssue=)([A-Z]{2,5}-\\d{2,5})$',
+        JIRA_REGEX:'^https:\\/\\/jira\\.ethanjohnsrud\\.com\\/(?:browse\\/|jira\\/software\\/c\\/projects\\/[^\/?#]+\\/boards\\/\\d+\\/backlog\\?selectedIssue=)([A-Z]{2,5}-\\d{2,5})$',
 
         //Extract Sprint for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
         JIRA_SPRINT_ELEMENT_SELECTOR:'[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a',
