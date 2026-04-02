@@ -10,6 +10,8 @@ import REGIONS from "./constants/regions";
 import { extractAGOClientLastName, extractJiraSprint } from "./utils/dom-extractor";
 import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cache";
 import { DEBUG_MODE, stateInitPromise } from "./utils/state";
+import { sendMessage } from "./controllers/messageController";
+import { IErrorMsgResponse } from "./types/message-types";
 
 /* **********************************************************
  * content.jsx | Used for is for manipulating the DOM        *
@@ -25,11 +27,7 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 		const jiraSprint = await extractJiraSprint();
 		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", url, jiraSprint);
 
-		await chrome.runtime.sendMessage({
-			command: "SAVE_JIRA_URL",
-			url,
-			jiraSprint,
-		});
+		await sendMessage({ command: "SAVE_JIRA_URL", url, jiraSprint });
 	} else if (COMPANY_REGEX.test(url)) {
 		//Dropdown storage (for popup)
 		const matched = url.match(COMPANY_REGEX);
@@ -47,11 +45,7 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 			const agoClientName = await extractAGOClientLastName(DEBUG_MODE);
 			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_AGO_URL", url, agoClientName);
 
-			await chrome.runtime.sendMessage({
-				command: "SAVE_AGO_URL",
-				url,
-				agoClientName,
-			});
+			await sendMessage({ command: "SAVE_AGO_URL", url, agoClientName });
 		}
 
 		//Update
@@ -117,9 +111,9 @@ const initialize = async () => {
 	await createCacheURL(window.location.href);
 
 	// Get and cache this tab's ID
-	chrome.runtime.sendMessage({ command: "GET_TAB_ID" }, (response) => {
+	sendMessage<"GET_TAB_ID">({ command: "GET_TAB_ID" }).then((response) => {
 		if (DEBUG_MODE) console.log("[CONTENT][initTabId] Response:", response);
-		if (response?.tabId !== undefined) {
+		if (response.ok && response.tabId !== undefined) {
 			thisTabId = response.tabId;
 			if (DEBUG_MODE) console.log("[CONTENT][initTabId] Tab ID:", thisTabId);
 
@@ -128,7 +122,8 @@ const initialize = async () => {
 				if (result.cacheTabId === thisTabId) startCachePolling();
 			});
 		} else {
-			if (DEBUG_MODE) console.warn("[CONTENT][initTabId] Failed to get tab ID:", response?.error);
+			const errRes = response as IErrorMsgResponse;
+			if (DEBUG_MODE) console.warn("[CONTENT][initTabId] Failed to get tab ID:", errRes.error);
 		}
 	});
 
