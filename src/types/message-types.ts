@@ -19,9 +19,6 @@ export interface GetTabIdRequest extends IMessage {
   command: "GET_TAB_ID",
 }
 
-export type Message = AGOUrlSaveRequest | JIRASaveRequest | GetTabIdRequest;
-
-
 export interface ISuccessMsgResponse {
   ok: true;
 }
@@ -43,8 +40,14 @@ interface AgoUrlSaveResponse extends ISuccessMsgResponse {
   message: string;
 }
 
-export type MessageResponse<T extends MessageCommand> =
-  (
+export type Message<T extends MessageCommand = MessageCommand>
+  = T extends "GET_TAB_ID" ? GetTabIdRequest
+  : T extends "SAVE_JIRA_URL" ? JIRASaveRequest
+  : T extends "SAVE_AGO_URL" ? AGOUrlSaveRequest
+  : never;
+
+export type MessageResponse<T extends MessageCommand>
+  = (
     T extends "GET_TAB_ID" ? GetTabIdResponse
     : T extends "SAVE_JIRA_URL" ? JiraUrlSaveResponse
     : T extends "SAVE_AGO_URL" ? AgoUrlSaveResponse
@@ -55,5 +58,13 @@ export type MessageResponse<T extends MessageCommand> =
 export type OnMessageListener = (
   message: Message,
   sender: chrome.runtime.MessageSender,
-  sendResponse: (response: MessageResponse<MessageCommand>) => void
+  sendResponse: <T extends MessageCommand>(response: MessageResponse<T>) => void
 ) => boolean | void;
+
+export type MessageHandlers = {
+  [K in MessageCommand]: (
+    request: Message<K>,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: MessageResponse<K>) => void
+  ) => Promise<boolean | void> | boolean | void;
+};
