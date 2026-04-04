@@ -1,8 +1,10 @@
-import { AGO_REGEX, LOCAL_CACHE_INTERVAL } from "../constants/constants";
+import { LOCAL_CACHE_INTERVAL } from "../constants/constants";
 import { saveToStorage } from "../controllers/storageController";
 import ROUTES from "../constants/routes";
 import ENVIRONMENTS from "../constants/environments";
 import { DEBUG_MODE } from "./state";
+import { isAgoUrl } from "./url";
+import { AGO_URL_REGEX } from "../constants/regex";
 
 /* Interval Clear Cache */
 let cacheInterval: ReturnType<typeof setInterval> | null = null;
@@ -11,11 +13,11 @@ let cacheUrl: string = "";
 /** Create cache URL for local AGO environment */
 export async function createCacheURL(url: string): Promise<string | null> {
   if (DEBUG_MODE) console.log("[CONTENT][createCacheURL] URL:", url);
-  if (!AGO_REGEX.test(url)) {
+  if (!isAgoUrl(url)) {
     if (DEBUG_MODE) console.log("[CONTENT][createCacheURL] Not an AGO URL");
     return null;
   }
-  const matched = url.match(AGO_REGEX);
+  const matched = url.match(AGO_URL_REGEX);
   if (!matched || matched.length < 4) {
     if (DEBUG_MODE) console.log("[CONTENT][createCacheURL] Regex failed", matched);
     return null;

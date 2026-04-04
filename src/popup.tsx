@@ -9,7 +9,6 @@ import {
 	JIRA_HEADER_HYPERLINK_DEFAULT,
 	UK_HOSTED_TEST_REGIONS,
 	QA_TEST_REGIONS,
-	AGO_REGEX,
 } from "./constants/constants";
 
 import Dropdown from "./components/Dropdown";
@@ -21,6 +20,8 @@ import TableItem from "./components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback, UrlListItem } from "./types/storage-types";
 import { PressEvent } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
+import { AGO_URL_REGEX } from "./constants/regex";
+import { isAgoUrl } from "./utils/url";
 
 interface DropdownSelections {
 	region: RegionSelection;
@@ -166,7 +167,7 @@ const Popup = () => {
 
 	//Alternative Manager for Cache Button
 	const handleDynamicButtonClick = async (event) => {
-		const matched = currentTabURL.match(AGO_REGEX);
+		const matched = currentTabURL.match(AGO_URL_REGEX);
 
 		//Local Environment -> Auto Cache Button
 		if (currentTabURL.includes("localhost")) {
@@ -355,7 +356,7 @@ const Popup = () => {
 						loading={cacheLoading}
 						onClick={handleCacheClick}
 					/>
-				) : currentTabURL.match(AGO_REGEX) ? (
+				) : isAgoUrl(currentTabURL) ? (
 					<Button label="⇪ Export" type="primary" loading={false} onClick={handleDynamicButtonClick} />
 				) : (
 					<Button label="⇩ Import" type="primary" loading={false} onClick={handleDynamicButtonClick} />

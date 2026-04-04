@@ -1,8 +1,6 @@
 import { getFromStorage, saveToStorage } from "./controllers/storageController";
 import {
-	JIRA_REGEX,
 	COMPANY_REGEX,
-	AGO_REGEX,
 	URL_SAVING_INTERVAL,
 	AGO_TAB_RENAMING_INTERVAL,
 } from "./constants/constants";
@@ -12,6 +10,8 @@ import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cac
 import { DEBUG_MODE, stateInitPromise } from "./utils/state";
 import { sendMessage } from "./controllers/messageController";
 import { IErrorMsgResponse } from "./types/message-types";
+import { isAgoUrl, isJiraUrl } from "./utils/url";
+import { AGO_URL_REGEX } from "./constants/regex";
 
 /* **********************************************************
  * content.jsx | Used for is for manipulating the DOM        *
@@ -23,9 +23,10 @@ let thisTabId: number | null = null;
 
 /** Send URL save request to background script */
 const saveUrl = async (url: string = currentUrl): Promise<void> => {
-	if (JIRA_REGEX.test(url)) {
+	if (DEBUG_MODE) console.log("[CONTENT][saveUrl] URL:", url);
+	if (isJiraUrl(url)) {
 		const jiraSprint = await extractJiraSprint();
-		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", url, jiraSprint);
+		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", { url, jiraSprint });
 
 		await sendMessage({ command: "SAVE_JIRA_URL", url, jiraSprint });
 	} else if (COMPANY_REGEX.test(url)) {
@@ -41,7 +42,7 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 		}
 
 		//Save AGO Plan URL
-		if (AGO_REGEX.test(url)) {
+		if (isAgoUrl(url)) {
 			const agoClientName = await extractAGOClientLastName(DEBUG_MODE);
 			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_AGO_URL", url, agoClientName);
 
@@ -64,7 +65,7 @@ const initializeAGOTabRenaming = async (): Promise<void> => {
 		const { tabOn } = await getFromStorage("tabOn");
 		if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] tabOn:", tabOn, "URL:", url);
 
-		const matched = url.match(AGO_REGEX);
+		const matched = url.match(AGO_URL_REGEX);
 		if (tabOn && matched) {
 			const { agoUrlList = [] } = await getFromStorage("agoUrlList");
 			const item = agoUrlList.find((u) => u.url === matched[1]);

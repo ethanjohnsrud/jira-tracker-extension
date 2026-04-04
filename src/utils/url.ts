@@ -1,21 +1,39 @@
 import { v4 as uuidv4 } from "uuid";
 import { getFromStorage, saveToStorage } from "../controllers/storageController";
-import { AGO_REGEX, JIRA_REGEX, MAX_LIST_LENGTH } from "../constants/constants";
+import { MAX_LIST_LENGTH } from "../constants/constants";
 import { JiraUrlListItem, StorageKey, UrlListItem } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
+import { AGO_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
+
+export const isJiraUrl = (url: string): boolean => {
+  return JIRA_URL_REGEX.test(url);
+};
+
+export const isAgoUrl = (url: string): boolean => {
+  return AGO_URL_REGEX.test(url);
+};
+
+export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string; } | null => {
+  const match = url.match(JIRA_URL_REGEX);
+  if (!match) return null;
+  if (DEBUG_MODE) console.log("[parseJiraUrl] JIRA match", match);
+  if (match.groups?.jiraCode) return { jiraCode: match.groups.jiraCode, capturedUrl: match[0] };
+  return null;
+};
 
 /** Derives display name for JIRA and AGO URLs */
 export const getListEntryDisplayName = (url: string, jiraSprint: string | null, agoClientName: string | null) => {
-  if (JIRA_REGEX.test(url)) {
-    const match = url.match(JIRA_REGEX)!;
-    const name = match[2] + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
-    if (DEBUG_MODE) console.log("[BACKGROUND][getListEntryDisplayName] JIRA name", name);
+  if (isJiraUrl(url)) {
+    const parsedJiraUrl = parseJiraUrl(url)!;
+    const name = parsedJiraUrl.jiraCode
+      + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
+    if (DEBUG_MODE) console.log("[getListEntryDisplayName] JIRA name", name);
     return name;
-  } else if (AGO_REGEX.test(url)) {
-    const groups = url.match(AGO_REGEX);
+  } else if (isAgoUrl(url)) {
+    const groups = url.match(AGO_URL_REGEX);
     if (!groups || groups.length < 5) {
-      if (DEBUG_MODE) console.log("[BACKGROUND][getListEntryDisplayName] Invalid AGO Match", url, groups);
+      if (DEBUG_MODE) console.log("[getListEntryDisplayName] Invalid AGO Match", url, groups);
       return "AGO";
     }
 
@@ -60,9 +78,8 @@ export const evaluateMaxListLength = (urlList: UrlListItem[]) => {
 
 /** Processes and saves visited URLs into storage lists */
 export const saveJiraUrl = async (url: string, jiraSprint: string) => {
-  const isJiraUrl = JIRA_REGEX.test(url);
-  if (!isJiraUrl) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Not Jira URL", url, JIRA_REGEX);
+  if (!isJiraUrl(url)) {
+    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Not Jira URL", url, JIRA_URL_REGEX);
     return false;
   }
 
@@ -70,7 +87,7 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
   const { jiraUrlList } = await getFromStorage(storageKey);
   const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
-  const capturedUrl = url.match(JIRA_REGEX)?.[1];
+  const capturedUrl = parseJiraUrl(url)?.capturedUrl;
   if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Captured:", capturedUrl);
 
   if (!capturedUrl) {
@@ -108,9 +125,9 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
 
 /** Save AGO URL to Storage List and update popup dropdowns */
 export const saveAGOUrl = async (url: string, agoClientName: string) => {
-  const isAgoUrl = AGO_REGEX.test(url);
+  const isAgoUrl = AGO_URL_REGEX.test(url);
   if (!isAgoUrl) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Not AGO URL", url, AGO_REGEX);
+    if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
     return false;
   }
 
@@ -118,7 +135,7 @@ export const saveAGOUrl = async (url: string, agoClientName: string) => {
   const { agoUrlList } = await getFromStorage(storageKey);
   const urlList = Array.isArray(agoUrlList) ? agoUrlList : [];
 
-  const capturedUrl = url.match(AGO_REGEX)?.[1];
+  const capturedUrl = url.match(AGO_URL_REGEX)?.[1];
   if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Captured:", capturedUrl);
 
   if (!capturedUrl) {
