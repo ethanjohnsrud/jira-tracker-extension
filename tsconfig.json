@@ -1,11 +1,11 @@
 {
 	"compilerOptions": {
-		"target": "ES2017",
-		"lib": ["DOM", "DOM.Iterable", "ES2017"],
+		"target": "ES2022",
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"allowJs": true,
 		"checkJs": false,
 		"jsx": "react-jsx",
-		"module": "ESNext",
+		"module": "ES2022",
 		"moduleResolution": "Bundler",
 		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,

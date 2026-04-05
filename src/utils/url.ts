@@ -4,7 +4,7 @@ import { MAX_LIST_LENGTH } from "../constants/constants";
 import { JiraUrlListItem, StorageKey, UrlListItem } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
-import { AGO_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
+import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
 
 export const isJiraUrl = (url: string): boolean => {
   return JIRA_URL_REGEX.test(url);
@@ -14,12 +14,59 @@ export const isAgoUrl = (url: string): boolean => {
   return AGO_URL_REGEX.test(url);
 };
 
+export const isCompanyUrl = (url: string): boolean => {
+  return COMPANY_URL_REGEX.test(url);
+};
+
 export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string; } | null => {
   const match = url.match(JIRA_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseJiraUrl] JIRA match", match);
   if (match.groups?.jiraCode) return { jiraCode: match.groups.jiraCode, capturedUrl: match[0] };
   return null;
+};
+
+
+type ParsedCompanyUrl = {
+  capturedUrl: string;
+  region?: string;
+  environment?: string;
+  route?: string;
+};
+
+export const parseCompanyUrl = (url: string): ParsedCompanyUrl | null => {
+  const match = url.match(COMPANY_URL_REGEX);
+  if (!match) return null;
+  if (DEBUG_MODE) console.log("[parseCompanyUrl] match", match);
+  return { 
+    capturedUrl: match[0],
+    region: match.groups?.region, 
+    environment: match.groups?.environment, 
+    route: match.groups?.route, 
+  };
+};
+
+type ParsedAGOUrl = {
+  capturedUrl: string;
+  region: string;
+  environment: string;
+  route: string;
+  clientID: string;
+  planID: string;
+};
+
+export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
+  const match = url.match(AGO_URL_REGEX);
+  if (!match) return null;
+  if (DEBUG_MODE) console.log("[parseAGOUrl] match", match);
+  return { 
+    region: match.groups?.region || "", 
+    environment: match.groups?.environment || "", 
+    route: match.groups?.route || "", 
+    clientID: match.groups?.clientID || "", 
+    planID: match.groups?.planID || "", 
+    capturedUrl: match[0] 
+  };
 };
 
 /** Derives display name for JIRA and AGO URLs */
@@ -125,9 +172,8 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
 
 /** Save AGO URL to Storage List and update popup dropdowns */
 export const saveAGOUrl = async (url: string, agoClientName: string) => {
-  const isAgoUrl = AGO_URL_REGEX.test(url);
-  if (!isAgoUrl) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
+  if (!isAgoUrl(url)) {
+    if (DEBUG_MODE) console.log("[saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
     return false;
   }
 
@@ -136,10 +182,10 @@ export const saveAGOUrl = async (url: string, agoClientName: string) => {
   const urlList = Array.isArray(agoUrlList) ? agoUrlList : [];
 
   const capturedUrl = url.match(AGO_URL_REGEX)?.[1];
-  if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Captured:", capturedUrl);
+  if (DEBUG_MODE) console.log("[saveAGOUrl] Captured:", capturedUrl);
 
   if (!capturedUrl) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] URL Not Captured", url);
+    if (DEBUG_MODE) console.log("[saveAGOUrl] URL Not Captured", url);
     return false;
   }
 
@@ -149,7 +195,7 @@ export const saveAGOUrl = async (url: string, agoClientName: string) => {
   let updatedUrlList = [];
   const existing = urlList.find((u) => u.url === capturedUrl);
   if (existing) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Revisiting:", displayName);
+    if (DEBUG_MODE) console.log("[saveAGOUrl] Revisiting:", displayName);
     existing.lastVisited = new Date().toISOString();
     if (!existing.preserveCustomName && !existing.favorite) existing.displayName = displayName;
     updatedUrlList = urlList;

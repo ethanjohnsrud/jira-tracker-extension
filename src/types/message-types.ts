@@ -8,12 +8,23 @@ interface IMessage {
 export interface AGOUrlSaveRequest extends IMessage {
   command: "SAVE_AGO_URL",
   url: string,
+  region: string;
+  environment: string;
+  route: string;
+  clientID: string;
+  planID: string;
+  agoPlanName: string,
+  clientFullName: string,
+  clientLastName: string,
+  /**@deprecated use `clientFullName` or `clientLastName` instead */
   agoClientName: string,
 }
 export interface JIRASaveRequest extends IMessage {
   command: "SAVE_JIRA_URL",
   url: string,
+  jiraTitle: string,
   jiraSprint: string,
+  jiraStatus: string,
 }
 export interface GetTabIdRequest extends IMessage {
   command: "GET_TAB_ID",

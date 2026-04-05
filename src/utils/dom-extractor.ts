@@ -1,6 +1,7 @@
 import { formatDate } from "date-fns";
-import { AGO_CLIENT_NAME_ELEMENT_ID, DOM_NAMING_TIMEOUT, JIRA_SPRINT_ELEMENT_SELECTOR } from "../constants/constants";
+import { DOM_NAMING_TIMEOUT } from "../constants/constants";
 import { DEBUG_MODE } from "./state";
+import { AGO_CLIENT_NAME_SELECTOR, AGO_PLAN_NAME_SELECTOR, JIRA_SPRINT_SELECTOR, JIRA_STATUS_SELECTOR, JIRA_TITLE_SELECTOR } from "../constants/dom-selectors";
 
 /** Wait for a DOM element to appear 
  *
@@ -24,17 +25,33 @@ export async function waitForDOM<T>(fetchElement: () => T): Promise<T> {
 };
 
 /**@returns if element exists returns immediately, otherwise waits for element to appear */
-export const getElement = async <T extends HTMLElement>(selector: string): Promise<T | null> => {
+export async function getElement<T extends HTMLElement>(selector: string): Promise<T | null> {
   const el = document.querySelector<T>(selector);
   if (el) return el;
 
   return waitForDOM(() => document.querySelector<T>(selector));
 };
 
+export async function extractJiraTitle(): Promise<string> {
+  try {
+    const titleElement = await getElement(JIRA_TITLE_SELECTOR);
+    if (DEBUG_MODE) console.log("[extractJiraTitle] Element text:", titleElement?.innerText);
+    const rawText = titleElement?.innerText?.trim() || "";
+    if (!rawText) {
+      if (DEBUG_MODE) console.log("[extractJiraTitle] No title found");
+      return "";
+    }
+    return rawText;
+  } catch (error) {
+    if (DEBUG_MODE) console.warn("[extractJiraTitle] Error:", error);
+    return "";
+  }
+}
+
 /** Extract the current JIRA sprint identifier */
 export async function extractJiraSprint(): Promise<string> {
   try {
-    const sprintElement = await getElement(JIRA_SPRINT_ELEMENT_SELECTOR);
+    const sprintElement = await getElement(JIRA_SPRINT_SELECTOR);
     if (DEBUG_MODE) console.log("[extractJiraSprint] Element text:", sprintElement?.innerText);
     const rawText = sprintElement?.innerText?.trim() || "";
     if (!rawText) {
@@ -56,19 +73,58 @@ export async function extractJiraSprint(): Promise<string> {
   }
 };
 
-/** Extract AGO client last name from page */
-export async function extractAGOClientLastName(DEBUG_MODE = false): Promise<string> {
+
+/**Extracts the current JIRA status and return it's acronym */
+export async function extractJiraStatus(): Promise<string> {
   try {
-    const element = await waitForDOM(() => document.getElementById(AGO_CLIENT_NAME_ELEMENT_ID));
-    if (DEBUG_MODE) console.log("[CONTENT][extractAGOClientLastName] Element text:", element?.innerText);
-    const text = element?.innerText?.trim() || "";
-    if (!text) {
-      if (DEBUG_MODE) console.log("[CONTENT][extractAGOClientLastName] No client name");
+    const statusElement = await getElement(JIRA_STATUS_SELECTOR);
+    if (DEBUG_MODE) console.log("[extractJiraStatus] Element text:", statusElement?.innerText);
+    const rawText = statusElement?.innerText?.trim() || "";
+    if (!rawText) {
+      if (DEBUG_MODE) console.log("[extractJiraStatus] No status found");
       return "";
     }
-    return text.split(",")[0].trim();
+    const acronym = rawText.split(/\s+/).map((word) => word[0].toUpperCase()).join("");
+    if (DEBUG_MODE) console.log("[extractJiraStatus] Acronym:", acronym);
+    return acronym;
   } catch (error) {
-    if (DEBUG_MODE) console.warn("[CONTENT][extractAGOClientLastName] Error:", error);
+    if (DEBUG_MODE) console.warn("[extractJiraStatus] Error:", error);
     return "";
+  }
+}
+
+export async function extractAGOPlanName(): Promise<string> {
+  try {
+    const element = await getElement(AGO_PLAN_NAME_SELECTOR);
+    if (DEBUG_MODE) console.log("[extractAGOPlanName] Element text:", element?.innerText);
+    const rawText = element?.innerText?.trim() || "";
+    if (!rawText) {
+      if (DEBUG_MODE) console.log("[extractAGOPlanName] No plan name found");
+      return "";
+    }
+    return rawText;
+  } catch (error) {
+    if (DEBUG_MODE) console.warn("[extractAGOPlanName] Error:", error);
+    return "";
+  }
+}
+
+/** Extract AGO clientFullName and clientLastName.
+ * @returns If innerText is `Campbell, John & Julia` 
+ *          clientFullName = `John & Julia Campbell`,clientLastName = `Campbell`
+ */
+export async function extractAGOClientName(): Promise<{ clientFullName: string, clientLastName: string; }> {
+  try {
+    const element = await getElement(AGO_CLIENT_NAME_SELECTOR);
+    if (DEBUG_MODE) console.log("[extractAGOClientName] Element text:", element?.innerText);
+    const text = element?.innerText?.trim() || "";
+    if (!text) {
+      if (DEBUG_MODE) console.log("[extractAGOClientName] No client name");
+      return { clientFullName: "", clientLastName: "" };
+    }
+    return { clientFullName: text, clientLastName: text.split(",")[0].trim() };
+  } catch (error) {
+    if (DEBUG_MODE) console.warn("[extractAGOClientName] Error:", error);
+    return { clientFullName: "", clientLastName: "" };
   }
 };

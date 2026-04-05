@@ -1,16 +1,15 @@
 import { getFromStorage, saveToStorage } from "./controllers/storageController";
 import {
-	COMPANY_REGEX,
 	URL_SAVING_INTERVAL,
 	AGO_TAB_RENAMING_INTERVAL,
 } from "./constants/constants";
 import REGIONS from "./constants/regions";
-import { extractAGOClientLastName, extractJiraSprint } from "./utils/dom-extractor";
+import { extractAGOClientName, extractAGOPlanName, extractJiraSprint, extractJiraStatus, extractJiraTitle } from "./utils/dom-extractor";
 import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cache";
 import { DEBUG_MODE, stateInitPromise } from "./utils/state";
 import { sendMessage } from "./controllers/messageController";
 import { IErrorMsgResponse } from "./types/message-types";
-import { isAgoUrl, isJiraUrl } from "./utils/url";
+import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl } from "./utils/url";
 import { AGO_URL_REGEX } from "./constants/regex";
 
 /* **********************************************************
@@ -25,28 +24,43 @@ let thisTabId: number | null = null;
 const saveUrl = async (url: string = currentUrl): Promise<void> => {
 	if (DEBUG_MODE) console.log("[CONTENT][saveUrl] URL:", url);
 	if (isJiraUrl(url)) {
-		const jiraSprint = await extractJiraSprint();
-		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", { url, jiraSprint });
+		const [jiraTitle, jiraSprint, jiraStatus] = await Promise.all([
+			extractJiraTitle(),
+			extractJiraSprint(),
+			extractJiraStatus(),
+		]);
+		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", { url, jiraTitle, jiraSprint, jiraStatus });
 
-		await sendMessage({ command: "SAVE_JIRA_URL", url, jiraSprint });
-	} else if (COMPANY_REGEX.test(url)) {
+		await sendMessage({ command: "SAVE_JIRA_URL", url, jiraTitle, jiraSprint, jiraStatus });
+	} else if (isCompanyUrl(url)) {
 		//Dropdown storage (for popup)
-		const matched = url.match(COMPANY_REGEX);
-		if (matched && matched.length >= 4) {
-			const route = matched[1];
-			const region = matched[2];
-			const environment = matched[3] || matched[4];
-
+		const parsedCompanyUrl = parseCompanyUrl(url);
+		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] parsed Company URL", parsedCompanyUrl);
+		if (parsedCompanyUrl) {
+			const { region, environment, route } = parsedCompanyUrl;
+			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] saving dropdowns", { region, environment, route });
 			await saveToStorage({ region, environment, route });
-			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Saved dropdowns:", region, environment, route);
+			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] saved dropdowns");
 		}
 
 		//Save AGO Plan URL
 		if (isAgoUrl(url)) {
-			const agoClientName = await extractAGOClientLastName(DEBUG_MODE);
-			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_AGO_URL", url, agoClientName);
+			const parsedAgoUrl = parseAGOUrl(url)!;
+			const [{ clientFullName, clientLastName }, agoPlanName] = await Promise.all([
+				extractAGOClientName(),
+				extractAGOPlanName(),
+			]);
+			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_AGO_URL", { url, clientFullName, clientLastName, agoPlanName, ...parsedAgoUrl });
 
-			await sendMessage({ command: "SAVE_AGO_URL", url, agoClientName });
+			await sendMessage({
+				command: "SAVE_AGO_URL",
+				url,
+				clientFullName,
+				clientLastName,
+				agoClientName: clientFullName,
+				agoPlanName,
+				...parsedAgoUrl,
+			});
 		}
 
 		//Update
