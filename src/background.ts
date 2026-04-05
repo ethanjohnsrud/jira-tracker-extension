@@ -58,9 +58,9 @@ const msgHandlers: MessageHandlers = {
 };
 
 const onMessageListener: OnMessageListener = (request, sender, sendResponse) => {
-	if (DEBUG_MODE) console.log("[BACKGROUND][onMessage] Received:", request.command, request.url);
+	if (DEBUG_MODE) console.log("[BACKGROUND][onMessage] Received:", request.command, request);
 	const handler = msgHandlers[request.command];
-	handler(request as any, sender, sendResponse);
+	if (handler) handler(request as any, sender, sendResponse);
 	return true;
 };
 chrome.runtime.onMessage.addListener(onMessageListener);
