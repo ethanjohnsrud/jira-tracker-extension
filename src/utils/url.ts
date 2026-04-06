@@ -1,9 +1,10 @@
 import { getFromStorage, saveToStorage } from "../controllers/storageController";
 import { MAX_LIST_LENGTH } from "../constants/constants";
-import { JiraUrlListItem, StorageKey, UrlListItem } from "../types/storage-types";
+import { JiraUrlListItem, StorageKey } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
 import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
+import { UrlListItem } from "../types/list-types";
 
 const createId = () => crypto.randomUUID();
 
@@ -28,7 +29,7 @@ export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: stri
 };
 
 
-type ParsedCompanyUrl = {
+export type ParsedCompanyUrl = {
   capturedUrl: string;
   region?: string;
   environment?: string;
@@ -39,15 +40,15 @@ export const parseCompanyUrl = (url: string): ParsedCompanyUrl | null => {
   const match = url.match(COMPANY_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseCompanyUrl] match", match);
-  return { 
+  return {
     capturedUrl: match[0],
-    region: match.groups?.region, 
-    environment: match.groups?.environment, 
-    route: match.groups?.route, 
+    region: match.groups?.region,
+    environment: match.groups?.environment,
+    route: match.groups?.route,
   };
 };
 
-type ParsedAGOUrl = {
+export type ParsedAGOUrl = {
   capturedUrl: string;
   region: string;
   environment: string;
@@ -60,13 +61,13 @@ export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
   const match = url.match(AGO_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseAGOUrl] match", match);
-  return { 
-    region: match.groups?.region || "", 
-    environment: match.groups?.environment || "", 
-    route: match.groups?.route || "", 
-    clientID: match.groups?.clientID || "", 
-    planID: match.groups?.planID || "", 
-    capturedUrl: match[0] 
+  return {
+    region: match.groups?.region || "",
+    environment: match.groups?.environment || "",
+    route: match.groups?.route || "",
+    clientID: match.groups?.clientID || "",
+    planID: match.groups?.planID || "",
+    capturedUrl: match[0]
   };
 };
 
@@ -125,9 +126,10 @@ export const evaluateMaxListLength = (urlList: UrlListItem[]) => {
 };
 
 /** Processes and saves visited URLs into storage lists */
-export const saveJiraUrl = async (url: string, jiraSprint: string) => {
+export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraSprint: string, jiraStatus: string; }) => {
+  const { url, jiraSprint, jiraTitle, jiraStatus } = props;
   if (!isJiraUrl(url)) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Not Jira URL", url, JIRA_URL_REGEX);
+    if (DEBUG_MODE) console.log("[saveJiraUrl] Not Jira URL", url, JIRA_URL_REGEX);
     return false;
   }
 
@@ -135,11 +137,12 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
   const { jiraUrlList } = await getFromStorage(storageKey);
   const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
-  const capturedUrl = parseJiraUrl(url)?.capturedUrl;
-  if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Captured:", capturedUrl);
+  const parsedJiraUrl = parseJiraUrl(url);
+  const { jiraCode, capturedUrl } = parsedJiraUrl;
+  if (DEBUG_MODE) console.log("[saveJiraUrl] Captured:", capturedUrl);
 
   if (!capturedUrl) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] URL Not Captured", url);
+    if (DEBUG_MODE) console.log("[saveJiraUrl] URL Not Captured", url);
     return false;
   }
 
@@ -148,31 +151,42 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
 
   let updatedUrlList = [];
   const existing = urlList.find((u) => u.url === capturedUrl);
+  const nowDate = new Date();
   if (existing) {
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Revisiting:", displayName);
-    existing.lastVisited = new Date().toISOString();
+    if (DEBUG_MODE) console.log("[saveJiraUrl] Revisiting:", displayName);
+    existing.lastVisited = nowDate.toISOString();
+    existing.lastVisitedMS = nowDate.getTime();
     if (!existing.preserveCustomName) existing.displayName = displayName;
     updatedUrlList = urlList;
   } else {
     urlList.push({
       id: createId(),
+      type: "jira",
+      jiraCode,
+      sprint: jiraSprint,
+      title: jiraTitle,
+      status: jiraStatus,
+      originalUrl: url,
       url: capturedUrl,
       displayName,
-      lastVisited: new Date().toISOString(),
-      favorite: false,
       preserveCustomName: false,
+      lastVisitedMS: nowDate.getTime(),
+      lastVisited: nowDate.toISOString(),
+      favorite: false,
     });
     updatedUrlList = evaluateMaxListLength(urlList);
-    if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] New Entry:", capturedUrl);
+    if (DEBUG_MODE) console.log("[saveJiraUrl] New Entry:", capturedUrl);
   }
 
   await saveToStorage({ [storageKey]: updatedUrlList });
-  if (DEBUG_MODE) console.log("[BACKGROUND][saveJiraUrl] Saved List", updatedUrlList.length);
+  if (DEBUG_MODE) console.log("[saveJiraUrl] Saved List", updatedUrlList.length);
   return true;
 };
 
 /** Save AGO URL to Storage List and update popup dropdowns */
-export const saveAGOUrl = async (url: string, agoClientName: string) => {
+export const saveAGOUrl = async (props: ParsedAGOUrl & { agoClientName: string, agoPlanName: string, clientFullName: string, clientLastName: string; }) => {
+  const { capturedUrl: url, agoClientName, region, environment, route, clientID, planID, agoPlanName, clientFullName, clientLastName } = props;
+
   if (!isAgoUrl(url)) {
     if (DEBUG_MODE) console.log("[saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
     return false;
@@ -194,18 +208,29 @@ export const saveAGOUrl = async (url: string, agoClientName: string) => {
   if (!displayName) return false;
 
   let updatedUrlList = [];
+  const nowDate = new Date();
   const existing = urlList.find((u) => u.url === capturedUrl);
   if (existing) {
     if (DEBUG_MODE) console.log("[saveAGOUrl] Revisiting:", displayName);
-    existing.lastVisited = new Date().toISOString();
+    existing.lastVisited = nowDate.toISOString();
+    existing.lastVisitedMS = nowDate.getTime();
     if (!existing.preserveCustomName && !existing.favorite) existing.displayName = displayName;
     updatedUrlList = urlList;
   } else {
     urlList.push({
       id: createId(),
       url: capturedUrl,
+      type: "ago",
+      region,
+      environment,
+      route,
+      clientFullName,
+      clientLastName,
       displayName,
-      lastVisited: new Date().toISOString(),
+      planName: agoPlanName,
+      originalUrl: url,
+      lastVisitedMS: nowDate.getTime(),
+      lastVisited: nowDate.toISOString(),
       favorite: false,
       preserveCustomName: false,
     });

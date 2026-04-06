@@ -14,15 +14,17 @@ import {
 
 import Dropdown from "./components/Dropdown";
 import Button from "./components/Button";
+import { ArrowDownToLineIcon, ArrowUpToLine, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon } from "lucide-react";
 
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import { createRoot } from "react-dom/client";
 import TableItem from "./components/TableItem";
-import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback, UrlListItem } from "./types/storage-types";
+import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "./types/storage-types";
 import { Button as HeroButton } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
 import { AGO_URL_REGEX } from "./constants/regex";
 import { isAgoUrl } from "./utils/url";
+import { UrlListItem } from "./types/list-types";
 
 type HeroButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HeroButton>["onPress"]>>[0];
 type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HeroButtonPressEvent;
@@ -354,10 +356,20 @@ const Popup = () => {
 				<Dropdown label="Route" options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
 			</div>
 			<div className="w-full grid grid-cols-3 gap-3">
-				<HeroButton className="w-full h-8 bg-primary text-white">Import</HeroButton>
-				<HeroButton className="w-full h-8 bg-primary text-white">Basic Plan</HeroButton>
-				<HeroButton className="w-full h-8 bg-primary text-white">Export</HeroButton>
+				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+					<ArrowUpToLineIcon className="size-4" />
+					Import
+				</HeroButton>
+				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+					<ArrowUpToLineIcon className="size-4" />
+					Basic Plan
+				</HeroButton>
+				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+					<ArrowDownToLineIcon className="size-4" />
+					Export
+				</HeroButton>
 			</div>
+			{/* TODO: Remove these section after migration */}
 			<div className="flex gap-x-2 justify-start w-full">
 				<Button label={"✎ Tab"} type={tabOn ? "primary" : "alternative-background"} onClick={handleTabToggle} />
 				<Button label={"☍ Link"} className={"min-w-[50%]"} onClick={handleLinkClick} />
@@ -374,24 +386,28 @@ const Popup = () => {
 					<Button label="⇩ Import" type="primary" loading={false} onClick={handleDynamicButtonClick} />
 				)}
 			</div>
-			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden">
+			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden relative">
 				{/* 35% Width Column */}
-				<div className="w-[35%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
-					<a
-						href={jiraLink}
-						target="_self"
-						onClick={(e) => openUrlTab(e, jiraLink)}
-						className="text-primary text-[14px] font-bold pl-3"
-					>
-						Jira
-					</a>
-					<div className="border-b-2 border-primary mb-2" />
+				<div className="w-[35%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar">
+					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
+						<a
+							href={jiraLink}
+							target="_self"
+							onClick={(e) => openUrlTab(e, jiraLink)}
+							className="text-primary text-[14px] font-bold pl-3"
+						>
+							Jira
+						</a>
+						<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
+							<CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
+						</span>
+					</div>
 					<div className="flex flex-col w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar p-0">
 						{jiraDisplayList.map((item, index) => (
 							<TableItem
 								key={index}
 								storageListKey="jiraUrlList"
-								{...item}
+								urlItem={item}
 								linkReady={item.id == latestJiraId}
 								className={index % 2 === 0 ? "bg-alternative-background" : ""}
 							/>
@@ -401,21 +417,25 @@ const Popup = () => {
 
 				{/* 65% Width Column */}
 				<div className="w-[65%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
-					<a
-						href={agoLink}
-						target="_self"
-						onClick={(e) => openUrlTab(e, agoLink)}
-						className="text-primary text-[14px] font-bold pl-3"
-					>
-						Adviser Go
-					</a>
-					<div className="border-b-2 border-primary mb-2" />
+					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
+						<a
+							href={agoLink}
+							target="_self"
+							onClick={(e) => openUrlTab(e, agoLink)}
+							className="text-primary text-[14px] font-bold pl-3"
+						>
+							Adviser Go
+						</a>
+						<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
+							<FilterIcon size={18} className="text-green-500 group-hover:text-white" />
+						</span>
+					</div>
 					<div className="flex flex-col w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar">
 						{agoDisplayList.map((item, index) => (
 							<TableItem
 								key={index}
 								storageListKey="agoUrlList"
-								{...item}
+								urlItem={item}
 								linkReady={item.id == latestAgoId}
 								className={index % 2 === 0 ? "bg-alternative-background" : ""}
 							/>

@@ -4,7 +4,9 @@
  * No defaults, but may be imported to initialize state. *
  *********************************************************/
 
-interface UrlListItem {
+export interface UrlListItem {
+	type: "jira" | "ago";
+	/**@deprecated use `url` instead */
 	id: string; //Deprecate if possible
 	url: string; //Unique use as identifier
 	originalUrl: string;
@@ -14,11 +16,14 @@ interface UrlListItem {
 
 	favorite?: boolean;
 	collectionName?: string; //Optional, filtered from root list at render
+	/**@deprecated use `lastVisitedMS` instead */
+	lastVisited: string;
 	lastVisitedMS: number; //Timestamp in milliseconds
-	additionalLinks?: { name: string; link: string }[];
+	additionalLinks?: { name: string; link: string; }[];
 }
 
 export interface JiraListItem extends UrlListItem {
+	type: "jira";
 	jiraCode: string;
 	title: string;
 	sprint: string;
@@ -27,6 +32,7 @@ export interface JiraListItem extends UrlListItem {
 }
 
 export interface AGOListItem extends UrlListItem {
+	type: "ago";
 	region: string;
 	environment: string;
 	route: string;

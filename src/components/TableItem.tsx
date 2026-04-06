@@ -1,24 +1,35 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
-import StarButton from "./StarButton";
 import { saveToStorage, getFromStorage } from "../controllers/storageController";
+import { StarIcon } from "lucide-react";
+import { Button } from "@heroui/react";
+import { AgoUrlListItem, JiraUrlListItem, StorageKey } from "../types/storage-types";
+
+type Props = {
+	urlItem: JiraUrlListItem | AgoUrlListItem;
+	storageListKey: StorageKey;
+	className?: string;
+	linkReady?: boolean;
+};
 
 export default function TableItem({
 	storageListKey,
-	displayName,
-	favorite,
 	className,
-	id,
-	url,
-	lastVisited,
-	preserveCustomName,
 	linkReady,
+	urlItem,
 	...props
-}) {
+}: Props & React.ComponentProps<"div">) {
+	const { displayName, favorite, id, url, lastVisited, preserveCustomName } = urlItem;
 	const [showEditMenu, setShowEditMenu] = useState(false);
 	const [displayNameValue, setDisplayNameValue] = useState(displayName);
 	const [urlValue, setUrlValue] = useState(url);
 	const tableItemRef = useRef(null);
+
+	const getUrlList = async () => {
+		let stored = await getFromStorage(storageListKey);
+		const urlList = Array.isArray(stored[storageListKey]) ? stored[storageListKey] : [];
+		return urlList as (JiraUrlListItem | AgoUrlListItem)[];
+	};
 
 	const onLabelClick = (e) => {
 		// if(showEditMenu) return;
@@ -34,9 +45,7 @@ export default function TableItem({
 	};
 
 	const onDeleteClick = async () => {
-		let storedList = (await getFromStorage(storageListKey)) ?? [];
-		const urlList = Array.isArray(storedList) ? storedList : [];
-
+		const urlList = await getUrlList();
 		const updatedUrls = urlList.filter((u) => u.id !== id);
 
 		await saveToStorage({ [storageListKey]: updatedUrls });
@@ -44,8 +53,7 @@ export default function TableItem({
 	};
 
 	const onSaveClick = async () => {
-		let storedList = (await getFromStorage(storageListKey)) ?? [];
-		const urlList = Array.isArray(storedList) ? storedList : [];
+		const urlList = await getUrlList();
 
 		const urlItem = urlList.find((u) => u.id === id);
 		urlItem.displayName = displayNameValue;
@@ -57,11 +65,11 @@ export default function TableItem({
 	};
 
 	const handleFavPress = async () => {
-		let storedList = (await getFromStorage(storageListKey)) ?? [];
-		const urlList = Array.isArray(storedList) ? storedList : [];
+		const urlList = await getUrlList();
 
 		//To trigger update: Find the index instead of modifying the reference directly
 		const index = urlList.findIndex((u) => u.id === id);
+		console.log({ urlList, index, id, storageListKey });
 		if (index > -1) {
 			urlList[index] = {
 				...urlList[index],
@@ -98,7 +106,18 @@ export default function TableItem({
 			}}
 			{...props}
 		>
-			<StarButton fill={favorite ? "#ffffff" : "none"} size={16} onClick={handleFavPress} />
+			<Button
+				isIconOnly
+				aria-label="Favorite"
+				className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent hover:bg-transparent`}
+				onClick={handleFavPress}
+			>
+				<StarIcon
+					className="size-4.5"
+					fill={favorite ? "#ffffff" : "none"}
+					stroke={favorite ? "#ffffff" : "#ffffff"}
+				/>
+			</Button>
 
 			{showEditMenu ? (
 				<div className="hide-scrollbar">
