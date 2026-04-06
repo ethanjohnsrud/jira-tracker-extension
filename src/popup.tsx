@@ -13,14 +13,13 @@ import {
 } from "./constants/constants";
 
 import Dropdown from "./components/Dropdown";
-import Button from "./components/Button";
-import { ArrowDownToLineIcon, ArrowUpToLine, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon } from "lucide-react";
+import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon } from "lucide-react";
 
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import { createRoot } from "react-dom/client";
 import TableItem from "./components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "./types/storage-types";
-import { Button as HeroButton } from "@heroui/react";
+import { Button as HeroButton, PressEvent } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
 import { AGO_URL_REGEX } from "./constants/regex";
 import { isAgoUrl } from "./utils/url";
@@ -119,7 +118,7 @@ const Popup = () => {
 
 	/* Handle route dropdown change */
 	const onRouteChange = async (route: string) => {
-		const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase());
+		const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase())!;
 		updateDropdowns({ route: validRoute });
 		if (DEBUG_MODE) console.log("[POPUP][onRouteChange] New route:", validRoute);
 		navigateTabOnChange({ ...dropdowns, route: validRoute });
@@ -127,7 +126,7 @@ const Popup = () => {
 
 	/* Handle region dropdown change */
 	const onRegionChange = async (region: string) => {
-		const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase());
+		const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase())!;
 		updateDropdowns({ region: validRegion });
 		if (DEBUG_MODE) console.log("[POPUP][onRegionChange] New region:", validRegion);
 		navigateTabOnChange({ ...dropdowns, region: validRegion });
@@ -135,7 +134,7 @@ const Popup = () => {
 
 	/* Handle environment dropdown change */
 	const onEnvironmentChange = async (environment: string) => {
-		const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase());
+		const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase())!;
 		updateDropdowns({ environment: validEnvironment });
 		if (DEBUG_MODE) console.log("[POPUP][onEnvironmentChange] New environment:", validEnvironment);
 		navigateTabOnChange({ ...dropdowns, environment: validEnvironment });
@@ -157,7 +156,7 @@ const Popup = () => {
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
 			if (newCacheState) {
-				if (environment.includes("localhost")) {
+				if (environment?.includes("localhost")) {
 					setCacheOn(true);
 					await saveToStorage({ cacheTabId: tab.id });
 					if (DEBUG_MODE) console.log("[POPUP][handleCacheClick] Cache polling started");
@@ -175,7 +174,7 @@ const Popup = () => {
 	};
 
 	//Alternative Manager for Cache Button
-	const handleDynamicButtonClick = async (event) => {
+	const handleDynamicButtonClick = async (event: PressEvent) => {
 		const matched = currentTabURL.match(AGO_URL_REGEX);
 
 		//Local Environment -> Auto Cache Button
@@ -190,7 +189,7 @@ const Popup = () => {
 
 			//Other webpage -> Import
 		} else {
-			const importRoute = ROUTES.find((r) => r.label === "Import");
+			const importRoute = ROUTES.find((r) => r.label === "Import")!;
 			if (DEBUG_MODE) console.log("[CONTENT][handleDynamicButtonClick] importRoute:", importRoute);
 			navigateTabOnChange({ ...dropdowns, route: importRoute });
 		}
@@ -268,8 +267,8 @@ const Popup = () => {
 	/* Fetch next timer from storage and compute seconds left */
 	const fetchNextTimer = async () => {
 		try {
-			const { nextTimerMS } = await getFromStorage("nextTimerMS");
 			const now = Date.now();
+			const { nextTimerMS = now } = await getFromStorage("nextTimerMS");
 			const msLeft = nextTimerMS - now;
 			const seconds = msLeft > 0 ? Math.ceil(msLeft / 1000) : 0;
 			setTimerSecondsLeft(seconds);
@@ -296,9 +295,11 @@ const Popup = () => {
 			};
 			startCountdown();
 		} else {
-			clearInterval(timerRef.current);
+			if (timerRef.current) clearInterval(timerRef.current);
 		}
-		return () => clearInterval(timerRef.current);
+		return () => {
+			if (timerRef.current) clearInterval(timerRef.current);
+		};
 	}, [cacheOn]);
 
 	/* Initialize popup state and storage listeners */
@@ -310,8 +311,8 @@ const Popup = () => {
 		};
 
 		const init = async () => {
-			const { debug, cacheTabId, tabOn, environment, region, route }
-				= await getFromStorage(["debug", "cacheTabId", "tabOn", "environment", "region", "route"]);
+			const stored = await getFromStorage(["debug", "cacheTabId", "tabOn", "environment", "region", "route"]);
+			const { debug, cacheTabId, tabOn, environment, region, route } = stored;
 
 			DEBUG_MODE = debug == true;
 			if (DEBUG_MODE) console.log("[POPUP][init] Debug mode enabled");
@@ -323,22 +324,18 @@ const Popup = () => {
 			setTabOn(tabOn === true || tabOn === "true");
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			setCacheOn(cacheTabId === tab.id);
-			setCurrentTabURL(tab.url);
+			if (tab.url) setCurrentTabURL(tab.url);
 
 			const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region || "").toLowerCase()) || REGIONS[0];
 
 			const validEnvironment =
 				ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment || "").toLowerCase()) || ENVIRONMENTS[1];
 
+			const sortedRoutes = [...ROUTES].sort((a, b) =>
+				Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
+			);
 			//Some have general regex; where could be more specific
-			const validRoute =
-				[...ROUTES]
-					.sort(
-						(a, b) =>
-							Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) -
-							Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
-					)
-					.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0];
+			const validRoute = !!route ? sortedRoutes.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0] : ROUTES[0];
 
 			setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
 			if (DEBUG_MODE) console.log("[POPUP][init] Dropdowns set:", validRegion, validEnvironment, validRoute);
@@ -370,7 +367,7 @@ const Popup = () => {
 				</HeroButton>
 			</div>
 			{/* TODO: Remove these section after migration */}
-			<div className="flex gap-x-2 justify-start w-full">
+			{/* <div className="flex gap-x-2 justify-start w-full">
 				<Button label={"✎ Tab"} type={tabOn ? "primary" : "alternative-background"} onClick={handleTabToggle} />
 				<Button label={"☍ Link"} className={"min-w-[50%]"} onClick={handleLinkClick} />
 				{currentTabURL.includes("localhost") ? (
@@ -385,10 +382,10 @@ const Popup = () => {
 				) : (
 					<Button label="⇩ Import" type="primary" loading={false} onClick={handleDynamicButtonClick} />
 				)}
-			</div>
-			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden relative">
-				{/* 35% Width Column */}
-				<div className="w-[35%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar">
+			</div> */}
+			<div className="flex justify-between w-full mt-2 gap-x-2 relative">
+				{/* 40% Width Column */}
+				<div className="w-[40%] h-full overflow-y-auto hide-scrollbar">
 					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
 						<a
 							href={jiraLink}
@@ -402,21 +399,21 @@ const Popup = () => {
 							<CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
 						</span>
 					</div>
-					<div className="flex flex-col w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar p-0">
+					<div className="flex flex-col gap-4 flex-1 h-full max-h-[400px] overflow-y-auto hide-scrollbar p-0">
 						{jiraDisplayList.map((item, index) => (
 							<TableItem
 								key={index}
 								storageListKey="jiraUrlList"
 								urlItem={item}
 								linkReady={item.id == latestJiraId}
-								className={index % 2 === 0 ? "bg-alternative-background" : ""}
+							// className={index % 2 === 0 ? "bg-alternative-background" : ""}
 							/>
 						))}
 					</div>
 				</div>
 
-				{/* 65% Width Column */}
-				<div className="w-[65%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
+				{/* 60% Width Column */}
+				<div className="flex-1 h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
 					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
 						<a
 							href={agoLink}
@@ -430,14 +427,14 @@ const Popup = () => {
 							<FilterIcon size={18} className="text-green-500 group-hover:text-white" />
 						</span>
 					</div>
-					<div className="flex flex-col w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar">
+					<div className="flex flex-col gap-2 w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar">
 						{agoDisplayList.map((item, index) => (
 							<TableItem
 								key={index}
 								storageListKey="agoUrlList"
 								urlItem={item}
 								linkReady={item.id == latestAgoId}
-								className={index % 2 === 0 ? "bg-alternative-background" : ""}
+							// className={index % 2 === 0 ? "bg-alternative-background" : ""}
 							/>
 						))}
 					</div>
@@ -447,5 +444,5 @@ const Popup = () => {
 	);
 };
 
-const root = createRoot(document.getElementById("react-target"));
+const root = createRoot(document.getElementById("react-target")!);
 root.render(<Popup />);

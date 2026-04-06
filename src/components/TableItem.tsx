@@ -4,6 +4,8 @@ import { saveToStorage, getFromStorage } from "../controllers/storageController"
 import { StarIcon } from "lucide-react";
 import { Button } from "@heroui/react";
 import { AgoUrlListItem, JiraUrlListItem, StorageKey } from "../types/storage-types";
+import { DEBUG_MODE } from "../utils/state";
+import { formatDistanceToNowStrict } from "date-fns";
 
 type Props = {
 	urlItem: JiraUrlListItem | AgoUrlListItem;
@@ -23,7 +25,15 @@ export default function TableItem({
 	const [showEditMenu, setShowEditMenu] = useState(false);
 	const [displayNameValue, setDisplayNameValue] = useState(displayName);
 	const [urlValue, setUrlValue] = useState(url);
-	const tableItemRef = useRef(null);
+	const tableItemRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (urlItem.type == 'jira') {
+			setDisplayNameValue(urlItem.title || urlItem.jiraCode);
+		} else if (urlItem.type == 'ago') {
+			//TODO: Add AGO display name logic
+		}
+	}, [urlItem]);
 
 	const getUrlList = async () => {
 		let stored = await getFromStorage(storageListKey);
@@ -31,7 +41,7 @@ export default function TableItem({
 		return urlList as (JiraUrlListItem | AgoUrlListItem)[];
 	};
 
-	const onLabelClick = (e) => {
+	const onLabelClick: React.MouseEventHandler<HTMLElement> = (e) => {
 		// if(showEditMenu) return;
 		setShowEditMenu(false);
 
@@ -56,6 +66,10 @@ export default function TableItem({
 		const urlList = await getUrlList();
 
 		const urlItem = urlList.find((u) => u.id === id);
+		if (!urlItem) {
+			if (DEBUG_MODE) console.log("[TableItem] URL Item not found", id);
+			return;
+		}
 		urlItem.displayName = displayNameValue;
 		urlItem.preserveCustomName = true;
 		urlItem.url = urlValue;
@@ -84,8 +98,8 @@ export default function TableItem({
 	useEffect(() => {
 		if (!showEditMenu) return;
 
-		const onOutsideClick = (e) => {
-			if (tableItemRef.current && !tableItemRef.current.contains(e.target)) {
+		const onOutsideClick = (e: MouseEvent) => {
+			if (tableItemRef.current && !tableItemRef.current.contains(e.target as Node)) {
 				setShowEditMenu(false);
 			}
 		};
@@ -99,26 +113,13 @@ export default function TableItem({
 	return (
 		<div
 			ref={tableItemRef}
-			className={`flex justify-start gap-x-2 w-full items-center p-2 ${className} rounded-md`}
+			className={`flex justify-start gap-x-2 w-full items-center ${className} rounded-md`}
 			onContextMenu={(e) => {
 				e.preventDefault();
 				setShowEditMenu((p) => !p);
 			}}
 			{...props}
 		>
-			<Button
-				isIconOnly
-				aria-label="Favorite"
-				className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent hover:bg-transparent`}
-				onClick={handleFavPress}
-			>
-				<StarIcon
-					className="size-4.5"
-					fill={favorite ? "#ffffff" : "none"}
-					stroke={favorite ? "#ffffff" : "#ffffff"}
-				/>
-			</Button>
-
 			{showEditMenu ? (
 				<div className="hide-scrollbar">
 					{/* Row 1: label input */}
@@ -170,12 +171,53 @@ export default function TableItem({
 					</div>
 				</div>
 			) : (
-				<div
-					className={`flex-1 text-[14px] whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer
-              ${linkReady ? "text-primary" : "text-white"}`}
-					onClick={onLabelClick}
-				>
-					{displayName}
+				<div className="w-full flex flex-col">
+					<div className="flex items-center gap-2">
+						<Button
+							isIconOnly
+							aria-label="Favorite"
+							className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent hover:bg-transparent`}
+							onClick={handleFavPress}
+						>
+							<StarIcon
+								className="size-4.5"
+								fill={favorite ? "#ffffff" : "none"}
+								stroke={favorite ? "#ffffff" : "#ffffff"}
+							/>
+						</Button>
+						<div
+							className={`text-[14px] flex-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer border border-gray-500 py-2 px-1 ${linkReady ? "text-primary" : "text-white"}`}
+							onClick={onLabelClick}
+						>
+							{displayName}
+						</div>
+					</div>
+					<div className="flex items-center gap-2 mt-1">
+						<div className="w-4"></div>
+						{urlItem.type == 'jira' ? (
+							<div className="w-full flex justify-between gap-2 flex-wrap">
+								<span className="text-slate-300">{urlItem.jiraCode}</span>
+								<span className="text-slate-300">{urlItem.sprint}</span>
+								{urlItem.targetDateMS && (
+									<span className="text-slate-300">
+										{formatDistanceToNowStrict(urlItem.targetDateMS)}
+									</span>
+								)}
+							</div>
+						) : urlItem.type == 'ago' && (
+							<div className="w-full flex justify-between gap-2 flex-wrap">
+								{/* Region-Environment */}
+								<span className="text-slate-300">
+									<span className="uppercase">{urlItem.region}</span>
+									-
+									<span className="capitalize">{urlItem.environment}</span>
+								</span>
+								{urlItem.jiraCode && (
+									<span className="text-slate-300">{urlItem.jiraCode}</span>
+								)}
+							</div>
+						)}
+					</div>
 				</div>
 			)}
 		</div>

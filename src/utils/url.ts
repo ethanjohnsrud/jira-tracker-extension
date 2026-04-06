@@ -72,7 +72,7 @@ export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
 };
 
 /** Derives display name for JIRA and AGO URLs */
-export const getListEntryDisplayName = (url: string, jiraSprint: string | null, agoClientName: string | null) => {
+export const getListEntryDisplayName = (url: string, jiraSprint: string | null, agoClientName: string | null): string | null => {
   if (isJiraUrl(url)) {
     const parsedJiraUrl = parseJiraUrl(url)!;
     const name = parsedJiraUrl.jiraCode
@@ -110,12 +110,12 @@ export const getListEntryDisplayName = (url: string, jiraSprint: string | null, 
     return display;
   } else {
     if (DEBUG_MODE) console.error("[BACKGROUND][getListEntryDisplayName] No regex match", url);
-    return false;
+    return null;
   }
 };
 
 /** Trims URL list to MAX_LIST_LENGTH removing oldest non-favorites */
-export const evaluateMaxListLength = (urlList: UrlListItem[]) => {
+export const evaluateMaxListLength = <T extends UrlListItem>(urlList: T[]): T[] => {
   if (urlList.length > MAX_LIST_LENGTH) {
     urlList.sort((a, b) => new Date(a.lastVisited).getTime() - new Date(b.lastVisited).getTime());
     const idx = urlList.findIndex((u) => u.favorite === false);
@@ -138,6 +138,10 @@ export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraS
   const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
   const parsedJiraUrl = parseJiraUrl(url);
+  if (!parsedJiraUrl) {
+    if (DEBUG_MODE) console.log("[saveJiraUrl] URL Not Captured", url);
+    return false;
+  }
   const { jiraCode, capturedUrl } = parsedJiraUrl;
   if (DEBUG_MODE) console.log("[saveJiraUrl] Captured:", capturedUrl);
 
@@ -146,10 +150,10 @@ export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraS
     return false;
   }
 
-  const displayName = getListEntryDisplayName(url, jiraSprint, null);
+  const displayName = jiraTitle || getListEntryDisplayName(url, jiraSprint, null);
   if (!displayName) return false;
 
-  let updatedUrlList = [];
+  let updatedUrlList: JiraUrlListItem[] = [];
   const existing = urlList.find((u) => u.url === capturedUrl);
   const nowDate = new Date();
   if (existing) {
@@ -178,7 +182,7 @@ export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraS
     if (DEBUG_MODE) console.log("[saveJiraUrl] New Entry:", capturedUrl);
   }
 
-  await saveToStorage({ [storageKey]: updatedUrlList });
+  await saveToStorage({ jiraUrlList: updatedUrlList });
   if (DEBUG_MODE) console.log("[saveJiraUrl] Saved List", updatedUrlList.length);
   return true;
 };
@@ -204,7 +208,14 @@ export const saveAGOUrl = async (props: ParsedAGOUrl & { agoClientName: string, 
     return false;
   }
 
-  const displayName = getListEntryDisplayName(url, null, agoClientName);
+  let displayName: string | null = null;
+  if (agoPlanName.length > 2 && agoPlanName.toLowerCase() !== 'base plan') {
+    displayName = agoPlanName;
+  } else if (clientLastName.length > 2) {
+    displayName = clientLastName;
+  } else {
+    displayName = getListEntryDisplayName(url, null, agoClientName);
+  }
   if (!displayName) return false;
 
   let updatedUrlList = [];

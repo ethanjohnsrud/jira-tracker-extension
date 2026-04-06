@@ -128,8 +128,8 @@ body {
 	transition:
 		background 0.3s,
 		color 0.3s;
-	min-width: 500px;
-	height: 540px;
+	min-width: 650px;
+	height: 550px;
 	overflow: hidden;
 	border: none;
 
