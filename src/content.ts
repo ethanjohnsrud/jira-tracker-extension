@@ -9,7 +9,7 @@ import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cac
 import { DEBUG_MODE, stateInitPromise } from "./utils/state";
 import { sendMessage } from "./controllers/messageController";
 import { IErrorMsgResponse } from "./types/message-types";
-import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl } from "./utils/url";
+import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl, saveAGOUrl, saveJiraUrl } from "./utils/url";
 import { AGO_URL_REGEX } from "./constants/regex";
 
 /* **********************************************************
@@ -31,7 +31,9 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 		]);
 		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_JIRA_URL", { url, jiraTitle, jiraSprint, jiraStatus });
 
-		await sendMessage({ command: "SAVE_JIRA_URL", url, jiraTitle, jiraSprint, jiraStatus });
+		const saved = await saveJiraUrl({ url, jiraTitle, jiraSprint, jiraStatus });
+		if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Saved JIRA URL", saved);
+		// await sendMessage({ command: "SAVE_JIRA_URL", url, jiraTitle, jiraSprint, jiraStatus });
 	} else if (isCompanyUrl(url)) {
 		//Dropdown storage (for popup)
 		const parsedCompanyUrl = parseCompanyUrl(url);
@@ -52,15 +54,14 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 			]);
 			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Sending SAVE_AGO_URL", { url, clientFullName, clientLastName, agoPlanName, ...parsedAgoUrl });
 
-			await sendMessage({
-				command: "SAVE_AGO_URL",
-				url,
+			const saved = await saveAGOUrl({
 				clientFullName,
 				clientLastName,
 				agoClientName: clientFullName,
 				agoPlanName,
 				...parsedAgoUrl,
 			});
+			if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Saved AGO URL", saved);
 		}
 
 		//Update

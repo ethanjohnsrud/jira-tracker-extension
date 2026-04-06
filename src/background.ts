@@ -1,7 +1,6 @@
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
 import { AGO_HEADER_HYPERLINK_DEFAULT, JIRA_HEADER_HYPERLINK_DEFAULT } from "./constants/constants";
 import { StorageKey, StorageSchema } from "./types/storage-types";
-import { saveAGOUrl, saveJiraUrl } from "./utils/url";
 import { DEBUG_MODE } from "./utils/state";
 import { MessageHandlers, OnMessageListener } from "./types/message-types";
 
@@ -28,32 +27,10 @@ const msgHandlers: MessageHandlers = {
 		}
 	},
 	SAVE_JIRA_URL: async (request, sender, sendResponse) => {
-		const savedJira = await saveJiraUrl(request.url, request.jiraSprint);
-		if (savedJira) sendResponse({ ok: true, message: "JIRA URL saved" });
-		else {
-			if (DEBUG_MODE)
-				console.warn(
-					"[BACKGROUND][onMessage] SAVE_JIRA_URL: Failed to save JIRA URL",
-					request.url,
-					"jiraSprint:",
-					request.jiraSprint
-				);
-			sendResponse({ ok: false, error: "Failed: SAVE_JIRA_URL" });
-		}
+		sendResponse({ ok: false, error: "saveJiraUrl function can be used directly from content script" });
 	},
 	SAVE_AGO_URL: async (request, sender, sendResponse) => {
-		const savedAgo = await saveAGOUrl(request.url, request.agoClientName);
-		if (savedAgo) sendResponse({ ok: true, message: "AGO URL saved" });
-		else {
-			if (DEBUG_MODE)
-				console.warn(
-					"[BACKGROUND][onMessage] SAVE_AGO_URL: Failed to save AGO URL",
-					request.url,
-					"agoClientName:",
-					request.agoClientName
-				);
-			sendResponse({ ok: false, error: "Failed: SAVE_AGO_URL" });
-		}
+		sendResponse({ ok: false, error: "saveAGOUrl function can be used directly from content script" });
 	},
 };
 

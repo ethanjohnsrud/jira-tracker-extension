@@ -4,17 +4,19 @@
  * Later we will refactor as we go.
  */
 
-export interface UrlListItem {
-  id: string;
-  url: string;
-  displayName: string;
-  lastVisited: string;
-  favorite: boolean;
-  preserveCustomName: boolean;
-}
+import { AGOListItem, JiraListItem } from "./list-types";
 
-export interface JiraUrlListItem extends UrlListItem { }
-export interface AgoUrlListItem extends UrlListItem { }
+// export interface UrlListItem {
+//   id: string;
+//   url: string;
+//   displayName: string;
+//   lastVisited: string;
+//   favorite: boolean;
+//   preserveCustomName: boolean;
+// }
+
+export type JiraUrlListItem = JiraListItem;
+export type AgoUrlListItem = AGOListItem;
 
 export interface StorageSchema {
   jiraUrlList: JiraUrlListItem[];
