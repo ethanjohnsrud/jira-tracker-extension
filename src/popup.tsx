@@ -1,3 +1,4 @@
+import type { ComponentProps, MouseEvent } from "react";
 import React, { useState, useEffect, useRef } from "react";
 import "./index.css";
 import REGIONS from "./constants/regions";
@@ -18,10 +19,13 @@ import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/
 import { createRoot } from "react-dom/client";
 import TableItem from "./components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback, UrlListItem } from "./types/storage-types";
-import { PressEvent } from "@heroui/react";
+import { Button as HeroButton } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
 import { AGO_URL_REGEX } from "./constants/regex";
 import { isAgoUrl } from "./utils/url";
+
+type HeroButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HeroButton>["onPress"]>>[0];
+type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HeroButtonPressEvent;
 
 interface DropdownSelections {
 	region: RegionSelection;
@@ -69,7 +73,7 @@ const Popup = () => {
 	}, []);
 
 	/* Open URL in new or current tab */
-	const openUrlTab = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent> | PressEvent, url: string) => {
+	const openUrlTab = (event: NavigationEvent, url: string) => {
 		// event.preventDefault();
 
 		// Check if Ctrl (Windows/Linux) or Cmd (Mac) key is held down
@@ -85,7 +89,7 @@ const Popup = () => {
 	};
 
 	/* Navigate based on dropdown config */
-	const navigateTabOnChange = (event: PressEvent, config: DropdownSelections) => {
+	const navigateTabOnChange = (config: DropdownSelections) => {
 		let regionValue = config.region.value.toUpperCase();
 		let environmentValue = config.environment.value.toLowerCase();
 		const routeValue = config.route.value;
@@ -105,31 +109,34 @@ const Popup = () => {
 
 		const url = `https://${domain}/${routeValue}`;
 		if (DEBUG_MODE) console.log("[POPUP][navigateTabOnChange] Navigating to:", url, config);
-		return openUrlTab(event, url);
+		return chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+			chrome.tabs.update(tabs[0].id, { url });
+			if (DEBUG_MODE) console.log("[POPUP][navigateTabOnChange] Updated tab:", url);
+		});
 	};
 
 	/* Handle route dropdown change */
-	const onRouteChange = async (event: PressEvent, route: string) => {
+	const onRouteChange = async (route: string) => {
 		const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase());
 		updateDropdowns({ route: validRoute });
 		if (DEBUG_MODE) console.log("[POPUP][onRouteChange] New route:", validRoute);
-		navigateTabOnChange(event, { ...dropdowns, route: validRoute });
+		navigateTabOnChange({ ...dropdowns, route: validRoute });
 	};
 
 	/* Handle region dropdown change */
-	const onRegionChange = async (event: PressEvent, region: string) => {
+	const onRegionChange = async (region: string) => {
 		const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase());
 		updateDropdowns({ region: validRegion });
 		if (DEBUG_MODE) console.log("[POPUP][onRegionChange] New region:", validRegion);
-		navigateTabOnChange(event, { ...dropdowns, region: validRegion });
+		navigateTabOnChange({ ...dropdowns, region: validRegion });
 	};
 
 	/* Handle environment dropdown change */
-	const onEnvironmentChange = async (event: PressEvent, environment: string) => {
+	const onEnvironmentChange = async (environment: string) => {
 		const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase());
 		updateDropdowns({ environment: validEnvironment });
 		if (DEBUG_MODE) console.log("[POPUP][onEnvironmentChange] New environment:", validEnvironment);
-		navigateTabOnChange(event, { ...dropdowns, environment: validEnvironment });
+		navigateTabOnChange({ ...dropdowns, environment: validEnvironment });
 	};
 
 	/* Toggle tab linking feature */
@@ -183,7 +190,7 @@ const Popup = () => {
 		} else {
 			const importRoute = ROUTES.find((r) => r.label === "Import");
 			if (DEBUG_MODE) console.log("[CONTENT][handleDynamicButtonClick] importRoute:", importRoute);
-			navigateTabOnChange(event, { ...dropdowns, route: importRoute });
+			navigateTabOnChange({ ...dropdowns, route: importRoute });
 		}
 	};
 
@@ -340,11 +347,16 @@ const Popup = () => {
 	}, []);
 
 	return (
-		<div className="w-full h-full flex flex-col items-center ">
-			<div className="w-full h-4 flex justify-center items-center py-3 gap-x-2 mt-2 mb-4">
-				<Dropdown options={REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
-				<Dropdown options={ENVIRONMENTS} onChange={onEnvironmentChange} value={dropdowns.environment.value} />
-				<Dropdown options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
+		<div className="w-full h-full flex flex-col items-center space-y-4">
+			<div className="w-full grid grid-cols-3 gap-x-2 mt-4">
+				<Dropdown label="Region" options={REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
+				<Dropdown label="Environment" options={ENVIRONMENTS} onChange={onEnvironmentChange} value={dropdowns.environment.value} />
+				<Dropdown label="Route" options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
+			</div>
+			<div className="w-full grid grid-cols-3 gap-3">
+				<HeroButton className="w-full h-8 bg-primary text-white">Import</HeroButton>
+				<HeroButton className="w-full h-8 bg-primary text-white">Basic Plan</HeroButton>
+				<HeroButton className="w-full h-8 bg-primary text-white">Export</HeroButton>
 			</div>
 			<div className="flex gap-x-2 justify-start w-full">
 				<Button label={"✎ Tab"} type={tabOn ? "primary" : "alternative-background"} onClick={handleTabToggle} />
@@ -364,7 +376,7 @@ const Popup = () => {
 			</div>
 			<div className="flex justify-between w-full mt-2 gap-x-2 overflow-hidden">
 				{/* 35% Width Column */}
-				<div className="w-[35%] h-full" id="scrollable">
+				<div className="w-[35%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
 					<a
 						href={jiraLink}
 						target="_self"
@@ -388,7 +400,7 @@ const Popup = () => {
 				</div>
 
 				{/* 65% Width Column */}
-				<div className="w-[65%] h-full" id="scrollable">
+				<div className="w-[65%] h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
 					<a
 						href={agoLink}
 						target="_self"

@@ -1,9 +1,6 @@
-const { heroui } = require("@heroui/react");
-
 module.exports = {
 	content: [
 		"./src/**/*.{js,jsx,ts,tsx,html}", // Ensures Tailwind scans all files
-		"./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
 	],
 	theme: {
 		extend: {
@@ -18,5 +15,4 @@ module.exports = {
 		},
 	},
 	darkMode: "class",
-	plugins: [heroui()],
 };

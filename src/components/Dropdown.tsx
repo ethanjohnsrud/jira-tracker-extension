@@ -1,48 +1,54 @@
 import React from "react";
-import {
-	Dropdown as HeroDropdown,
-	DropdownTrigger,
-	DropdownMenu,
-	DropdownItem
-} from "@heroui/dropdown";
-import { PressEvent } from "@heroui/react";
+import { Button, Dropdown as HeroDropdown, Label } from "@heroui/react";
 
 interface DropdownProps {
-	onChange: (event: PressEvent, value: string) => void;
+	onChange: (value: string) => void;
 	value: string;
-	options: { label: string; value: string }[];
+	options: { label: string; value: string; }[];
+	label?: string;
 }
 
-export default function Dropdown({ onChange, value, options }: DropdownProps) {
+export default function Dropdown({ onChange, value, options, label }: DropdownProps) {
+	const selectedOption = options.find((option) => option?.value === value) ?? options[0];
+
 	return (
 		<HeroDropdown className="w-full border border-primary rounded-md shadow-sm bg-background">
-			<DropdownTrigger className="w-full outline-none focus:outline-none border-[#7bbd4a] hover:bg-[#A3E063] transition duration-300 ease-in-out">
-				<button className="w-full flex items-center justify-between border border-[#7bbd4a] text-white py-1 px-2 rounded-md text-[14px] bg-alternative-background hover:bg-[#7bbd4a] transition duration-300 ease-in-out">
-					<span className="text-center w-full">
-						{options.find((o) => o?.value === value)?.label || options?.[0].label}
+			<HeroDropdown.Trigger className="w-full outline-none focus:outline-none">
+				<div className="flex w-full flex-col border-collapse">
+					{label && <label className="py-1 px-2 border border-[#7bbd4a] border-b-0 text-white text-center">{label}</label>}
+					<span className="w-full flex items-center justify-between border border-[#7bbd4a] rounded-none text-white py-1 px-2 text-[14px] min-w-0 bg-alternative-background hover:bg-[#7bbd4a] transition duration-300 ease-in-out">
+						<span className="text-center w-full">
+							{selectedOption?.label}
+						</span>
+						<svg
+							className="w-4 h-4 ml-2"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+						</svg>
 					</span>
-					<svg
-						className="w-4 h-4 ml-2"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-					</svg>
-				</button>
-			</DropdownTrigger>
-			<DropdownMenu className="mt-2 rounded-md shadow-lg w-full max-h-60 overflow-y-auto overflow-x-hidden hide-scrollbar">
+				</div>
+			</HeroDropdown.Trigger>
+			<HeroDropdown.Popover className="w-[var(--trigger-width)]">
+				<HeroDropdown.Menu
+					className="mt-2 rounded-md shadow-lg w-full max-h-60 overflow-y-auto overflow-x-hidden hide-scrollbar"
+					onAction={(key) => onChange(String(key))}
+				>
 				{options.map((option) => (
-					<DropdownItem
+					<HeroDropdown.Item
 						key={option.value}
-						onPress={(e) => onChange(e, option.value)}
+						id={option.value}
+						textValue={option.label}
 						className="transition duration-300 ease-in-out data-[hover=true]:!bg-[#7bbd4a] data-[hover=true]:!text-white"
 					>
-						{option.label}
-					</DropdownItem>
+						<Label>{option.label}</Label>
+					</HeroDropdown.Item>
 				))}
-			</DropdownMenu>
+				</HeroDropdown.Menu>
+			</HeroDropdown.Popover>
 		</HeroDropdown>
 	);
 }

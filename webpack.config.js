@@ -44,7 +44,7 @@ module.exports = {
 						loader: "postcss-loader",
 						options: {
 							postcssOptions: {
-								plugins: ["tailwindcss", "autoprefixer"],
+								plugins: ["@tailwindcss/postcss", "autoprefixer"],
 							},
 						},
 					},
@@ -59,6 +59,7 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: "./src/popup.html",
 			filename: "popup.html",
+			chunks: ["popup"],
 		}),
 		new CopyPlugin({
 			patterns: [{ from: "public" }, { from: "src/assets/", to: "assets" }],

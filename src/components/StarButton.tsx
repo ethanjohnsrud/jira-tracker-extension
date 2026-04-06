@@ -11,14 +11,13 @@ interface StarButtonProps {
 
 export default function StarButton({ fill = "currentColor", size, height, width, ...props }: StarButtonProps) {
 	return (
-		<Button isIconOnly aria-label="Favorite" className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent`}>
+		<Button isIconOnly aria-label="Favorite" className={`p-0 m-0 min-w-4 w-4 h-4 bg-transparent`} {...props}>
 			<svg
 				fill={fill ? fill : "none"}
 				height={size || height || 24}
 				viewBox="0 0 24 24"
 				width={size || width || 24}
 				xmlns="http://www.w3.org/2000/svg"
-				{...props}
 			>
 				<path
 					fill={fill}

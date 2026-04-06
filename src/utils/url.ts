@@ -1,10 +1,11 @@
-import { v4 as uuidv4 } from "uuid";
 import { getFromStorage, saveToStorage } from "../controllers/storageController";
 import { MAX_LIST_LENGTH } from "../constants/constants";
 import { JiraUrlListItem, StorageKey, UrlListItem } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
 import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
+
+const createId = () => crypto.randomUUID();
 
 export const isJiraUrl = (url: string): boolean => {
   return JIRA_URL_REGEX.test(url);
@@ -154,7 +155,7 @@ export const saveJiraUrl = async (url: string, jiraSprint: string) => {
     updatedUrlList = urlList;
   } else {
     urlList.push({
-      id: uuidv4(),
+      id: createId(),
       url: capturedUrl,
       displayName,
       lastVisited: new Date().toISOString(),
@@ -201,7 +202,7 @@ export const saveAGOUrl = async (url: string, agoClientName: string) => {
     updatedUrlList = urlList;
   } else {
     urlList.push({
-      id: uuidv4(),
+      id: createId(),
       url: capturedUrl,
       displayName,
       lastVisited: new Date().toISOString(),
