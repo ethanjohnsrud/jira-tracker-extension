@@ -6,6 +6,7 @@ import { Button } from "@heroui/react";
 import { AgoUrlListItem, JiraUrlListItem, StorageKey } from "../types/storage-types";
 import { DEBUG_MODE } from "../utils/state";
 import { formatDistanceToNowStrict } from "date-fns";
+import { URLType } from "../types/list-types";
 
 type Props = {
 	urlItem: JiraUrlListItem | AgoUrlListItem;
@@ -28,9 +29,9 @@ export default function TableItem({
 	const tableItemRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (urlItem.type == 'jira') {
+		if (urlItem.type == URLType.JIRA) {
 			setDisplayNameValue(urlItem.title || urlItem.jiraCode);
-		} else if (urlItem.type == 'ago') {
+		} else if (urlItem.type == URLType.AGO) {
 			//TODO: Add AGO display name logic
 		}
 	}, [urlItem]);
@@ -194,7 +195,7 @@ export default function TableItem({
 					</div>
 					<div className="flex items-center gap-2 mt-1">
 						<div className="w-4"></div>
-						{urlItem.type == 'jira' ? (
+						{urlItem.type == URLType.JIRA ? (
 							<div className="w-full flex justify-between gap-2 flex-wrap">
 								<span className="text-slate-300">{urlItem.jiraCode}</span>
 								<span className="text-slate-300">{urlItem.sprint}</span>
@@ -204,7 +205,7 @@ export default function TableItem({
 									</span>
 								)}
 							</div>
-						) : urlItem.type == 'ago' && (
+						) : urlItem.type == URLType.AGO && (
 							<div className="w-full flex justify-between gap-2 flex-wrap">
 								{/* Region-Environment */}
 								<span className="text-slate-300">

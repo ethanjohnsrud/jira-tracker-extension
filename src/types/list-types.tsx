@@ -4,8 +4,13 @@
  * No defaults, but may be imported to initialize state. *
  *********************************************************/
 
+export enum URLType {
+	JIRA = "JIRA",
+	AGO = "AGO",
+}
+
 export interface UrlListItem {
-	type: "jira" | "ago";
+	type: URLType.JIRA | URLType.AGO;
 	/**@deprecated use `url` instead */
 	id: string; //Deprecate if possible
 	url: string; //Unique use as identifier
@@ -23,7 +28,7 @@ export interface UrlListItem {
 }
 
 export interface JiraListItem extends UrlListItem {
-	type: "jira";
+	type: URLType.JIRA;
 	jiraCode: string;
 	title: string;
 	sprint: string;
@@ -32,7 +37,7 @@ export interface JiraListItem extends UrlListItem {
 }
 
 export interface AGOListItem extends UrlListItem {
-	type: "ago";
+	type: URLType.AGO;
 	region: string;
 	environment: string;
 	route: string;

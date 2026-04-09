@@ -4,7 +4,7 @@ import { JiraUrlListItem, StorageKey } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
 import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
-import { UrlListItem } from "../types/list-types";
+import { UrlListItem, URLType } from "../types/list-types";
 
 const createId = () => crypto.randomUUID();
 
@@ -165,7 +165,7 @@ export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraS
   } else {
     urlList.push({
       id: createId(),
-      type: "jira",
+      type: URLType.JIRA,
       jiraCode,
       sprint: jiraSprint,
       title: jiraTitle,
@@ -231,7 +231,7 @@ export const saveAGOUrl = async (props: ParsedAGOUrl & { agoClientName: string, 
     urlList.push({
       id: createId(),
       url: capturedUrl,
-      type: "ago",
+      type: URLType.AGO,
       region,
       environment,
       route,
