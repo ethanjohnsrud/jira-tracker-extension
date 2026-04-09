@@ -1,29 +1,27 @@
 import type { ComponentProps, MouseEvent } from "react";
 import React, { useState, useEffect, useRef } from "react";
-import "./index.css";
-import REGIONS from "./constants/regions";
-import ENVIRONMENTS from "./constants/environments";
-import ROUTES from "./constants/routes";
+import REGIONS from "@/constants/regions";
+import ENVIRONMENTS from "@/constants/environments";
+import ROUTES from "@/constants/routes";
 import {
 	ROUTE_DEPRIORITIZED_LABELS,
 	AGO_HEADER_HYPERLINK_DEFAULT,
 	JIRA_HEADER_HYPERLINK_DEFAULT,
 	UK_HOSTED_TEST_REGIONS,
 	QA_TEST_REGIONS,
-} from "./constants/constants";
+} from "@/constants/constants";
 
-import Dropdown from "./components/Dropdown";
+import Dropdown from "@/components/Dropdown";
 import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon } from "lucide-react";
 
-import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
-import { createRoot } from "react-dom/client";
-import TableItem from "./components/TableItem";
-import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "./types/storage-types";
+import { saveToStorage, removeFromStorage, getFromStorage } from "@/controllers/storageController";
+import TableItem from "@/components/TableItem";
+import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
 import { Button as HeroButton, PressEvent } from "@heroui/react";
-import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "./types/dropdown-types";
-import { AGO_URL_REGEX } from "./constants/regex";
-import { isAgoUrl } from "./utils/url";
-import { UrlListItem } from "./types/list-types";
+import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
+import { AGO_URL_REGEX } from "@/constants/regex";
+import { isAgoUrl } from "@/utils/url";
+import { UrlListItem } from "@/types/list-types";
 
 type HeroButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HeroButton>["onPress"]>>[0];
 type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HeroButtonPressEvent;
@@ -444,5 +442,4 @@ const Popup = () => {
 	);
 };
 
-const root = createRoot(document.getElementById("react-target")!);
-root.render(<Popup />);
+export default Popup;

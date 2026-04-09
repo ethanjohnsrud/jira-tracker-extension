@@ -40,6 +40,7 @@ export default [
 			...reactPlugin.configs.flat.recommended.rules,
 			...reactPlugin.configs.flat["jsx-runtime"].rules,
 			"no-unused-vars": "warn",
+			"@typescript-eslint/no-unused-vars": "warn",
 			"react-hooks/rules-of-hooks": "error",
 			"react-hooks/exhaustive-deps": "warn",
 			"react/prop-types": "off",

@@ -1,21 +1,7 @@
 {
-	"compilerOptions": {
-		"target": "ES2022",
-		"lib": ["DOM", "DOM.Iterable", "ES2022"],
-		"strict": true,
-		"allowJs": false,
-		"checkJs": false,
-		"jsx": "react-jsx",
-		"module": "ES2022",
-		"moduleResolution": "Bundler",
-		"resolveJsonModule": true,
-		"allowSyntheticDefaultImports": true,
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"noEmit": true,
-		"skipLibCheck": true,
-		"types": ["chrome", "react", "react-dom"]
-	},
-	"include": ["src/**/*", "webpack*.js", "postcss.config.js", "tailwind.config.js"],
-	"exclude": ["dist", "node_modules"]
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "files": []
 }
