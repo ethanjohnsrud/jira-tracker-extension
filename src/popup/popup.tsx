@@ -1,5 +1,5 @@
 import type { ComponentProps, MouseEvent } from "react";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import REGIONS from "@/constants/regions";
 import ENVIRONMENTS from "@/constants/environments";
 import ROUTES from "@/constants/routes";
@@ -12,7 +12,7 @@ import {
 } from "@/constants/constants";
 
 import Dropdown from "@/components/Dropdown";
-import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon } from "lucide-react";
+import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon, LinkIcon } from "lucide-react";
 
 import { saveToStorage, removeFromStorage, getFromStorage } from "@/controllers/storageController";
 import TableItem from "@/components/TableItem";
@@ -198,12 +198,12 @@ const Popup = () => {
 		try {
 			const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage(["jiraUrlList", "agoUrlList"]);
 			const latestJira = jiraUrlList.reduce(
-				(latest, current) => (new Date(current.lastVisited) > new Date(latest.lastVisited) ? current : latest),
+				(latest, current) => current.lastVisitedMS > latest.lastVisitedMS ? current : latest,
 				jiraUrlList[0]
 			);
 
 			const latestAgo = agoUrlList.reduce(
-				(latest, current) => (new Date(current.lastVisited) > new Date(latest.lastVisited) ? current : latest),
+				(latest, current) => current.lastVisitedMS > latest.lastVisitedMS ? current : latest,
 				agoUrlList[0]
 			);
 			if (!latestJira || !latestAgo) {
@@ -214,6 +214,12 @@ const Popup = () => {
 
 			latestAgo.displayName = `${latestJira.displayName} | ${latestAgo.displayName}`;
 			latestAgo.preserveCustomName = true;
+			latestAgo.jiraCode = latestJira.jiraCode;
+			latestAgo.additionalLinks = latestJira.additionalLinks || [];
+			const existingLink = latestAgo.additionalLinks.find((link) => link.link === latestJira.url);
+			if (!existingLink) {
+				latestAgo.additionalLinks.push({ link: latestJira.url, name: latestJira.jiraCode });
+			}
 			await saveToStorage({ agoUrlList });
 
 			if (DEBUG_MODE) console.log("[POPUP][handleLinkClick] Linked:", latestAgo.displayName);
@@ -384,18 +390,23 @@ const Popup = () => {
 			<div className="flex justify-between w-full mt-2 gap-x-2 relative">
 				{/* 40% Width Column */}
 				<div className="w-[40%] h-full overflow-y-auto hide-scrollbar">
-					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
-						<a
-							href={jiraLink}
-							target="_self"
-							onClick={(e) => openUrlTab(e, jiraLink)}
-							className="text-primary text-[14px] font-bold pl-3"
-						>
-							Jira
-						</a>
-						<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
-							<CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
-						</span>
+					<div className="flex items-center gap-1">
+						<div className="w-5">
+							{/* Empty space for the layout */}
+						</div>
+						<div className="flex-1 flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
+							<a
+								href={jiraLink}
+								target="_self"
+								onClick={(e) => openUrlTab(e, jiraLink)}
+								className="text-primary text-[14px] font-bold pl-3"
+							>
+								Jira
+							</a>
+							<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
+								<CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
+							</span>
+						</div>
 					</div>
 					<div className="flex flex-col gap-4 flex-1 h-full max-h-[400px] overflow-y-auto hide-scrollbar p-0">
 						{jiraDisplayList.map((item, index) => (
@@ -412,18 +423,23 @@ const Popup = () => {
 
 				{/* 60% Width Column */}
 				<div className="flex-1 h-full overflow-y-auto overflow-x-hidden hide-scrollbar" id="scrollable">
-					<div className="flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
-						<a
-							href={agoLink}
-							target="_self"
-							onClick={(e) => openUrlTab(e, agoLink)}
-							className="text-primary text-[14px] font-bold pl-3"
-						>
-							Adviser Go
-						</a>
-						<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
-							<FilterIcon size={18} className="text-green-500 group-hover:text-white" />
+					<div className="flex items-center gap-1">
+						<span onClick={handleLinkClick} className="flex items-center justify-center p-0.5 mb-2 cursor-pointer hover:text-success-hover">
+							<LinkIcon className="size-4 text-primary" />
 						</span>
+						<div className="flex-1 flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
+							<a
+								href={agoLink}
+								target="_self"
+								onClick={(e) => openUrlTab(e, agoLink)}
+								className="text-primary text-[14px] font-bold pl-3"
+							>
+								Adviser Go
+							</a>
+							<span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
+								<FilterIcon size={18} className="text-green-500 group-hover:text-white" />
+							</span>
+						</div>
 					</div>
 					<div className="flex flex-col gap-2 w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar">
 						{agoDisplayList.map((item, index) => (
