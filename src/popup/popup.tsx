@@ -489,10 +489,10 @@ const Popup = () => {
 								onChange={() => changePreference("autoLogin", !preferences.autoLogin)}
 							/>
 							<CheckboxWrapper
-								id="jiraTabRenaming"
-								label="Jira Tab Renaming"
-								isSelected={preferences.jiraTabRenaming}
-								onChange={() => changePreference("jiraTabRenaming", !preferences.jiraTabRenaming)}
+								id="renameAGOTab"
+								label="AGO Tab Renaming"
+								isSelected={preferences.renameAGOTab}
+								onChange={() => changePreference("renameAGOTab", !preferences.renameAGOTab)}
 							/>
 							<CheckboxWrapper
 								id="localCacheClearing"

@@ -77,7 +77,11 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 /** Initialize AGO tab renaming based on storage setting */
 const initializeAGOTabRenaming = async (): Promise<void> => {
 	const renameAGOTab = async (url = currentUrl): Promise<void> => {
-		const { tabOn } = await getFromStorage("tabOn");
+		const { tabOn, preferences } = await getFromStorage(["tabOn", "preferences"]);
+		if (!preferences?.renameAGOTab) {
+			if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] Renaming AGO tab is disabled");
+			return;
+		}
 		if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] tabOn:", tabOn, "URL:", url);
 
 		const matched = url.match(AGO_URL_REGEX);

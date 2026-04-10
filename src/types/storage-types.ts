@@ -13,7 +13,7 @@ export interface Preferences {
   /**Used in `src/utils/state.ts` for `DEBUG_MODE` variable */
   debugMode: boolean;
   autoLogin: boolean; // TODO: implement
-  jiraTabRenaming: boolean; // TODO: implement
+  renameAGOTab: boolean; // TODO: implement
   /**Implemented in `clearCache()` in `src/utils/cache.ts` */
   localCacheClearing: boolean;
 }

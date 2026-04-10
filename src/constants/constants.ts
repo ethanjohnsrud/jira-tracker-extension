@@ -56,7 +56,7 @@ export const DEFAULT_STORAGE_STATE: StorageSchema = {
   preferences: {
     debugMode: false,
     autoLogin: false,
-    jiraTabRenaming: false,
+    renameAGOTab: false,
     localCacheClearing: false,
   },
   cacheTabId: undefined,
