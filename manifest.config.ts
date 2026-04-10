@@ -36,7 +36,7 @@ export default defineManifest({
       "https://*.ethanjohnsrud.com/*"
     ],
     run_at: "document_start",
-    js: ['src/content.ts'],
+    js: ['src/content/index.ts'],
   }],
   commands: {
     "activate-extension": {

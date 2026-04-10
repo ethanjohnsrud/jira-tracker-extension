@@ -27,3 +27,5 @@ export const AGO_URL_REGEX = /^https:\/\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<envir
 // export const COMPANY_REGEX = /^(https:\/\/([a-zA-Z]{2,7})[-.](?:([a-z]+)\.domain\.(?:co\.uk|com)|(localhost\.tld:[0-9]{4})).+)/;
 // export const COMPANY_REGEX = /^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com)).+)/;
 export const COMPANY_URL_REGEX = /^https:\/\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)\/(?<route>advisergo)\//;
+
+export const LOGIN_URL_REGEX = /^https:\/\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)/;

@@ -1,16 +1,17 @@
-import { getFromStorage, saveToStorage } from "./controllers/storageController";
+import { getFromStorage, saveToStorage } from "@/controllers/storageController";
 import {
 	URL_SAVING_INTERVAL,
 	AGO_TAB_RENAMING_INTERVAL,
-} from "./constants/constants";
-import REGIONS from "./constants/regions";
-import { extractAGOClientName, extractAGOPlanName, extractJiraSprint, extractJiraStatus, extractJiraTitle } from "./utils/dom-extractor";
-import { createCacheURL, startCachePolling, stopCachePolling } from "./utils/cache";
-import { DEBUG_MODE, stateInitPromise } from "./utils/state";
-import { sendMessage } from "./controllers/messageController";
-import { IErrorMsgResponse } from "./types/message-types";
-import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl, saveAGOUrl, saveJiraUrl } from "./utils/url";
-import { AGO_URL_REGEX } from "./constants/regex";
+} from "@/constants/constants";
+import REGIONS from "@/constants/regions";
+import { extractAGOClientName, extractAGOPlanName, extractJiraSprint, extractJiraStatus, extractJiraTitle } from "@/utils/dom-extractor";
+import { createCacheURL, startCachePolling, stopCachePolling } from "@/utils/cache";
+import { DEBUG_MODE, stateInitPromise } from "@/utils/state";
+import { sendMessage } from "@/controllers/messageController";
+import { IErrorMsgResponse } from "@/types/message-types";
+import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl, saveAGOUrl, saveJiraUrl } from "@/utils/url";
+import { AGO_URL_REGEX } from "@/constants/regex";
+import { initAutoLogin } from "@/content/auto-login";
 
 /* **********************************************************
  * content.jsx | Used for is for manipulating the DOM        *
@@ -152,6 +153,13 @@ const initialize = async () => {
 	await initializeTabURLSaving(); //Updates currentUrl
 
 	if (DEBUG_MODE) console.log("[CONTENT][init] Content script initialized");
+
+	// Wait for DOM before initializing Auto Login
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initAutoLogin);
+	} else {
+		initAutoLogin();
+	}
 };
 
 // Call the initializer
