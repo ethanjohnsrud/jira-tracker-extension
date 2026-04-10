@@ -47,8 +47,8 @@
 	--warning-foreground: oklch(21.03% 0.0059 72.33);
 
 	/* Border Radius */
-	--radius: 0;
-	--field-radius: 0.75rem;
+	--radius: 0.125rem;
+	--field-radius: 0.25rem;
 
 	/* Font Family */
 	/* Make sure to load Inter font in your app */
