@@ -1,5 +1,5 @@
 import { LOCAL_CACHE_INTERVAL } from "../constants/constants";
-import { saveToStorage } from "../controllers/storageController";
+import { getFromStorage, saveToStorage } from "../controllers/storageController";
 import ROUTES from "../constants/routes";
 import ENVIRONMENTS from "../constants/environments";
 import { DEBUG_MODE } from "./state";
@@ -48,6 +48,11 @@ export async function clearCache(): Promise<boolean> {
     return false;
   }
   try {
+    const { preferences } = await getFromStorage("preferences");
+    if (!preferences?.localCacheClearing) {
+      if (DEBUG_MODE) console.log("[CONTENT][clearCache] disabled");
+      return false;
+    }
     const res = await fetch(cacheUrl, { method: "GET", credentials: "include" }); // includes cookies automatically from content context
     if (res.status !== 200) {
       if (DEBUG_MODE) console.warn("[CONTENT][clearCache] Unavailable", res.status, cacheUrl);

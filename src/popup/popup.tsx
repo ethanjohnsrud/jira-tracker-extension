@@ -12,19 +12,22 @@ import {
 } from "@/constants/constants";
 
 import Dropdown from "@/components/Dropdown";
-import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon, LinkIcon } from "lucide-react";
+import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, EllipsisVerticalIcon, FilterIcon, LinkIcon } from "lucide-react";
 
-import { saveToStorage, removeFromStorage, getFromStorage } from "@/controllers/storageController";
+import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
 import TableItem from "@/components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
-import { Button as HeroButton, PressEvent } from "@heroui/react";
+import { Button as HerouiButton, PressEvent, Popover } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
 import { UrlListItem } from "@/types/list-types";
+import { CheckboxWrapper } from "@/components/CheckboxWrapper";
+import { useStorage } from "@/hooks/useStorage";
+import { DEBUG_MODE } from "@/utils/state";
 
-type HeroButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HeroButton>["onPress"]>>[0];
-type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HeroButtonPressEvent;
+type HerouiButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HerouiButton>["onPress"]>>[0];
+type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HerouiButtonPressEvent;
 
 interface DropdownSelections {
 	region: RegionSelection;
@@ -32,13 +35,11 @@ interface DropdownSelections {
 	route: RouteSelection;
 }
 
-//Global Setting
-let DEBUG_MODE = false;
-
 /**************************************************
  * popup.tsx is the React extension popup display *
  **************************************************/
 const Popup = () => {
+	const { storageState, preferences, saveToStorage, changePreference } = useStorage();
 	const [dropdowns, setDropdowns] = useState<DropdownSelections>({
 		region: REGIONS[0],
 		environment: ENVIRONMENTS[1],
@@ -315,10 +316,9 @@ const Popup = () => {
 		};
 
 		const init = async () => {
-			const stored = await getFromStorage(["debug", "cacheTabId", "tabOn", "environment", "region", "route"]);
-			const { debug, cacheTabId, tabOn, environment, region, route } = stored;
+			const stored = await getFromStorage(["cacheTabId", "tabOn", "environment", "region", "route"]);
+			const { cacheTabId, tabOn, environment, region, route } = stored;
 
-			DEBUG_MODE = debug == true;
 			if (DEBUG_MODE) console.log("[POPUP][init] Debug mode enabled");
 
 			loadDisplayLists();
@@ -351,24 +351,90 @@ const Popup = () => {
 
 	return (
 		<div className="w-full h-full flex flex-col items-center space-y-4">
-			<div className="w-full grid grid-cols-3 gap-x-2 mt-4">
+			<div className="w-full flex justify-between items-center">
+				<h1 className="text-xl font-semibold text-primary">Jira Tracker</h1>
+				{/* Preferences */}
+				<Popover>
+					<Popover.Trigger aria-label="Preferences">
+						<HerouiButton size="sm" variant="ghost" isIconOnly className="rounded-full text-white hover:text-primary bg-transparent">
+							<EllipsisVerticalIcon className="size-5" />
+						</HerouiButton>
+					</Popover.Trigger>
+					<Popover.Content className="w-[320px]">
+						<Popover.Dialog>
+							<Popover.Heading className="text-base font-semibold">Preferences</Popover.Heading>
+							<CheckboxWrapper
+								id="debug"
+								label="Debug Mode"
+								isSelected={preferences.debugMode}
+								onChange={() => changePreference("debugMode", !preferences.debugMode)}
+							/>
+							<CheckboxWrapper
+								id="autoLogin"
+								label="Auto Login"
+								isSelected={preferences.autoLogin}
+								onChange={() => changePreference("autoLogin", !preferences.autoLogin)}
+							/>
+							<CheckboxWrapper
+								id="jiraTabRenaming"
+								label="Jira Tab Renaming"
+								isSelected={preferences.jiraTabRenaming}
+								onChange={() => changePreference("jiraTabRenaming", !preferences.jiraTabRenaming)}
+							/>
+							<CheckboxWrapper
+								id="localCacheClearing"
+								label="Local Cache Clearing"
+								isSelected={preferences.localCacheClearing}
+								onChange={() => changePreference("localCacheClearing", !preferences.localCacheClearing)}
+							/>
+
+							<p className="text-base font-semibold mt-2">Import/Export</p>
+							{/* TODO: Add functionality to import/export */}
+							<div className="flex flex-col gap-y-1 mt-1">
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowUpToLineIcon className="size-3.5" /> Jira links
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowDownToLineIcon className="size-3.5" /> Jira links
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowUpToLineIcon className="size-3.5" /> AGO links
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowDownToLineIcon className="size-3.5" /> AGO links
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowUpToLineIcon className="size-3.5" /> Settings
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowDownToLineIcon className="size-3.5" /> Settings
+								</HerouiButton>
+								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+									<ArrowUpToLineIcon className="size-3.5" /> Auto Login Credentials
+								</HerouiButton>
+							</div>
+						</Popover.Dialog>
+					</Popover.Content>
+				</Popover>
+			</div>
+			<div className="w-full grid grid-cols-3 gap-x-2">
 				<Dropdown label="Region" options={REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
 				<Dropdown label="Environment" options={ENVIRONMENTS} onChange={onEnvironmentChange} value={dropdowns.environment.value} />
 				<Dropdown label="Route" options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
 			</div>
 			<div className="w-full grid grid-cols-3 gap-3">
-				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+				<HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
 					<ArrowUpToLineIcon className="size-4" />
 					Import
-				</HeroButton>
-				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+				</HerouiButton>
+				<HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
 					<ArrowUpToLineIcon className="size-4" />
 					Basic Plan
-				</HeroButton>
-				<HeroButton className="w-full h-8 bg-primary text-white font-semibold">
+				</HerouiButton>
+				<HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
 					<ArrowDownToLineIcon className="size-4" />
 					Export
-				</HeroButton>
+				</HerouiButton>
 			</div>
 			{/* TODO: Remove these section after migration */}
 			{/* <div className="flex gap-x-2 justify-start w-full">
@@ -408,7 +474,7 @@ const Popup = () => {
 							</span>
 						</div>
 					</div>
-					<div className="flex flex-col gap-4 flex-1 h-full max-h-[400px] overflow-y-auto hide-scrollbar p-0">
+					<div className="flex flex-col gap-4 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
 						{jiraDisplayList.map((item, index) => (
 							<TableItem
 								key={index}
@@ -441,7 +507,7 @@ const Popup = () => {
 							</span>
 						</div>
 					</div>
-					<div className="flex flex-col gap-2 w-full h-full max-h-[400px] overflow-x-hidden overflow-y-auto hide-scrollbar">
+					<div className="flex flex-col gap-2 w-full h-full max-h-[300px] overflow-x-hidden overflow-y-auto hide-scrollbar">
 						{agoDisplayList.map((item, index) => (
 							<TableItem
 								key={index}

@@ -10,9 +10,11 @@ export type JiraUrlListItem = JiraListItem;
 export type AgoUrlListItem = AGOListItem;
 
 export interface Preferences {
+  /**Used in `src/utils/state.ts` for `DEBUG_MODE` variable */
   debugMode: boolean;
-  autoLogin: boolean;
-  jiraTabRenaming: boolean;
+  autoLogin: boolean; // TODO: implement
+  jiraTabRenaming: boolean; // TODO: implement
+  /**Implemented in `clearCache()` in `src/utils/cache.ts` */
   localCacheClearing: boolean;
 }
 
@@ -34,7 +36,14 @@ export interface StorageSchema {
 
 export type StorageKey = keyof StorageSchema;
 
+interface StorageChange<T> {
+  /** The new value of the item, if there is a new value. */
+  newValue?: T;
+  /** The old value of the item, if there was an old value. */
+  oldValue?: T;
+}
+
 export type StorageChangeCallback = (
-  changes: { [key in StorageKey]?: chrome.storage.StorageChange },
+  changes: { [key in StorageKey]?: StorageChange<StorageSchema[key]> },
   areaName: chrome.storage.AreaName
 ) => void;
