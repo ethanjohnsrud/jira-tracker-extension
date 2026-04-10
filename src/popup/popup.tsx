@@ -1,4 +1,4 @@
-import type { ComponentProps, MouseEvent } from "react";
+import type { ComponentProps, MouseEvent, ReactNode } from "react";
 import { useState, useEffect, useRef } from "react";
 import REGIONS from "@/constants/regions";
 import ENVIRONMENTS from "@/constants/environments";
@@ -12,12 +12,20 @@ import {
 } from "@/constants/constants";
 
 import Dropdown from "@/components/Dropdown";
-import { ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, EllipsisVerticalIcon, FilterIcon, LinkIcon } from "lucide-react";
+import {
+	ArrowDownToLineIcon,
+	ArrowUpToLineIcon,
+	CalendarDaysIcon,
+	EllipsisVerticalIcon,
+	FilterIcon,
+	FolderIcon,
+	LinkIcon,
+} from "lucide-react";
 
 import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
 import TableItem from "@/components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
-import { Button as HerouiButton, PressEvent, Popover } from "@heroui/react";
+import { Accordion, Button as HerouiButton, PressEvent, Popover } from "@heroui/react";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
@@ -34,6 +42,23 @@ interface DropdownSelections {
 	environment: EnvironmentSelectionOption;
 	route: RouteSelection;
 }
+
+const ARCHIVED_COLLECTION_NAME = "Archived";
+
+type GroupedListEntry<T extends UrlListItem> =
+	| {
+		kind: "item";
+		id: string;
+		lastVisitedMS: number;
+		item: T;
+	}
+	| {
+		kind: "folder";
+		id: string;
+		lastVisitedMS: number;
+		collectionName: string;
+		items: T[];
+	};
 
 /**************************************************
  * popup.tsx is the React extension popup display *
@@ -58,6 +83,100 @@ const Popup = () => {
 
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
+		if (a.favorite && !b.favorite) return -1;
+		if (!a.favorite && b.favorite) return 1;
+		return b.lastVisitedMS - a.lastVisitedMS;
+	};
+
+	const sortGroupedEntries = <T extends UrlListItem>(a: GroupedListEntry<T>, b: GroupedListEntry<T>) => {
+		const aArchived = a.kind === "folder" && a.collectionName === ARCHIVED_COLLECTION_NAME;
+		const bArchived = b.kind === "folder" && b.collectionName === ARCHIVED_COLLECTION_NAME;
+		if (aArchived && !bArchived) return 1;
+		if (!aArchived && bArchived) return -1;
+		return b.lastVisitedMS - a.lastVisitedMS;
+	};
+
+	const buildGroupedListEntries = <T extends UrlListItem>(urlList: T[]): GroupedListEntry<T>[] => {
+		const collectionGroups = new Map<string, T[]>();
+		const rootItems: GroupedListEntry<T>[] = [];
+
+		for (const item of urlList) {
+			if (item.collectionName) {
+				const existingItems = collectionGroups.get(item.collectionName) ?? [];
+				existingItems.push(item);
+				collectionGroups.set(item.collectionName, existingItems);
+				continue;
+			}
+
+			rootItems.push({
+				kind: "item",
+				id: item.id,
+				lastVisitedMS: item.lastVisitedMS,
+				item,
+			});
+		}
+
+		const folderItems: GroupedListEntry<T>[] = Array.from(collectionGroups.entries()).map(([collectionName, items]) => ({
+			kind: "folder",
+			id: `folder-${collectionName}`,
+			collectionName,
+			lastVisitedMS: Math.max(...items.map((item) => item.lastVisitedMS)),
+			items: [...items].sort(sortByRecentAndFavorite),
+		}));
+
+		return [...rootItems, ...folderItems].sort(sortGroupedEntries);
+	};
+
+	const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
+		entries: GroupedListEntry<T>[],
+		storageListKey: "jiraUrlList" | "agoUrlList",
+		latestId: string
+	): ReactNode =>
+		entries.map((entry) => {
+			if (entry.kind === "item") {
+				return (
+					<TableItem
+						key={entry.id}
+						storageListKey={storageListKey}
+						urlItem={entry.item}
+						linkReady={entry.item.id === latestId}
+					/>
+				);
+			}
+
+			return (
+				<Accordion key={entry.id} hideSeparator className="px-0">
+					<Accordion.Item id={entry.id} className="border border-default-200 rounded-md bg-content1/40 overflow-hidden">
+						<Accordion.Heading>
+							<Accordion.Trigger className="w-full px-0 py-2 hover:bg-content2/60 transition-colors">
+								<div className="flex w-full items-center gap-2 text-left">
+									<FolderIcon className="size-4 text-primary shrink-0" />
+									<span className="flex-1 truncate text-sm font-semibold text-white">{entry.collectionName}</span>
+									<span className="text-xs text-default-400 whitespace-nowrap">{entry.items.length}</span>
+									<Accordion.Indicator className="size-4 text-default-400 shrink-0" />
+								</div>
+							</Accordion.Trigger>
+						</Accordion.Heading>
+						<Accordion.Panel>
+							<Accordion.Body className="pl-2 pr-0 pb-2 pt-0">
+								<div className="flex flex-col gap-2">
+									{entry.items.map((item) => (
+										<TableItem
+											key={item.id}
+											storageListKey={storageListKey}
+											urlItem={item}
+											linkReady={item.id === latestId}
+										/>
+									))}
+								</div>
+							</Accordion.Body>
+						</Accordion.Panel>
+					</Accordion.Item>
+				</Accordion>
+			);
+		});
 
 	const updateDropdowns = (dropdowns: Partial<DropdownSelections>) => {
 		setDropdowns((prev) => ({ ...prev, ...dropdowns }));
@@ -233,12 +352,6 @@ const Popup = () => {
 	const loadDisplayLists = async () => {
 		try {
 			const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage(["jiraUrlList", "agoUrlList"]);
-
-			const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
-				if (a.favorite && !b.favorite) return -1;
-				if (!a.favorite && b.favorite) return 1;
-				return new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime();
-			};
 
 			const jiraSortedList = jiraUrlList.sort(sortByRecentAndFavorite);
 			const agoSortedList = agoUrlList.sort(sortByRecentAndFavorite);
@@ -474,16 +587,8 @@ const Popup = () => {
 							</span>
 						</div>
 					</div>
-					<div className="flex flex-col gap-4 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
-						{jiraDisplayList.map((item, index) => (
-							<TableItem
-								key={index}
-								storageListKey="jiraUrlList"
-								urlItem={item}
-								linkReady={item.id == latestJiraId}
-							// className={index % 2 === 0 ? "bg-alternative-background" : ""}
-							/>
-						))}
+					<div className="flex flex-col gap-2 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
+						{renderGroupedList(buildGroupedListEntries(jiraDisplayList), "jiraUrlList", latestJiraId)}
 					</div>
 				</div>
 
@@ -508,15 +613,7 @@ const Popup = () => {
 						</div>
 					</div>
 					<div className="flex flex-col gap-2 w-full h-full max-h-[300px] overflow-x-hidden overflow-y-auto hide-scrollbar">
-						{agoDisplayList.map((item, index) => (
-							<TableItem
-								key={index}
-								storageListKey="agoUrlList"
-								urlItem={item}
-								linkReady={item.id == latestAgoId}
-							// className={index % 2 === 0 ? "bg-alternative-background" : ""}
-							/>
-						))}
+						{renderGroupedList(buildGroupedListEntries(agoDisplayList), "agoUrlList", latestAgoId)}
 					</div>
 				</div>
 			</div>
