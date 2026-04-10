@@ -30,6 +30,7 @@ import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/t
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
 import { UrlListItem, validateJiraList, validateAGOList } from "@/types/list-types";
+import { validateCredentials } from "@/types/dropdown-types";
 import { CheckboxWrapper } from "@/components/CheckboxWrapper";
 import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
@@ -84,9 +85,9 @@ const Popup = () => {
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	const handleExport = async (type: "jira" | "ago") => {
+	const handleExport = async (type: "jira" | "ago" | "credentials") => {
 		try {
-			const storageKey = type === "jira" ? "jiraUrlList" : "agoUrlList";
+			const storageKey = type === "jira" ? "jiraUrlList" : type === "ago" ? "agoUrlList" : ("loginCredentials" as const);
 			const data = await getFromStorage(storageKey);
 			const list = data[storageKey] || [];
 
@@ -94,17 +95,17 @@ const Popup = () => {
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `${type}_links_export_${new Date().toISOString().split("T")[0]}.json`;
+			a.download = `${type}_export_${new Date().toISOString().split("T")[0]}.json`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 		} catch (error) {
-			if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${type} links:`, error);
+			if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${type}:`, error);
 		}
 	};
 
-	const handleImport = (type: "jira" | "ago") => {
+	const handleImport = (type: "jira" | "ago" | "credentials") => {
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".json";
@@ -118,19 +119,21 @@ const Popup = () => {
 					const content = event.target?.result as string;
 					const parsed = JSON.parse(content);
 
-					const isValid =
-						type === "jira"
-							? validateJiraList(parsed, preferences.debugMode)
-							: validateAGOList(parsed, preferences.debugMode);
+					let isValid = false;
+					if (type === "jira") isValid = validateJiraList(parsed, preferences.debugMode);
+					else if (type === "ago") isValid = validateAGOList(parsed, preferences.debugMode);
+					else if (type === "credentials") isValid = validateCredentials(parsed, preferences.debugMode);
 
 					if (isValid) {
 						if (type === "jira") {
 							await saveToStorage({ jiraUrlList: parsed });
-						} else {
+						} else if (type === "ago") {
 							await saveToStorage({ agoUrlList: parsed });
+						} else if (type === "credentials") {
+							await saveToStorage({ loginCredentials: parsed });
 						}
 						// UI will be updated via storage listener calling loadDisplayLists
-						if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${type} links`);
+						if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${type}`);
 					} else {
 						alert(`Invalid ${type.toUpperCase()} JSON file format.`);
 					}
@@ -582,7 +585,7 @@ const Popup = () => {
 								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowDownToLineIcon className="size-3.5" /> Settings
 								</HerouiButton>
-								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+								<HerouiButton onPress={() => handleImport("credentials")} className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowUpToLineIcon className="size-3.5" /> Auto Login Credentials
 								</HerouiButton>
 							</div>

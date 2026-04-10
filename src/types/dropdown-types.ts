@@ -22,7 +22,7 @@ export interface RouteSelection extends RegionSelection {
 }
 
 /* Auto Login */
-type LoginCredentials = {
+export type LoginCredentials = {
 	region: string;
 	environment: string;
 

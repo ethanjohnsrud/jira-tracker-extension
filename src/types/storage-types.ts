@@ -3,8 +3,8 @@
  * Currently collecting the actual types and interfaces used in the legacy code.
  * Later we will refactor as we go.
  */
-
 import { AGOListItem, JiraListItem } from "./list-types";
+import { LoginCredentials } from "./dropdown-types";
 
 export type JiraUrlListItem = JiraListItem;
 export type AgoUrlListItem = AGOListItem;
@@ -32,6 +32,7 @@ export interface StorageSchema {
   nextTimerMS: number;
   preferences: Preferences;
   cacheTabId?: number;
+  loginCredentials?: LoginCredentials[];
 }
 
 export type StorageKey = keyof StorageSchema;

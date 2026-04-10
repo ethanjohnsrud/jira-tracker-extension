@@ -7,16 +7,16 @@ interface UseStorageReturn {
   storageState: StorageSchema;
   preferences: Preferences;
   /* Save storage with partial changes and update hook state */
-  saveToStorage: (changes: Partial<StorageSchema>) => void;
+  saveToStorage: (changes: Partial<StorageSchema>) => Promise<void>;
   changePreference: (preference: keyof Preferences, value: boolean) => void;
 }
 
 export const useStorage = (): UseStorageReturn => {
   const [storageState, setStorageState] = useState<StorageSchema>(DEFAULT_STORAGE_STATE);
 
-  const saveToStorage = (changes: Partial<StorageSchema>) => {
+  const saveToStorage = async (changes: Partial<StorageSchema>) => {
     setStorageState((prev) => ({ ...prev, ...changes }));
-    saveToStorageController(changes);
+    await saveToStorageController(changes);
   };
 
   const changePreference = (preference: keyof Preferences, value: boolean) => {
