@@ -6,21 +6,20 @@
 
 import { AGOListItem, JiraListItem } from "./list-types";
 
-// export interface UrlListItem {
-//   id: string;
-//   url: string;
-//   displayName: string;
-//   lastVisited: string;
-//   favorite: boolean;
-//   preserveCustomName: boolean;
-// }
-
 export type JiraUrlListItem = JiraListItem;
 export type AgoUrlListItem = AGOListItem;
+
+export interface Preferences {
+  debugMode: boolean;
+  autoLogin: boolean;
+  jiraTabRenaming: boolean;
+  localCacheClearing: boolean;
+}
 
 export interface StorageSchema {
   jiraUrlList: JiraUrlListItem[];
   agoUrlList: AgoUrlListItem[];
+  /**@deprecated - use `preferences.debugMode` instead */
   debug: boolean;
   jira_header_link: string;
   ago_header_link: string;
@@ -29,6 +28,7 @@ export interface StorageSchema {
   region: string;
   route: string;
   nextTimerMS: number;
+  preferences: Preferences;
   cacheTabId?: number;
 }
 

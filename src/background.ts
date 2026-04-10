@@ -1,5 +1,5 @@
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
-import { AGO_HEADER_HYPERLINK_DEFAULT, JIRA_HEADER_HYPERLINK_DEFAULT } from "./constants/constants";
+import { AGO_HEADER_HYPERLINK_DEFAULT, DEFAULT_STORAGE_STATE, JIRA_HEADER_HYPERLINK_DEFAULT } from "./constants/constants";
 import { StorageKey, StorageSchema } from "./types/storage-types";
 import { DEBUG_MODE } from "./utils/state";
 import { MessageHandlers, OnMessageListener } from "./types/message-types";
@@ -45,11 +45,7 @@ chrome.runtime.onMessage.addListener(onMessageListener);
 /*/ Initializes background service worker and settings on install */
 chrome.runtime.onInstalled.addListener(async () => {
 	//Only set default values if not present
-	const defaults: Partial<StorageSchema> = {
-		debug: false,
-		jira_header_link: JIRA_HEADER_HYPERLINK_DEFAULT,
-		ago_header_link: AGO_HEADER_HYPERLINK_DEFAULT,
-	};
+	const defaults = DEFAULT_STORAGE_STATE;
 
 	const defaultKeys = Object.keys(defaults) as StorageKey[];
 	const existingDefaults = await getFromStorage(defaultKeys);

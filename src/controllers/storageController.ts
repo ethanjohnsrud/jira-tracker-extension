@@ -17,13 +17,19 @@ export const removeFromStorage = (keys: StorageKey | StorageKey[]) =>
 
 /**
  * Retrieves values from Chrome's local storage for one or more keys.
+ * @param keys - The keys to retrieve values for. If null, retrieves all keys.
  * @returns An object with each key and `undefined` for missing keys.
  */
 export const getFromStorage = async <K extends StorageKey>(
-	keys: K | K[]
-): Promise<Partial<Pick<StorageSchema, K>>> => {
+	keys: null | K | K[]
+): Promise<Partial<Pick<StorageSchema, K>> | StorageSchema> => {
 	if (!chrome?.runtime?.id || !chrome?.storage?.local) {
 		throw new Error("Extension context invalidated");
+	}
+
+	if (keys == null) {
+		const res = await chrome.storage.local.get<StorageSchema>();
+		return res;
 	}
 
 	const res = await chrome.storage.local.get<Partial<Pick<StorageSchema, K>>>(keys);

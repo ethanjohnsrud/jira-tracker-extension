@@ -2,6 +2,9 @@
  * Configuration & Timing Constants *
  * TODO: replace constants with dynamic values from storage
  ************************************/
+
+import { StorageSchema } from "@/types/storage-types";
+
 /*  Maximum number of stored URLs (favorites never removed) */
 export const MAX_LIST_LENGTH = 100;
 
@@ -38,3 +41,23 @@ export const QA_TEST_REGIONS = ["IE", "AU"]; //Uses ie-qa instead of ie-test
 export const JIRA_HEADER_HYPERLINK_DEFAULT = "https://www.google.com/";
 
 export const AGO_HEADER_HYPERLINK_DEFAULT = "https://www.yahoo.com/";
+
+export const DEFAULT_STORAGE_STATE: StorageSchema = {
+  debug: false,
+  jira_header_link: JIRA_HEADER_HYPERLINK_DEFAULT,
+  ago_header_link: AGO_HEADER_HYPERLINK_DEFAULT,
+  jiraUrlList: [],
+  agoUrlList: [],
+  tabOn: false,
+  environment: "",
+  region: "",
+  route: "",
+  nextTimerMS: 0,
+  preferences: {
+    debugMode: false,
+    autoLogin: false,
+    jiraTabRenaming: false,
+    localCacheClearing: false,
+  },
+  cacheTabId: undefined,
+};
