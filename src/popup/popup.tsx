@@ -29,7 +29,7 @@ import { Accordion, Button as HerouiButton, PressEvent, Popover } from "@heroui/
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
-import { UrlListItem } from "@/types/list-types";
+import { UrlListItem, validateJiraList, validateAGOList } from "@/types/list-types";
 import { CheckboxWrapper } from "@/components/CheckboxWrapper";
 import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
@@ -83,6 +83,66 @@ const Popup = () => {
 
 	const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	const handleExport = async (type: "jira" | "ago") => {
+		try {
+			const storageKey = type === "jira" ? "jiraUrlList" : "agoUrlList";
+			const data = await getFromStorage(storageKey);
+			const list = data[storageKey] || [];
+
+			const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `${type}_links_export_${new Date().toISOString().split("T")[0]}.json`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${type} links:`, error);
+		}
+	};
+
+	const handleImport = (type: "jira" | "ago") => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".json";
+		input.onchange = (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (!file) return;
+
+			const reader = new FileReader();
+			reader.onload = async (event) => {
+				try {
+					const content = event.target?.result as string;
+					const parsed = JSON.parse(content);
+
+					const isValid =
+						type === "jira"
+							? validateJiraList(parsed, preferences.debugMode)
+							: validateAGOList(parsed, preferences.debugMode);
+
+					if (isValid) {
+						if (type === "jira") {
+							await saveToStorage({ jiraUrlList: parsed });
+						} else {
+							await saveToStorage({ agoUrlList: parsed });
+						}
+						// UI will be updated via storage listener calling loadDisplayLists
+						if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${type} links`);
+					} else {
+						alert(`Invalid ${type.toUpperCase()} JSON file format.`);
+					}
+				} catch (error) {
+					if (DEBUG_MODE) console.error(`[POPUP][handleImport] Failed to parse ${type} import:`, error);
+					alert(`Failed to parse ${type.toUpperCase()} JSON file.`);
+				}
+			};
+			reader.readAsText(file);
+		};
+		input.click();
+	};
 
 	const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
 		if (a.favorite && !b.favorite) return -1;
@@ -502,20 +562,20 @@ const Popup = () => {
 							/>
 
 							<p className="text-base font-semibold mt-2">Import/Export</p>
-							{/* TODO: Add functionality to import/export */}
 							<div className="flex flex-col gap-y-1 mt-1">
-								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+								<HerouiButton onPress={() => handleImport("jira")} className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowUpToLineIcon className="size-3.5" /> Jira links
 								</HerouiButton>
-								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+								<HerouiButton onPress={() => handleExport("jira")} className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowDownToLineIcon className="size-3.5" /> Jira links
 								</HerouiButton>
-								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+								<HerouiButton onPress={() => handleImport("ago")} className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowUpToLineIcon className="size-3.5" /> AGO links
 								</HerouiButton>
-								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+								<HerouiButton onPress={() => handleExport("ago")} className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowDownToLineIcon className="size-3.5" /> AGO links
 								</HerouiButton>
+								{/* TODO: Add functionality to import/export */}
 								<HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
 									<ArrowUpToLineIcon className="size-3.5" /> Settings
 								</HerouiButton>

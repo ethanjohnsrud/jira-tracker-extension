@@ -61,6 +61,7 @@ export const validateJiraList = (objectList: Object[], debugMode: boolean): bool
 	for (const item of list) {
 		try {
 			if (
+				item.type !== URLType.JIRA ||
 				!item.id ||
 				!item.url ||
 				!item.originalUrl ||
@@ -68,7 +69,7 @@ export const validateJiraList = (objectList: Object[], debugMode: boolean): bool
 				typeof item.lastVisitedMS !== "number" ||
 				!item.jiraCode ||
 				!item.title ||
-				!item.sprint ||
+				// !item.sprint ||
 				!item.status ||
 				list.filter((listItem) => listItem?.url === item.url).length > 1
 			)
@@ -113,6 +114,7 @@ export const validateAGOList = (objectList: Object[], debugMode: boolean): boole
 	for (const item of list) {
 		try {
 			if (
+				item.type !== URLType.AGO ||
 				!item.id ||
 				!item.url ||
 				!item.originalUrl ||
