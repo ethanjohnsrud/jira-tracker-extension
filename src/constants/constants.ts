@@ -30,10 +30,8 @@ export const UK_HOSTED_TEST_REGIONS = ["UK", "IE"];
 
 export const QA_TEST_REGIONS = ["IE", "AU"]; //Uses ie-qa instead of ie-test
 
-
 //TODO Support ?selectedIssue=
 // export const JIRA_REGEX = /^(?:https:\/\/company\.atlassian\.net\/browse\/([A-Z]{2,5}-\d{2,5})|https:\/\/company\.atlassian\.net\/jira\/software\/c\/projects\/[^/?#]+\/boards\/\d+\/backlog\?selectedIssue=([A-Z]{2,5}-\d{2,5}))$/;
-
 
 /*********************
  * Header Hyperlinks *

@@ -20,14 +20,13 @@ export const isCompanyUrl = (url: string): boolean => {
   return COMPANY_URL_REGEX.test(url);
 };
 
-export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string; } | null => {
+export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string } | null => {
   const match = url.match(JIRA_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseJiraUrl] JIRA match", match);
   if (match.groups?.jiraCode) return { jiraCode: match.groups.jiraCode, capturedUrl: match[0] };
   return null;
 };
-
 
 export type ParsedCompanyUrl = {
   capturedUrl: string;
@@ -67,16 +66,19 @@ export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
     route: match.groups?.route || "",
     clientID: match.groups?.clientID || "",
     planID: match.groups?.planID || "",
-    capturedUrl: match[0]
+    capturedUrl: match[0],
   };
 };
 
 /** Derives display name for JIRA and AGO URLs */
-export const getListEntryDisplayName = (url: string, jiraSprint: string | null, agoClientName: string | null): string | null => {
+export const getListEntryDisplayName = (
+  url: string,
+  jiraSprint: string | null,
+  agoClientName: string | null
+): string | null => {
   if (isJiraUrl(url)) {
     const parsedJiraUrl = parseJiraUrl(url)!;
-    const name = parsedJiraUrl.jiraCode
-      + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
+    const name = parsedJiraUrl.jiraCode + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
     if (DEBUG_MODE) console.log("[getListEntryDisplayName] JIRA name", name);
     return name;
   } else if (isAgoUrl(url)) {
@@ -126,7 +128,12 @@ export const evaluateMaxListLength = <T extends UrlListItem>(urlList: T[]): T[] 
 };
 
 /** Processes and saves visited URLs into storage lists */
-export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraSprint: string, jiraStatus: string; }) => {
+export const saveJiraUrl = async (props: {
+  url: string;
+  jiraTitle: string;
+  jiraSprint: string;
+  jiraStatus: string;
+}) => {
   const { url, jiraSprint, jiraTitle, jiraStatus } = props;
   if (!isJiraUrl(url)) {
     if (DEBUG_MODE) console.log("[saveJiraUrl] Not Jira URL", url, JIRA_URL_REGEX);
@@ -188,8 +195,21 @@ export const saveJiraUrl = async (props: { url: string, jiraTitle: string, jiraS
 };
 
 /** Save AGO URL to Storage List and update popup dropdowns */
-export const saveAGOUrl = async (props: ParsedAGOUrl & { agoClientName: string, agoPlanName: string, clientFullName: string, clientLastName: string; }) => {
-  const { capturedUrl: url, agoClientName, region, environment, route, clientID, planID, agoPlanName, clientFullName, clientLastName } = props;
+export const saveAGOUrl = async (
+  props: ParsedAGOUrl & { agoClientName: string; agoPlanName: string; clientFullName: string; clientLastName: string }
+) => {
+  const {
+    capturedUrl: url,
+    agoClientName,
+    region,
+    environment,
+    route,
+    clientID,
+    planID,
+    agoPlanName,
+    clientFullName,
+    clientLastName,
+  } = props;
 
   if (!isAgoUrl(url)) {
     if (DEBUG_MODE) console.log("[saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
@@ -209,7 +229,7 @@ export const saveAGOUrl = async (props: ParsedAGOUrl & { agoClientName: string, 
   }
 
   let displayName: string | null = null;
-  if (agoPlanName.length > 2 && agoPlanName.toLowerCase() !== 'base plan') {
+  if (agoPlanName.length > 2 && agoPlanName.toLowerCase() !== "base plan") {
     displayName = agoPlanName;
   } else if (clientLastName.length > 2) {
     displayName = clientLastName;

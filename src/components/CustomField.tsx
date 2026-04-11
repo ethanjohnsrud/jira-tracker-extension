@@ -13,14 +13,7 @@ export function CustomTextField({ id, value, onChange, placeholder, label }: Tex
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        placeholder={placeholder}
-        type="text"
-        value={value}
-        onChange={onChange}
-        className="ring-0"
-      />
+      <Input id={id} placeholder={placeholder} type="text" value={value} onChange={onChange} className="ring-0" />
     </div>
   );
 }
@@ -38,16 +31,8 @@ export function CustomTextAreaField({ id, value, onChange, placeholder, label, e
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
-      <TextArea
-        id={id}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className="ring-0"
-      />
-      {error ? (
-        <p className="text-xs text-danger">{error}</p>
-      ) : null}
+      <TextArea id={id} placeholder={placeholder} value={value} onChange={onChange} className="ring-0" />
+      {error ? <p className="text-xs text-danger">{error}</p> : null}
     </div>
   );
 }

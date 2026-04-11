@@ -36,7 +36,7 @@ export async function createCacheURL(url: string): Promise<string | null> {
   cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
   if (DEBUG_MODE) console.log("[createCacheURL] cacheUrl:", cacheUrl);
   return cacheUrl;
-};
+}
 
 /**
  * Clears the local cache by making a GET request to the cache URL.
@@ -64,7 +64,7 @@ export async function clearCache(): Promise<boolean> {
     if (DEBUG_MODE) console.error("[CONTENT][clearCache] Error:", e);
     return false;
   }
-};
+}
 
 /** Start the cache polling interval */
 export async function startCachePolling(): Promise<void> {
@@ -82,7 +82,7 @@ export async function startCachePolling(): Promise<void> {
   } else {
     if (DEBUG_MODE) console.log("[startCachePolling] Invalid URL", cacheUrl);
   }
-};
+}
 
 /** Stop the cache polling interval */
 export async function stopCachePolling(): Promise<void> {
@@ -91,4 +91,4 @@ export async function stopCachePolling(): Promise<void> {
     cacheInterval = null;
     if (DEBUG_MODE) console.log("[CONTENT][stopCachePolling] Stopped");
   }
-};
+}

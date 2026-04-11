@@ -14,7 +14,9 @@ export const CheckboxWrapper = ({ id, label, onChange, isSelected }: CheckboxWra
         <Checkbox.Indicator />
       </Checkbox.Control>
       <Checkbox.Content>
-        <Label htmlFor={id} className="text-sm cursor-pointer">{label}</Label>
+        <Label htmlFor={id} className="text-sm cursor-pointer">
+          {label}
+        </Label>
       </Checkbox.Content>
     </Checkbox>
   );

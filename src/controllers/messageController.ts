@@ -4,4 +4,3 @@ import { Message, MessageCommand, MessageResponse } from "../types/message-types
 export const sendMessage = async <T extends MessageCommand>(message: Message): Promise<MessageResponse<T>> => {
   return chrome.runtime.sendMessage(message);
 };
-

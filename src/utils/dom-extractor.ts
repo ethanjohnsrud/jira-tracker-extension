@@ -1,13 +1,19 @@
 import { formatDate } from "date-fns";
 import { DOM_NAMING_TIMEOUT } from "../constants/constants";
 import { DEBUG_MODE } from "./state";
-import { AGO_CLIENT_NAME_SELECTOR, AGO_PLAN_NAME_SELECTOR, JIRA_SPRINT_SELECTOR, JIRA_STATUS_SELECTOR, JIRA_TITLE_SELECTOR } from "../constants/dom-selectors";
+import {
+  AGO_CLIENT_NAME_SELECTOR,
+  AGO_PLAN_NAME_SELECTOR,
+  JIRA_SPRINT_SELECTOR,
+  JIRA_STATUS_SELECTOR,
+  JIRA_TITLE_SELECTOR,
+} from "../constants/dom-selectors";
 
 export function selectElement<T extends HTMLElement>(selector: string) {
   return document.querySelector<T>(selector);
-};
+}
 
-/** Wait for a DOM element to appear 
+/** Wait for a DOM element to appear
  *
  * Utility used for extracting elements after page loads
  */
@@ -26,7 +32,7 @@ export async function waitForDOM<T>(fetchElement: () => T): Promise<T> {
       reject(new Error(`Element not found within ${DOM_NAMING_TIMEOUT}ms`));
     }, DOM_NAMING_TIMEOUT);
   });
-};
+}
 
 /**@returns if element exists returns immediately, otherwise waits for element to appear */
 export async function getElement<T extends HTMLElement>(selector: string): Promise<T | null> {
@@ -34,7 +40,7 @@ export async function getElement<T extends HTMLElement>(selector: string): Promi
   if (el) return el;
 
   return waitForDOM(() => document.querySelector<T>(selector));
-};
+}
 
 /** Wait for user gesture (click, keydown, pointerdown, or touchstart etc.) */
 export async function waitForUserGesture(): Promise<void> {
@@ -42,12 +48,12 @@ export async function waitForUserGesture(): Promise<void> {
 
   return new Promise((resolve) => {
     const handler = () => {
-      GESTURE_EVENTS.forEach(evt => document.removeEventListener(evt, handler, true));
+      GESTURE_EVENTS.forEach((evt) => document.removeEventListener(evt, handler, true));
       resolve();
     };
 
-    GESTURE_EVENTS.forEach(evt =>
-      document.addEventListener(evt, handler, true) // capture phase
+    GESTURE_EVENTS.forEach(
+      (evt) => document.addEventListener(evt, handler, true) // capture phase
     );
   });
 }
@@ -91,8 +97,7 @@ export async function extractJiraSprint(): Promise<string> {
     if (DEBUG_MODE) console.warn("[extractJiraSprint] Error:", error);
     return "";
   }
-};
-
+}
 
 /**Extracts the current JIRA status and return it's acronym */
 export async function extractJiraStatus(): Promise<string> {
@@ -104,7 +109,10 @@ export async function extractJiraStatus(): Promise<string> {
       if (DEBUG_MODE) console.log("[extractJiraStatus] No status found");
       return "";
     }
-    const acronym = rawText.split(/\s+/).map((word) => word[0].toUpperCase()).join("");
+    const acronym = rawText
+      .split(/\s+/)
+      .map((word) => word[0].toUpperCase())
+      .join("");
     if (DEBUG_MODE) console.log("[extractJiraStatus] Acronym:", acronym);
     return acronym;
   } catch (error) {
@@ -130,10 +138,10 @@ export async function extractAGOPlanName(): Promise<string> {
 }
 
 /** Extract AGO clientFullName and clientLastName.
- * @returns If innerText is `Campbell, John & Julia` 
+ * @returns If innerText is `Campbell, John & Julia`
  *          clientFullName = `John & Julia Campbell`,clientLastName = `Campbell`
  */
-export async function extractAGOClientName(): Promise<{ clientFullName: string, clientLastName: string; }> {
+export async function extractAGOClientName(): Promise<{ clientFullName: string; clientLastName: string }> {
   try {
     const element = await getElement(AGO_CLIENT_NAME_SELECTOR);
     if (DEBUG_MODE) console.log("[extractAGOClientName] Element text:", element?.innerText);
@@ -147,4 +155,4 @@ export async function extractAGOClientName(): Promise<{ clientFullName: string, 
     if (DEBUG_MODE) console.warn("[extractAGOClientName] Error:", error);
     return { clientFullName: "", clientLastName: "" };
   }
-};
+}

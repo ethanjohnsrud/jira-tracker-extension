@@ -31,9 +31,8 @@ export const initAutoLogin = async () => {
     if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Detected Region:", regionStr, "Env:", environmentStr);
 
     const credentialsList = (loginCredentials as LoginCredentials[]) || [];
-    const creds = credentialsList.find(c =>
-      c.environment.toLowerCase() === environmentStr &&
-      c.region.toLowerCase() === regionStr
+    const creds = credentialsList.find(
+      (c) => c.environment.toLowerCase() === environmentStr && c.region.toLowerCase() === regionStr
     );
     if (!creds || !creds.username || !creds.password) {
       if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] No credentials found for", environmentStr, regionStr);
@@ -44,7 +43,6 @@ export const initAutoLogin = async () => {
 
     // Briefly wait to ensure forms have fully rendered (mostly for client-rendered applications)
     setTimeout(() => executeMatchedFlow(username, password), 500);
-
   } catch (e) {
     if (DEBUG_MODE) console.error("[CONTENT][AutoLogin] Error initializing", e);
   }
@@ -52,8 +50,8 @@ export const initAutoLogin = async () => {
 
 const triggerInput = (element: HTMLInputElement, value: string) => {
   element.value = value;
-  element.dispatchEvent(new Event('input', { bubbles: true }));
-  element.dispatchEvent(new Event('change', { bubbles: true }));
+  element.dispatchEvent(new Event("input", { bubbles: true }));
+  element.dispatchEvent(new Event("change", { bubbles: true }));
 };
 
 const executeMatchedFlow = async (userName: string, passWord: string) => {
@@ -100,7 +98,8 @@ const executeMatchedFlow = async (userName: string, passWord: string) => {
         triggerInput(step2Pass, passWord);
         const login2Btn = await selectElement<HTMLButtonElement>(S.TWO_STEP_LOGIN.STEP_2_LOGIN_BUTTON);
         if (login2Btn) login2Btn.click();
-      } else if (attempts > 20) { // wait up to 10 seconds
+      } else if (attempts > 20) {
+        // wait up to 10 seconds
         clearInterval(checkStep2);
       }
     }, 500);

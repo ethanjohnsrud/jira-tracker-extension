@@ -26,10 +26,9 @@ export const useStorage = (): UseStorageReturn => {
 
   /* Initialize storage state and listen for changes */
   useEffect(() => {
-    getFromStorage(null)
-      .then((data) => {
-        setStorageState(data as StorageSchema);
-      });
+    getFromStorage(null).then((data) => {
+      setStorageState(data as StorageSchema);
+    });
 
     const onStorageChange: StorageChangeCallback = (changes, namespace) => {
       const allChanges: Partial<StorageSchema> = {};
@@ -51,6 +50,6 @@ export const useStorage = (): UseStorageReturn => {
     storageState,
     preferences: storageState.preferences,
     saveToStorage,
-    changePreference
+    changePreference,
   };
 };

@@ -6,28 +6,28 @@ interface IMessage {
 }
 
 export interface AGOUrlSaveRequest extends IMessage {
-  command: "SAVE_AGO_URL",
-  url: string,
+  command: "SAVE_AGO_URL";
+  url: string;
   region: string;
   environment: string;
   route: string;
   clientID: string;
   planID: string;
-  agoPlanName: string,
-  clientFullName: string,
-  clientLastName: string,
+  agoPlanName: string;
+  clientFullName: string;
+  clientLastName: string;
   /**@deprecated use `clientFullName` or `clientLastName` instead */
-  agoClientName: string,
+  agoClientName: string;
 }
 export interface JIRASaveRequest extends IMessage {
-  command: "SAVE_JIRA_URL",
-  url: string,
-  jiraTitle: string,
-  jiraSprint: string,
-  jiraStatus: string,
+  command: "SAVE_JIRA_URL";
+  url: string;
+  jiraTitle: string;
+  jiraSprint: string;
+  jiraStatus: string;
 }
 export interface GetTabIdRequest extends IMessage {
-  command: "GET_TAB_ID",
+  command: "GET_TAB_ID";
 }
 
 export interface ISuccessMsgResponse {
@@ -51,20 +51,23 @@ interface AgoUrlSaveResponse extends ISuccessMsgResponse {
   message: string;
 }
 
-export type Message<T extends MessageCommand = MessageCommand>
-  = T extends "GET_TAB_ID" ? GetTabIdRequest
-  : T extends "SAVE_JIRA_URL" ? JIRASaveRequest
-  : T extends "SAVE_AGO_URL" ? AGOUrlSaveRequest
-  : never;
+export type Message<T extends MessageCommand = MessageCommand> = T extends "GET_TAB_ID"
+  ? GetTabIdRequest
+  : T extends "SAVE_JIRA_URL"
+    ? JIRASaveRequest
+    : T extends "SAVE_AGO_URL"
+      ? AGOUrlSaveRequest
+      : never;
 
-export type MessageResponse<T extends MessageCommand>
-  = (
-    T extends "GET_TAB_ID" ? GetTabIdResponse
-    : T extends "SAVE_JIRA_URL" ? JiraUrlSaveResponse
-    : T extends "SAVE_AGO_URL" ? AgoUrlSaveResponse
-    : never
-  ) | IErrorMsgResponse;
-
+export type MessageResponse<T extends MessageCommand> =
+  | (T extends "GET_TAB_ID"
+      ? GetTabIdResponse
+      : T extends "SAVE_JIRA_URL"
+        ? JiraUrlSaveResponse
+        : T extends "SAVE_AGO_URL"
+          ? AgoUrlSaveResponse
+          : never)
+  | IErrorMsgResponse;
 
 export type OnMessageListener = (
   message: Message,
