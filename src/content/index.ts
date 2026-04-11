@@ -12,6 +12,7 @@ import { IErrorMsgResponse } from "@/types/message-types";
 import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl, saveAGOUrl, saveJiraUrl } from "@/utils/url";
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { initAutoLogin } from "@/content/auto-login";
+import { initAutoExportImport } from "@/content/auto-export-import";
 
 /* **********************************************************
  * content.jsx | Used for is for manipulating the DOM        *
@@ -155,10 +156,14 @@ const initialize = async () => {
 	if (DEBUG_MODE) console.log("[CONTENT][init] Content script initialized");
 
 	// Wait for DOM before initializing Auto Login
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', initAutoLogin);
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", () => {
+			initAutoLogin();
+			initAutoExportImport();
+		});
 	} else {
 		initAutoLogin();
+		initAutoExportImport();
 	}
 };
 

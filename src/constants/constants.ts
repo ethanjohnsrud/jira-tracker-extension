@@ -56,6 +56,7 @@ export const DEFAULT_STORAGE_STATE: StorageSchema = {
   preferences: {
     debugMode: false,
     autoLogin: false,
+    autoExportImport: false,
     renameAGOTab: false,
     localCacheClearing: false,
   },

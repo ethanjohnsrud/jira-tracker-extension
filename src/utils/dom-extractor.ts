@@ -3,7 +3,7 @@ import { DOM_NAMING_TIMEOUT } from "../constants/constants";
 import { DEBUG_MODE } from "./state";
 import { AGO_CLIENT_NAME_SELECTOR, AGO_PLAN_NAME_SELECTOR, JIRA_SPRINT_SELECTOR, JIRA_STATUS_SELECTOR, JIRA_TITLE_SELECTOR } from "../constants/dom-selectors";
 
-export async function selectElement<T extends HTMLElement>(selector: string) {
+export function selectElement<T extends HTMLElement>(selector: string) {
   return document.querySelector<T>(selector);
 };
 

@@ -42,3 +42,15 @@ export const AUTO_LOGIN_SELECTORS = {
     SUBMIT_BUTTON: '.test-login-loginButton, [data-test-login="true"], button[type="submit"]',
   }
 };
+
+export const AUTO_EXPORT_IMPORT_SELECTORS = {
+  EXPORT: {
+    VYT_EXPORT_BUTTON: "a.btn.btn-primary.w-100.mt-2",
+  },
+  IMPORT: {
+    VYT_FILE_IMPORT_BUTTON: "#vyt-import-button",
+    CHOOSE_FILE_BUTTON: "#choose-file-button",
+    FILE_INPUT: '#mock-file-input, input[type="file"]',
+    UPLOAD_FILE_BUTTON: "#upload-file-button",
+  },
+};

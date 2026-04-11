@@ -10,12 +10,13 @@ export type JiraUrlListItem = JiraListItem;
 export type AgoUrlListItem = AGOListItem;
 
 export interface Preferences {
-  /**Used in `src/utils/state.ts` for `DEBUG_MODE` variable */
-  debugMode: boolean;
-  autoLogin: boolean; // TODO: implement
-  renameAGOTab: boolean; // TODO: implement
-  /**Implemented in `clearCache()` in `src/utils/cache.ts` */
-  localCacheClearing: boolean;
+	/**Used in `src/utils/state.ts` for `DEBUG_MODE` variable */
+	debugMode: boolean;
+	autoLogin: boolean;
+	autoExportImport: boolean;
+	renameAGOTab: boolean; // TODO: implement
+	/**Implemented in `clearCache()` in `src/utils/cache.ts` */
+	localCacheClearing: boolean;
 }
 
 export interface StorageSchema {

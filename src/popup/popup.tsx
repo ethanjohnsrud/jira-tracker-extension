@@ -381,12 +381,12 @@ const Popup = () => {
 		try {
 			const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage(["jiraUrlList", "agoUrlList"]);
 			const latestJira = jiraUrlList.reduce(
-				(latest, current) => current.lastVisitedMS > latest.lastVisitedMS ? current : latest,
+				(latest, current) => (current.lastVisitedMS > latest.lastVisitedMS ? current : latest),
 				jiraUrlList[0]
 			);
 
 			const latestAgo = agoUrlList.reduce(
-				(latest, current) => current.lastVisitedMS > latest.lastVisitedMS ? current : latest,
+				(latest, current) => (current.lastVisitedMS > latest.lastVisitedMS ? current : latest),
 				agoUrlList[0]
 			);
 			if (!latestJira || !latestAgo) {
@@ -532,7 +532,12 @@ const Popup = () => {
 				{/* Preferences */}
 				<Popover>
 					<Popover.Trigger aria-label="Preferences">
-						<HerouiButton size="sm" variant="ghost" isIconOnly className="rounded-full text-white hover:text-primary bg-transparent">
+						<HerouiButton
+							size="sm"
+							variant="ghost"
+							isIconOnly
+							className="rounded-full text-white hover:text-primary bg-transparent"
+						>
 							<EllipsisVerticalIcon className="size-5" />
 						</HerouiButton>
 					</Popover.Trigger>
@@ -550,6 +555,12 @@ const Popup = () => {
 								label="Auto Login"
 								isSelected={preferences.autoLogin}
 								onChange={() => changePreference("autoLogin", !preferences.autoLogin)}
+							/>
+							<CheckboxWrapper
+								id="autoExportImport"
+								label="Auto Export/Import"
+								isSelected={preferences.autoExportImport}
+								onChange={() => changePreference("autoExportImport", !preferences.autoExportImport)}
 							/>
 							<CheckboxWrapper
 								id="renameAGOTab"
