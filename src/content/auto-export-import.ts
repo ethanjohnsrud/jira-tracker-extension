@@ -1,7 +1,7 @@
 import { getFromStorage } from "@/controllers/storageController";
 import { DEBUG_MODE } from "@/utils/state";
 import { AUTO_EXPORT_IMPORT_SELECTORS } from "@/constants/dom-selectors";
-import { getElement } from "@/utils/dom-extractor";
+import { getElement, waitForUserGesture } from "@/utils/dom-extractor";
 import { sleep } from "@/utils/functions";
 
 const EXPORT_ROUTE_REGEX = /\/client-export/;
@@ -57,8 +57,9 @@ const handleImportPage = async () => {
 		const fileInput = await getElement<HTMLInputElement>(FILE_INPUT);
 
 		if (fileInput) {
-			if (DEBUG_MODE) console.log("[AutoExportImport] Clicking file input directly", fileInput);
-			fileInput.click();
+			if (DEBUG_MODE) console.log("[AutoExportImport] Waiting for user gesture before clicking file input");
+			await waitForUserGesture(); // filepicker is an user-gesture restricted feature
+			fileInput.click(); // It doesn't work programmatically on page load without user gesture
 
 			fileInput.addEventListener("change", async () => {
 				if (fileInput.files && fileInput.files.length > 0) {

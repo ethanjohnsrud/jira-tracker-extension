@@ -36,6 +36,22 @@ export async function getElement<T extends HTMLElement>(selector: string): Promi
   return waitForDOM(() => document.querySelector<T>(selector));
 };
 
+/** Wait for user gesture (click, keydown, pointerdown, or touchstart etc.) */
+export async function waitForUserGesture(): Promise<void> {
+  const GESTURE_EVENTS = ["click", "keydown", "pointerdown", "touchstart"];
+
+  return new Promise((resolve) => {
+    const handler = () => {
+      GESTURE_EVENTS.forEach(evt => document.removeEventListener(evt, handler, true));
+      resolve();
+    };
+
+    GESTURE_EVENTS.forEach(evt =>
+      document.addEventListener(evt, handler, true) // capture phase
+    );
+  });
+}
+
 export async function extractJiraTitle(): Promise<string> {
   try {
     const titleElement = await getElement(JIRA_TITLE_SELECTOR);
