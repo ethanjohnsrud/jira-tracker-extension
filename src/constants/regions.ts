@@ -1,0 +1,20 @@
+import { RegionSelection } from "../types/dropdown-types";
+
+export const REGIONS: RegionSelection[] = [
+  { label: "UK", value: "uk" },
+  { label: "IE", value: "ie" },
+  { label: "CA", value: "ca" },
+  { label: "US", value: "us" },
+  { label: "AU", value: "au" },
+  { label: "UNI", value: "uni" },
+  { label: "TD", value: "td" },
+  { label: "TDR", value: "tdr" },
+  { label: "BMO", value: "bmo" },
+  { label: "CIBC", value: "cibc" },
+  { label: "COUTTS", value: "coutts" },
+  { label: "BARC", value: "barc" },
+  { label: "SPW", value: "spw" },
+  { label: "BOI", value: "boi" },
+];
+
+export default REGIONS;

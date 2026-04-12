@@ -10,33 +10,35 @@ The **Jira Tracking Extension** is a Chrome extension designed to enhance produc
 This extension is designed to improve the workflow for development teams, making it easier to manage and access the most relevant project information in real-time.
 
 ## Production
+
 1. To build the extension in production mode using the webpack.prod config, run
-  `yarn build`. This will minify the code.
+   `yarn build`. This will minify the code.
 2. You can then install the extension file inside the dist folder on Google Chrome
 
 ## Install the Extension in Chrome
 
-1. Open **Google Chrome** and go to:  chrome://extensions/
-2. Enable **Developer mode** (toggle in the top-right corner).  
-3. Click on **"Load unpacked"**.  
-4. Select the **dist/** folder in your project.  
-5. The extension should now be installed and visible in Chrome.  
-
+1. Open **Google Chrome** and go to: chrome://extensions/
+2. Enable **Developer mode** (toggle in the top-right corner).
+3. Click on **"Load unpacked"**.
+4. Select the **dist/** folder in your project.
+5. The extension should now be installed and visible in Chrome.
 
 ## Development
+
 1. Install node modules, run `yarn`
 2. Build extension dev mode, run `yarn dev`
 3. Install the extension in the dist folder on Google Chrome
 
 ### Key File Structure
+
 - **`/constants`** — Dropdown Configurations: `environments.json`, `regions.json`, `routes.json`
 - **`constants.js`** — Regex Url Matching
 - **`content.jsx`** — Injected into web pages; it reads or modifies page content and listens for messages from the background or popup scripts.
 - **`background.jsx`** — Runs persistently in the background, handling alarms, storage, and event listeners like `chrome.alarms.onAlarm`, managing extension-wide state and cross-script messaging.
 - **`popup.jsx`** — The UI code for the extension's popup window; displays data from storage, triggers actions like starting/stopping timers, and communicates with the background script.
 
-
 #### Chrome Extension Refresh & Code Update Behavior
+
 - **When you run `yarn dev`**  
   → Webpack rebuilds your extension bundle and shows `compiled successfully` in the terminal.
 
@@ -59,6 +61,7 @@ This extension is designed to improve the workflow for development teams, making
   → Unless the manifest version changes significantly or you need to clear/reset extension storage.
 
 #### Debugging: Where `console.log` Appears
+
 - **From `background.jsx` (service worker)**  
   → Go to [chrome://extensions/](chrome://extensions/), click **“Service Worker” link under your extension**, opens a console for background logs.
 
@@ -68,18 +71,21 @@ This extension is designed to improve the workflow for development teams, making
 - **From `popup.jsx` (popup window)**  
   → Right-click your extension icon → **Inspect popup**, logs appear in the **Console tab** of that popup’s DevTools.
 
-
 ## Additional Information
+
 This extension is built with ReactJs, Tailwind and webpack.
 
-- The cache clear URL and the time interval are located in the `background.jsx` file.  It is only initiated in the `Local` environment; according to `Popup.jsx.handleCacheClick`.
+- The cache clear URL and the time interval are located in the `background.jsx` file. It is only initiated in the `Local` environment; according to `Popup.jsx.handleCacheClick`.
 
 ### Colors
+
 - Primary color is set in the `tailwind.config.js` file.
 - The background color is set in `src/index.css` file `line 20`
 
 ### Config
+
 The JavaScript files that you want to be in the extension as following in **webpack.config.js**
+
 ```
   entry: {
     popup: "./src/popup.jsx",
@@ -89,7 +95,8 @@ The JavaScript files that you want to be in the extension as following in **webp
 ```
 
 ### Author
+
 **Ethan Johnsrud**
+
 - [Github](https://github.com/ethanjohnsrud)
 - [Portfolio](https://ethanjohnsrud.com/)
- 
