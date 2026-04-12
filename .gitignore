@@ -11,3 +11,5 @@ pnpm-lock.yaml
 .pem
 .DS_Store
 *.zip
+
+bundle-stats.html

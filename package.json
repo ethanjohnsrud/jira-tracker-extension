@@ -4,6 +4,7 @@
   "version": "2.0",
   "description": "Automatically bookmark Jira tickets and link to AGO plan; including systematic environment navigation to aid development.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -50,6 +51,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^17.4.0",
     "prettier": "^3.8.1",
+    "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.49.7",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.2",
