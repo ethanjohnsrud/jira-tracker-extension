@@ -33,4 +33,3 @@ export const COMPANY_URL_REGEX =
 export const LOGIN_URL_REGEX = /^https:\/\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)/;
 
 export const JIRA_CODE_REGEX = /^[A-Z]{2,10}-\d{1,10}$/i;
-

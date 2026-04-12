@@ -14,7 +14,7 @@ type Props = {
   linkReady?: boolean;
 };
 
-export default function TableItem({
+export default function URLItemElement({
   storageListKey,
   className,
   linkReady,

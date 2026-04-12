@@ -1,5 +1,5 @@
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import REGIONS from "@/constants/regions";
 import ENVIRONMENTS from "@/constants/environments";
 import ROUTES from "@/constants/routes";
@@ -17,7 +17,6 @@ import {
   ArrowDownToLineIcon,
   ArrowUpToLineIcon,
   CalendarDaysIcon,
-  EllipsisVerticalIcon,
   FilterIcon,
   FolderIcon,
   LinkIcon,
@@ -26,19 +25,18 @@ import {
 } from "lucide-react";
 
 import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
-import TableItem from "@/components/TableItem";
-import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
-import { Accordion, Button as HerouiButton, PressEvent, Popover, DatePicker, DateField, Calendar, Chip, DateValue } from "@heroui/react";
+import URLItemElement from "@/components/URLItemElement";
+import { AgoUrlListItem, JiraUrlListItem } from "@/types/storage-types";
+import { Accordion, Button as HerouiButton, PressEvent, Popover, Calendar, Chip, DateValue } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX, JIRA_CODE_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
-import { UrlListItem, validateJiraList, validateAGOList } from "@/types/list-types";
-import { validateCredentials } from "@/types/dropdown-types";
-import { CheckboxWrapper } from "@/components/CheckboxWrapper";
+import { UrlListItem } from "@/types/list-types";
 import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
+import PreferencePopover from "@/components/PreferencePopover";
 
 type HerouiButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HerouiButton>["onPress"]>>[0];
 type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HerouiButtonPressEvent;
@@ -53,24 +51,118 @@ const ARCHIVED_COLLECTION_NAME = "Archived";
 
 type GroupedListEntry<T extends UrlListItem> =
   | {
-    kind: "item";
-    id: string;
-    lastVisitedMS: number;
-    item: T;
-  }
+      kind: "item";
+      id: string;
+      lastVisitedMS: number;
+      item: T;
+    }
   | {
-    kind: "folder";
-    id: string;
-    lastVisitedMS: number;
-    collectionName: string;
-    items: T[];
-  };
+      kind: "folder";
+      id: string;
+      lastVisitedMS: number;
+      collectionName: string;
+      items: T[];
+    };
+
+const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
+  if (a.favorite && !b.favorite) return -1;
+  if (!a.favorite && b.favorite) return 1;
+  return b.lastVisitedMS - a.lastVisitedMS;
+};
+
+const sortGroupedEntries = <T extends UrlListItem>(a: GroupedListEntry<T>, b: GroupedListEntry<T>) => {
+  const aArchived = a.kind === "folder" && a.collectionName === ARCHIVED_COLLECTION_NAME;
+  const bArchived = b.kind === "folder" && b.collectionName === ARCHIVED_COLLECTION_NAME;
+  if (aArchived && !bArchived) return 1;
+  if (!aArchived && bArchived) return -1;
+  return b.lastVisitedMS - a.lastVisitedMS;
+};
+
+const buildGroupedListEntries = <T extends UrlListItem>(urlList: T[]): GroupedListEntry<T>[] => {
+  const collectionGroups = new Map<string, T[]>();
+  const rootItems: GroupedListEntry<T>[] = [];
+
+  for (const item of urlList) {
+    if (item.collectionName) {
+      const existingItems = collectionGroups.get(item.collectionName) ?? [];
+      existingItems.push(item);
+      collectionGroups.set(item.collectionName, existingItems);
+      continue;
+    }
+
+    rootItems.push({
+      kind: "item",
+      id: item.id,
+      lastVisitedMS: item.lastVisitedMS,
+      item,
+    });
+  }
+
+  const folderItems: GroupedListEntry<T>[] = Array.from(collectionGroups.entries()).map(([collectionName, items]) => ({
+    kind: "folder",
+    id: `folder-${collectionName}`,
+    collectionName,
+    lastVisitedMS: Math.max(...items.map((item) => item.lastVisitedMS)),
+    items: [...items].sort(sortByRecentAndFavorite),
+  }));
+
+  return [...rootItems, ...folderItems].sort(sortGroupedEntries);
+};
+
+const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
+  entries: GroupedListEntry<T>[],
+  storageListKey: "jiraUrlList" | "agoUrlList",
+  latestId: string
+): ReactNode =>
+  entries.map((entry) => {
+    if (entry.kind === "item") {
+      return (
+        <URLItemElement
+          key={entry.id}
+          storageListKey={storageListKey}
+          urlItem={entry.item}
+          linkReady={entry.item.id === latestId}
+        />
+      );
+    }
+
+    return (
+      <Accordion key={entry.id} hideSeparator className="px-0">
+        <Accordion.Item id={entry.id} className="border border-default-200 rounded-md bg-content1/40 overflow-hidden">
+          <Accordion.Heading>
+            <Accordion.Trigger className="w-full px-0 py-2 hover:bg-content2/60 transition-colors">
+              <div className="flex w-full items-center gap-2 text-left">
+                <FolderIcon className="size-4 text-primary shrink-0" />
+                <span className="flex-1 truncate text-sm font-semibold text-white">{entry.collectionName}</span>
+                <span className="text-xs text-default-400 whitespace-nowrap">{entry.items.length}</span>
+                <Accordion.Indicator className="size-4 text-default-400 shrink-0" />
+              </div>
+            </Accordion.Trigger>
+          </Accordion.Heading>
+          <Accordion.Panel>
+            <Accordion.Body className="pl-2 pr-0 pb-2 pt-0">
+              <div className="flex flex-col gap-2">
+                {entry.items.map((item) => (
+                  <URLItemElement
+                    key={item.id}
+                    storageListKey={storageListKey}
+                    urlItem={item}
+                    linkReady={item.id === latestId}
+                  />
+                ))}
+              </div>
+            </Accordion.Body>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+    );
+  });
 
 /**************************************************
  * popup.tsx is the React extension popup display *
  **************************************************/
 const Popup = () => {
-  const { storageState, preferences, saveToStorage, changePreference } = useStorage();
+  const { saveToStorage, storageState } = useStorage();
   const [dropdowns, setDropdowns] = useState<DropdownSelections>({
     region: REGIONS[0],
     environment: ENVIRONMENTS[1],
@@ -82,9 +174,7 @@ const Popup = () => {
   const [tabOn, setTabOn] = useState<boolean>(false);
   const [cacheOn, setCacheOn] = useState<boolean>(false);
   const [cacheLoading, setCacheLoading] = useState<boolean>(false);
-  const [jiraDisplayList, setJiraDisplayList] = useState<JiraUrlListItem[]>([]);
   const [latestJiraId, setLatestJiraId] = useState<string>("");
-  const [agoDisplayList, setAgoDisplayList] = useState<AgoUrlListItem[]>([]);
   const [latestAgoId, setLatestAgoId] = useState<string>("");
   const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<DateValue | null>(null);
   const [isAgoFilterActive, setIsAgoFilterActive] = useState<boolean>(false);
@@ -94,164 +184,54 @@ const Popup = () => {
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const handleExport = async (type: "jira" | "ago" | "credentials") => {
-    try {
-      const storageKey =
-        type === "jira" ? "jiraUrlList" : type === "ago" ? "agoUrlList" : ("loginCredentials" as const);
-      const data = await getFromStorage(storageKey);
-      const list = data[storageKey] || [];
+  // Memoized Filtered and Sorted Jira List
+  const jiraEntries = useMemo(() => {
+    const filteredAndSorted = storageState.jiraUrlList
+      .filter((item) => {
+        const matchesDate =
+          !jiraTargetDateFilter ||
+          (item.targetDateMS &&
+            isSameDay(new Date(item.targetDateMS), jiraTargetDateFilter.toDate(getLocalTimeZone())));
 
-      const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${type}_export_${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${type}:`, error);
-    }
-  };
+        const searchAbleFields = [item.displayName, item.jiraCode, item.title, item.sprint, item.status];
+        const matchesSearch =
+          !searchQuery || searchAbleFields.some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const handleImport = (type: "jira" | "ago" | "credentials") => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const content = event.target?.result as string;
-          const parsed = JSON.parse(content);
-
-          let isValid = false;
-          if (type === "jira") isValid = validateJiraList(parsed, preferences.debugMode);
-          else if (type === "ago") isValid = validateAGOList(parsed, preferences.debugMode);
-          else if (type === "credentials") isValid = validateCredentials(parsed, preferences.debugMode);
-
-          if (isValid) {
-            if (type === "jira") {
-              await saveToStorage({ jiraUrlList: parsed });
-            } else if (type === "ago") {
-              await saveToStorage({ agoUrlList: parsed });
-            } else if (type === "credentials") {
-              await saveToStorage({ loginCredentials: parsed });
-            }
-            // UI will be updated via storage listener calling loadDisplayLists
-            if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${type}`);
-          } else {
-            alert(`Invalid ${type.toUpperCase()} JSON file format.`);
-          }
-        } catch (error) {
-          if (DEBUG_MODE) console.error(`[POPUP][handleImport] Failed to parse ${type} import:`, error);
-          alert(`Failed to parse ${type.toUpperCase()} JSON file.`);
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  };
-
-  const sortByRecentAndFavorite = <T extends UrlListItem>(a: T, b: T) => {
-    if (a.favorite && !b.favorite) return -1;
-    if (!a.favorite && b.favorite) return 1;
-    return b.lastVisitedMS - a.lastVisitedMS;
-  };
-
-  const sortGroupedEntries = <T extends UrlListItem>(a: GroupedListEntry<T>, b: GroupedListEntry<T>) => {
-    const aArchived = a.kind === "folder" && a.collectionName === ARCHIVED_COLLECTION_NAME;
-    const bArchived = b.kind === "folder" && b.collectionName === ARCHIVED_COLLECTION_NAME;
-    if (aArchived && !bArchived) return 1;
-    if (!aArchived && bArchived) return -1;
-    return b.lastVisitedMS - a.lastVisitedMS;
-  };
-
-  const buildGroupedListEntries = <T extends UrlListItem>(urlList: T[]): GroupedListEntry<T>[] => {
-    const collectionGroups = new Map<string, T[]>();
-    const rootItems: GroupedListEntry<T>[] = [];
-
-    for (const item of urlList) {
-      if (item.collectionName) {
-        const existingItems = collectionGroups.get(item.collectionName) ?? [];
-        existingItems.push(item);
-        collectionGroups.set(item.collectionName, existingItems);
-        continue;
-      }
-
-      rootItems.push({
-        kind: "item",
-        id: item.id,
-        lastVisitedMS: item.lastVisitedMS,
-        item,
-      });
-    }
-
-    const folderItems: GroupedListEntry<T>[] = Array.from(collectionGroups.entries()).map(
-      ([collectionName, items]) => ({
-        kind: "folder",
-        id: `folder-${collectionName}`,
-        collectionName,
-        lastVisitedMS: Math.max(...items.map((item) => item.lastVisitedMS)),
-        items: [...items].sort(sortByRecentAndFavorite),
+        return matchesDate && matchesSearch;
       })
-    );
+      .sort(sortByRecentAndFavorite);
+    return filteredAndSorted;
+  }, [storageState.jiraUrlList, jiraTargetDateFilter, searchQuery]);
 
-    return [...rootItems, ...folderItems].sort(sortGroupedEntries);
-  };
+  // Memoized Filtered and Sorted AGO List
+  const agoEntries = useMemo(() => {
+    const filteredAndSorted = storageState.agoUrlList
+      .filter((item) => {
+        const matchesFilter =
+          !isAgoFilterActive ||
+          (item.region.toLowerCase() === dropdowns.region.value.toLowerCase() &&
+            item.environment.toLowerCase() === dropdowns.environment.value.toLowerCase());
 
-  const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
-    entries: GroupedListEntry<T>[],
-    storageListKey: "jiraUrlList" | "agoUrlList",
-    latestId: string
-  ): ReactNode =>
-    entries.map((entry) => {
-      if (entry.kind === "item") {
-        return (
-          <TableItem
-            key={entry.id}
-            storageListKey={storageListKey}
-            urlItem={entry.item}
-            linkReady={entry.item.id === latestId}
-          />
-        );
-      }
+        const searchAbleFields = [
+          item.displayName,
+          item.planName,
+          item.clientFullName,
+          item.jiraCode,
+          item.region,
+          item.environment,
+          item.route,
+        ];
+        const matchesSearch =
+          !searchQuery || searchAbleFields.some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      return (
-        <Accordion key={entry.id} hideSeparator className="px-0">
-          <Accordion.Item id={entry.id} className="border border-default-200 rounded-md bg-content1/40 overflow-hidden">
-            <Accordion.Heading>
-              <Accordion.Trigger className="w-full px-0 py-2 hover:bg-content2/60 transition-colors">
-                <div className="flex w-full items-center gap-2 text-left">
-                  <FolderIcon className="size-4 text-primary shrink-0" />
-                  <span className="flex-1 truncate text-sm font-semibold text-white">{entry.collectionName}</span>
-                  <span className="text-xs text-default-400 whitespace-nowrap">{entry.items.length}</span>
-                  <Accordion.Indicator className="size-4 text-default-400 shrink-0" />
-                </div>
-              </Accordion.Trigger>
-            </Accordion.Heading>
-            <Accordion.Panel>
-              <Accordion.Body className="pl-2 pr-0 pb-2 pt-0">
-                <div className="flex flex-col gap-2">
-                  {entry.items.map((item) => (
-                    <TableItem
-                      key={item.id}
-                      storageListKey={storageListKey}
-                      urlItem={item}
-                      linkReady={item.id === latestId}
-                    />
-                  ))}
-                </div>
-              </Accordion.Body>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      );
-    });
+        return matchesFilter && matchesSearch;
+      })
+      .sort(sortByRecentAndFavorite);
+    return filteredAndSorted;
+  }, [storageState.agoUrlList, isAgoFilterActive, searchQuery, dropdowns]);
+
+  const jiraGroupedEntries = useMemo(() => buildGroupedListEntries(jiraEntries), [jiraEntries]);
+  const agoGroupedEntries = useMemo(() => buildGroupedListEntries(agoEntries), [agoEntries]);
 
   const updateDropdowns = (dropdowns: Partial<DropdownSelections>) => {
     setDropdowns((prev) => ({ ...prev, ...dropdowns }));
@@ -422,41 +402,32 @@ const Popup = () => {
     }
   };
 
-  /* Load and sort Jira and AGO URL lists from storage */
-  const loadDisplayLists = async () => {
-    try {
-      const { jiraUrlList = [], agoUrlList = [] } = await getFromStorage(["jiraUrlList", "agoUrlList"]);
+  // Set latest Jira and AGO IDs based on storage state
+  useEffect(() => {
+    const jiraSortedList = storageState.jiraUrlList.sort(sortByRecentAndFavorite);
+    const agoSortedList = storageState.agoUrlList.sort(sortByRecentAndFavorite);
 
-      const jiraSortedList = jiraUrlList.sort(sortByRecentAndFavorite);
-      const agoSortedList = agoUrlList.sort(sortByRecentAndFavorite);
-
-      setJiraDisplayList(jiraSortedList);
-      setAgoDisplayList(agoSortedList);
-
-      /* Determine Link Ready URLs */
-      if (jiraSortedList.length > 0) {
-        const latest = jiraSortedList.reduce(
-          (latest, current) => (new Date(current.lastVisited) > new Date(latest.lastVisited) ? current : latest),
-          jiraSortedList[0]
-        );
-        setLatestJiraId(latest.id);
-      }
-
-      if (agoSortedList.length > 0) {
-        const latest = agoSortedList.reduce(
-          (latest, current) => (new Date(current.lastVisited) > new Date(latest.lastVisited) ? current : latest),
-          agoSortedList[0]
-        );
-        setLatestAgoId(latest.id);
-      }
-
-      if (DEBUG_MODE) console.log("[popup:loadDisplayLists] Lists loaded", { jiraSortedList, agoSortedList });
-    } catch (error) {
-      if (DEBUG_MODE) console.error("[popup:loadDisplayLists] Error:", error);
+    // Determine Link Ready URLs
+    if (jiraSortedList.length > 0) {
+      const latest = jiraSortedList.reduce(
+        (latest, current) => (current.lastVisitedMS > latest.lastVisitedMS ? current : latest),
+        jiraSortedList[0]
+      );
+      setLatestJiraId(latest.id);
     }
-  };
 
-  /* Fetch next timer from storage and compute seconds left */
+    if (agoSortedList.length > 0) {
+      const latest = agoSortedList.reduce(
+        (latest, current) => (current.lastVisitedMS > latest.lastVisitedMS ? current : latest),
+        agoSortedList[0]
+      );
+      setLatestAgoId(latest.id);
+    }
+
+    if (DEBUG_MODE) console.log("[popup:loadDisplayLists] Lists loaded", { jiraSortedList, agoSortedList });
+  }, [storageState.jiraUrlList, storageState.agoUrlList]);
+
+  // Fetch next timer from storage and compute seconds left
   const fetchNextTimer = async () => {
     try {
       const now = Date.now();
@@ -494,48 +465,37 @@ const Popup = () => {
     };
   }, [cacheOn]);
 
-  /* Initialize popup state and storage listeners */
+  // Initialize tab states based on storage state and current tab
   useEffect(() => {
-    const onStorageChange: StorageChangeCallback = (changes, namespace) => {
-      if (namespace === "local" && (changes.jiraUrlList || changes.agoUrlList)) {
-        loadDisplayLists();
-      }
-    };
+    setTabOn(storageState.tabOn === true || storageState.tabOn === "true");
 
-    const init = async () => {
-      const stored = await getFromStorage(["cacheTabId", "tabOn", "environment", "region", "route"]);
-      const { cacheTabId, tabOn, environment, region, route } = stored;
-
-      if (DEBUG_MODE) console.log("[POPUP][init] Debug mode enabled");
-
-      loadDisplayLists();
-
-      chrome.storage.onChanged.addListener(onStorageChange);
-
-      setTabOn(tabOn === true || tabOn === "true");
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      setCacheOn(cacheTabId === tab.id);
+    chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      setCacheOn(storageState.cacheTabId === tab.id);
       if (tab.url) setCurrentTabURL(tab.url);
+    });
+  }, [storageState.tabOn, storageState.cacheTabId]);
 
-      const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region || "").toLowerCase()) || REGIONS[0];
+  // Update dropdowns based on storage state
+  useEffect(() => {
+    const validRegion =
+      REGIONS.find((r) => r.value.toLowerCase() === (storageState.region || "").toLowerCase()) || REGIONS[0];
 
-      const validEnvironment =
-        ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment || "").toLowerCase()) || ENVIRONMENTS[1];
+    const validEnvironment =
+      ENVIRONMENTS.find((e) => e.value.toLowerCase() === (storageState.environment || "").toLowerCase()) ||
+      ENVIRONMENTS[1];
 
-      const sortedRoutes = [...ROUTES].sort(
-        (a, b) =>
-          Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
-      );
-      //Some have general regex; where could be more specific
-      const validRoute = !!route ? sortedRoutes.find((r) => new RegExp(r.regex).test(route)) || ROUTES[0] : ROUTES[0];
+    const sortedRoutes = [...ROUTES].sort(
+      (a, b) =>
+        Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
+    );
+    //Some have general regex; where could be more specific
+    const validRoute = !!storageState.route
+      ? sortedRoutes.find((r) => new RegExp(r.regex).test(storageState.route)) || ROUTES[0]
+      : ROUTES[0];
 
-      setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
-      if (DEBUG_MODE) console.log("[POPUP][init] Dropdowns set:", validRegion, validEnvironment, validRoute);
-    };
-    init();
-
-    return () => chrome.storage.onChanged.removeListener(onStorageChange);
-  }, []);
+    if (DEBUG_MODE) console.log("[POPUP] Dropdowns set:", validRegion, validEnvironment, validRoute);
+    // setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
+  }, [storageState.environment, storageState.region, storageState.route]);
 
   /* Capture typing elsewhere to focus search and handle Enter */
   useEffect(() => {
@@ -571,95 +531,7 @@ const Popup = () => {
     <div className="w-full h-full flex flex-col items-center space-y-4">
       <div className="w-full flex justify-between items-center">
         <h1 className="text-xl font-semibold text-primary">Jira Tracker</h1>
-        {/* Preferences */}
-        <Popover>
-          <Popover.Trigger aria-label="Preferences">
-            <HerouiButton
-              size="sm"
-              variant="ghost"
-              isIconOnly
-              className="rounded-full text-white hover:text-primary bg-transparent"
-            >
-              <EllipsisVerticalIcon className="size-5" />
-            </HerouiButton>
-          </Popover.Trigger>
-          <Popover.Content className="w-[320px]">
-            <Popover.Dialog>
-              <Popover.Heading className="text-base font-semibold">Preferences</Popover.Heading>
-              <CheckboxWrapper
-                id="debug"
-                label="Debug Mode"
-                isSelected={preferences.debugMode}
-                onChange={() => changePreference("debugMode", !preferences.debugMode)}
-              />
-              <CheckboxWrapper
-                id="autoLogin"
-                label="Auto Login"
-                isSelected={preferences.autoLogin}
-                onChange={() => changePreference("autoLogin", !preferences.autoLogin)}
-              />
-              <CheckboxWrapper
-                id="autoExportImport"
-                label="Auto Export/Import"
-                isSelected={preferences.autoExportImport}
-                onChange={() => changePreference("autoExportImport", !preferences.autoExportImport)}
-              />
-              <CheckboxWrapper
-                id="renameAGOTab"
-                label="AGO Tab Renaming"
-                isSelected={preferences.renameAGOTab}
-                onChange={() => changePreference("renameAGOTab", !preferences.renameAGOTab)}
-              />
-              <CheckboxWrapper
-                id="localCacheClearing"
-                label="Local Cache Clearing"
-                isSelected={preferences.localCacheClearing}
-                onChange={() => changePreference("localCacheClearing", !preferences.localCacheClearing)}
-              />
-
-              <p className="text-base font-semibold mt-2">Import/Export</p>
-              <div className="flex flex-col gap-y-1 mt-1">
-                <HerouiButton
-                  onPress={() => handleImport("jira")}
-                  className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-                >
-                  <ArrowUpToLineIcon className="size-3.5" /> Jira links
-                </HerouiButton>
-                <HerouiButton
-                  onPress={() => handleExport("jira")}
-                  className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-                >
-                  <ArrowDownToLineIcon className="size-3.5" /> Jira links
-                </HerouiButton>
-                <HerouiButton
-                  onPress={() => handleImport("ago")}
-                  className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-                >
-                  <ArrowUpToLineIcon className="size-3.5" /> AGO links
-                </HerouiButton>
-                <HerouiButton
-                  onPress={() => handleExport("ago")}
-                  className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-                >
-                  <ArrowDownToLineIcon className="size-3.5" /> AGO links
-                </HerouiButton>
-                {/* TODO: Add functionality to import/export */}
-                <HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
-                  <ArrowUpToLineIcon className="size-3.5" /> Settings
-                </HerouiButton>
-                <HerouiButton className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
-                  <ArrowDownToLineIcon className="size-3.5" /> Settings
-                </HerouiButton>
-                <HerouiButton
-                  onPress={() => handleImport("credentials")}
-                  className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-                >
-                  <ArrowUpToLineIcon className="size-3.5" /> Auto Login Credentials
-                </HerouiButton>
-              </div>
-            </Popover.Dialog>
-          </Popover.Content>
-        </Popover>
+        <PreferencePopover />
       </div>
       <div className="w-full grid grid-cols-3 gap-x-2">
         <Dropdown label="Region" options={REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
@@ -759,18 +631,17 @@ const Popup = () => {
                           {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
                         </Calendar.GridHeader>
                         <Calendar.GridBody>
-                          {(date) => (
-                            <Calendar.Cell
-                              date={date}
-                              onClick={() => setJiraTargetDateFilter(date)}
-                            />
-                          )}
+                          {(date) => <Calendar.Cell date={date} onClick={() => setJiraTargetDateFilter(date)} />}
                         </Calendar.GridBody>
                       </Calendar.Grid>
                     </Calendar>
                     <div className="flex justify-end mt-2">
-                      {jiraTargetDateFilter && <Chip>{formatDate(jiraTargetDateFilter.toDate(getLocalTimeZone()), "MMM dd, yyyy")}</Chip>}
-                      <HerouiButton size="sm" variant="ghost" onPress={() => setJiraTargetDateFilter(null)}>Clear</HerouiButton>
+                      {jiraTargetDateFilter && (
+                        <Chip>{formatDate(jiraTargetDateFilter.toDate(getLocalTimeZone()), "MMM dd, yyyy")}</Chip>
+                      )}
+                      <HerouiButton size="sm" variant="ghost" onPress={() => setJiraTargetDateFilter(null)}>
+                        Clear
+                      </HerouiButton>
                     </div>
                   </Popover.Dialog>
                 </Popover.Content>
@@ -778,24 +649,7 @@ const Popup = () => {
             </div>
           </div>
           <div className="flex flex-col gap-2 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
-            {renderGroupedList(
-              buildGroupedListEntries(
-                jiraDisplayList.filter((item) => {
-                  const matchesDate =
-                    !jiraTargetDateFilter ||
-                    (item.targetDateMS && isSameDay(new Date(item.targetDateMS), jiraTargetDateFilter.toDate(getLocalTimeZone())));
-
-                  const matchesSearch =
-                    !searchQuery ||
-                    [item.displayName, item.jiraCode, item.title, item.sprint, item.status]
-                      .some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
-
-                  return matchesDate && matchesSearch;
-                })
-              ),
-              "jiraUrlList",
-              latestJiraId
-            )}
+            {renderGroupedList(jiraGroupedEntries, "jiraUrlList", latestJiraId)}
           </div>
         </div>
 
@@ -819,32 +673,17 @@ const Popup = () => {
               </a>
               <span
                 onClick={() => setIsAgoFilterActive(!isAgoFilterActive)}
-                className={`group rounded-full p-2 cursor-pointer hover:bg-success-hover ${isAgoFilterActive ? 'bg-success-hover/20' : ''}`}
+                className={`group rounded-full p-2 cursor-pointer hover:bg-success-hover ${isAgoFilterActive ? "bg-success-hover/20" : ""}`}
               >
-                <FilterIcon size={18} className={`${isAgoFilterActive ? 'text-white' : 'text-green-500'} group-hover:text-white`} />
+                <FilterIcon
+                  size={18}
+                  className={`${isAgoFilterActive ? "text-white" : "text-green-500"} group-hover:text-white`}
+                />
               </span>
             </div>
           </div>
           <div className="flex flex-col gap-2 w-full h-full max-h-[300px] overflow-x-hidden overflow-y-auto hide-scrollbar">
-            {renderGroupedList(
-              buildGroupedListEntries(
-                agoDisplayList.filter((item) => {
-                  const matchesFilter =
-                    !isAgoFilterActive ||
-                    (item.region.toLowerCase() === dropdowns.region.value.toLowerCase() &&
-                      item.environment.toLowerCase() === dropdowns.environment.value.toLowerCase());
-
-                  const matchesSearch =
-                    !searchQuery ||
-                    [item.displayName, item.planName, item.clientFullName, item.jiraCode, item.region, item.environment, item.route]
-                      .some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
-
-                  return matchesFilter && matchesSearch;
-                })
-              ),
-              "agoUrlList",
-              latestAgoId
-            )}
+            {renderGroupedList(agoGroupedEntries, "agoUrlList", latestAgoId)}
           </div>
         </div>
       </div>
