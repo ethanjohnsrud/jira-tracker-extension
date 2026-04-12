@@ -60,3 +60,6 @@ export const DEFAULT_STORAGE_STATE: StorageSchema = {
   },
   cacheTabId: undefined,
 };
+
+export const JIRA_SEARCH_URL_PREFIX = "https://jira.ethanjohnsrud.com/browse/";
+

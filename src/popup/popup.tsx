@@ -4,11 +4,12 @@ import REGIONS from "@/constants/regions";
 import ENVIRONMENTS from "@/constants/environments";
 import ROUTES from "@/constants/routes";
 import {
-  ROUTE_DEPRIORITIZED_LABELS,
-  AGO_HEADER_HYPERLINK_DEFAULT,
-  JIRA_HEADER_HYPERLINK_DEFAULT,
   UK_HOSTED_TEST_REGIONS,
   QA_TEST_REGIONS,
+  JIRA_SEARCH_URL_PREFIX,
+  AGO_HEADER_HYPERLINK_DEFAULT,
+  JIRA_HEADER_HYPERLINK_DEFAULT,
+  ROUTE_DEPRIORITIZED_LABELS,
 } from "@/constants/constants";
 
 import Dropdown from "@/components/Dropdown";
@@ -20,6 +21,8 @@ import {
   FilterIcon,
   FolderIcon,
   LinkIcon,
+  SearchIcon,
+  XIcon,
 } from "lucide-react";
 
 import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
@@ -29,7 +32,7 @@ import { Accordion, Button as HerouiButton, PressEvent, Popover, DatePicker, Dat
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
-import { AGO_URL_REGEX } from "@/constants/regex";
+import { AGO_URL_REGEX, JIRA_CODE_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
 import { UrlListItem, validateJiraList, validateAGOList } from "@/types/list-types";
 import { validateCredentials } from "@/types/dropdown-types";
@@ -85,6 +88,8 @@ const Popup = () => {
   const [latestAgoId, setLatestAgoId] = useState<string>("");
   const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<DateValue | null>(null);
   const [isAgoFilterActive, setIsAgoFilterActive] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -532,6 +537,36 @@ const Popup = () => {
     return () => chrome.storage.onChanged.removeListener(onStorageChange);
   }, []);
 
+  /* Capture typing elsewhere to focus search and handle Enter */
+  useEffect(() => {
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      // If Enter is pressed and we have a Jira code match -> redirect
+      if (e.key === "Enter" && searchQuery.trim()) {
+        if (JIRA_CODE_REGEX.test(searchQuery.trim())) {
+          const url = `${JIRA_SEARCH_URL_PREFIX}${searchQuery.trim().toUpperCase()}`;
+          openUrlTab(e as unknown as NavigationEvent, url);
+          return;
+        }
+      }
+
+      // If typing and not in an input, autofocus search
+      const activeElement = document.activeElement;
+      const isInput =
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.tagName === "SELECT" ||
+          (activeElement as HTMLElement).isContentEditable);
+
+      if (!isInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [searchQuery]);
+
   return (
     <div className="w-full h-full flex flex-col items-center space-y-4">
       <div className="w-full flex justify-between items-center">
@@ -636,6 +671,31 @@ const Popup = () => {
         />
         <Dropdown label="Route" options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
       </div>
+
+      {/* Search Input */}
+      <div className="w-full flex items-center bg-content2/40 rounded-lg px-3 py-0.5 gap-2 border border-default-200 focus-within:border-primary transition-colors">
+        <SearchIcon className="size-4 text-default-400" />
+        <input
+          ref={searchInputRef}
+          type="text"
+          placeholder="Search Jira or AGO..."
+          className="bg-transparent border-none outline-none text-sm w-full h-8 text-white placeholder:text-default-400"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <HerouiButton
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            onPress={() => setSearchQuery("")}
+            className="text-default-400 hover:text-white"
+          >
+            <XIcon className="size-4" />
+          </HerouiButton>
+        )}
+      </div>
+
       <div className="w-full grid grid-cols-3 gap-3">
         <HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
           <ArrowUpToLineIcon className="size-4" />
@@ -720,11 +780,17 @@ const Popup = () => {
           <div className="flex flex-col gap-2 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
             {renderGroupedList(
               buildGroupedListEntries(
-                jiraDisplayList.filter(item => {
-                  if (!jiraTargetDateFilter) return true;
-                  if (!item.targetDateMS) return false;
-                  const d = new Date(item.targetDateMS);
-                  return isSameDay(d, jiraTargetDateFilter.toDate(getLocalTimeZone()));
+                jiraDisplayList.filter((item) => {
+                  const matchesDate =
+                    !jiraTargetDateFilter ||
+                    (item.targetDateMS && isSameDay(new Date(item.targetDateMS), jiraTargetDateFilter.toDate(getLocalTimeZone())));
+
+                  const matchesSearch =
+                    !searchQuery ||
+                    [item.displayName, item.jiraCode, item.title, item.sprint, item.status]
+                      .some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+                  return matchesDate && matchesSearch;
                 })
               ),
               "jiraUrlList",
@@ -751,7 +817,7 @@ const Popup = () => {
               >
                 Adviser Go
               </a>
-              <span 
+              <span
                 onClick={() => setIsAgoFilterActive(!isAgoFilterActive)}
                 className={`group rounded-full p-2 cursor-pointer hover:bg-success-hover ${isAgoFilterActive ? 'bg-success-hover/20' : ''}`}
               >
@@ -763,11 +829,17 @@ const Popup = () => {
             {renderGroupedList(
               buildGroupedListEntries(
                 agoDisplayList.filter((item) => {
-                  if (!isAgoFilterActive) return true;
-                  return (
-                    item.region.toLowerCase() === dropdowns.region.value.toLowerCase() &&
-                    item.environment.toLowerCase() === dropdowns.environment.value.toLowerCase()
-                  );
+                  const matchesFilter =
+                    !isAgoFilterActive ||
+                    (item.region.toLowerCase() === dropdowns.region.value.toLowerCase() &&
+                      item.environment.toLowerCase() === dropdowns.environment.value.toLowerCase());
+
+                  const matchesSearch =
+                    !searchQuery ||
+                    [item.displayName, item.planName, item.clientFullName, item.jiraCode, item.region, item.environment, item.route]
+                      .some((val) => val?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+                  return matchesFilter && matchesSearch;
                 })
               ),
               "agoUrlList",
