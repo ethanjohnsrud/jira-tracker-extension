@@ -26,7 +26,7 @@ import { removeFromStorage, getFromStorage } from "@/controllers/storageControll
 import TableItem from "@/components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
 import { Accordion, Button as HerouiButton, PressEvent, Popover, DatePicker, DateField, Calendar, Chip, DateValue } from "@heroui/react";
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX } from "@/constants/regex";
@@ -84,6 +84,7 @@ const Popup = () => {
   const [agoDisplayList, setAgoDisplayList] = useState<AgoUrlListItem[]>([]);
   const [latestAgoId, setLatestAgoId] = useState<string>("");
   const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<DateValue | null>(null);
+  const [isAgoFilterActive, setIsAgoFilterActive] = useState<boolean>(false);
 
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -750,13 +751,28 @@ const Popup = () => {
               >
                 Adviser Go
               </a>
-              <span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
-                <FilterIcon size={18} className="text-green-500 group-hover:text-white" />
+              <span 
+                onClick={() => setIsAgoFilterActive(!isAgoFilterActive)}
+                className={`group rounded-full p-2 cursor-pointer hover:bg-success-hover ${isAgoFilterActive ? 'bg-success-hover/20' : ''}`}
+              >
+                <FilterIcon size={18} className={`${isAgoFilterActive ? 'text-white' : 'text-green-500'} group-hover:text-white`} />
               </span>
             </div>
           </div>
           <div className="flex flex-col gap-2 w-full h-full max-h-[300px] overflow-x-hidden overflow-y-auto hide-scrollbar">
-            {renderGroupedList(buildGroupedListEntries(agoDisplayList), "agoUrlList", latestAgoId)}
+            {renderGroupedList(
+              buildGroupedListEntries(
+                agoDisplayList.filter((item) => {
+                  if (!isAgoFilterActive) return true;
+                  return (
+                    item.region.toLowerCase() === dropdowns.region.value.toLowerCase() &&
+                    item.environment.toLowerCase() === dropdowns.environment.value.toLowerCase()
+                  );
+                })
+              ),
+              "agoUrlList",
+              latestAgoId
+            )}
           </div>
         </div>
       </div>
