@@ -25,7 +25,9 @@ import {
 import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
 import TableItem from "@/components/TableItem";
 import { AgoUrlListItem, JiraUrlListItem, StorageChangeCallback } from "@/types/storage-types";
-import { Accordion, Button as HerouiButton, PressEvent, Popover } from "@heroui/react";
+import { Accordion, Button as HerouiButton, PressEvent, Popover, DatePicker, DateField, Calendar, Chip, DateValue } from "@heroui/react";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { formatDate, isSameDay } from "date-fns";
 import { EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
 import { AGO_URL_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
@@ -48,18 +50,18 @@ const ARCHIVED_COLLECTION_NAME = "Archived";
 
 type GroupedListEntry<T extends UrlListItem> =
   | {
-      kind: "item";
-      id: string;
-      lastVisitedMS: number;
-      item: T;
-    }
+    kind: "item";
+    id: string;
+    lastVisitedMS: number;
+    item: T;
+  }
   | {
-      kind: "folder";
-      id: string;
-      lastVisitedMS: number;
-      collectionName: string;
-      items: T[];
-    };
+    kind: "folder";
+    id: string;
+    lastVisitedMS: number;
+    collectionName: string;
+    items: T[];
+  };
 
 /**************************************************
  * popup.tsx is the React extension popup display *
@@ -81,6 +83,7 @@ const Popup = () => {
   const [latestJiraId, setLatestJiraId] = useState<string>("");
   const [agoDisplayList, setAgoDisplayList] = useState<AgoUrlListItem[]>([]);
   const [latestAgoId, setLatestAgoId] = useState<string>("");
+  const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<DateValue | null>(null);
 
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -673,17 +676,59 @@ const Popup = () => {
                 href={jiraLink}
                 target="_self"
                 onClick={(e) => openUrlTab(e, jiraLink)}
-                className="text-primary text-[14px] font-bold pl-3"
+                className="text-primary text-[14px] font-bold pl-1"
               >
                 Jira
               </a>
-              <span className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
-                <CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
-              </span>
+              {/* Date Picker for filtering */}
+              <Popover>
+                <Popover.Trigger className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
+                  <CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
+                </Popover.Trigger>
+                <Popover.Content className="max-w-64">
+                  <Popover.Dialog>
+                    <Calendar aria-label="Event date" value={jiraTargetDateFilter}>
+                      <Calendar.Header>
+                        <Calendar.Heading />
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => (
+                            <Calendar.Cell
+                              date={date}
+                              onClick={() => setJiraTargetDateFilter(date)}
+                            />
+                          )}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                    </Calendar>
+                    <div className="flex justify-end mt-2">
+                      {jiraTargetDateFilter && <Chip>{formatDate(jiraTargetDateFilter.toDate(getLocalTimeZone()), "MMM dd, yyyy")}</Chip>}
+                      <HerouiButton size="sm" variant="ghost" onPress={() => setJiraTargetDateFilter(null)}>Clear</HerouiButton>
+                    </div>
+                  </Popover.Dialog>
+                </Popover.Content>
+              </Popover>
             </div>
           </div>
           <div className="flex flex-col gap-2 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
-            {renderGroupedList(buildGroupedListEntries(jiraDisplayList), "jiraUrlList", latestJiraId)}
+            {renderGroupedList(
+              buildGroupedListEntries(
+                jiraDisplayList.filter(item => {
+                  if (!jiraTargetDateFilter) return true;
+                  if (!item.targetDateMS) return false;
+                  const d = new Date(item.targetDateMS);
+                  return isSameDay(d, jiraTargetDateFilter.toDate(getLocalTimeZone()));
+                })
+              ),
+              "jiraUrlList",
+              latestJiraId
+            )}
           </div>
         </div>
 
