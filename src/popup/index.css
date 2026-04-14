@@ -128,7 +128,8 @@ body {
     background 0.3s,
     color 0.3s;
   min-width: 650px;
-  height: 550px;
+  height: 600px;
+  line-height: 1.2;
   overflow: hidden;
   border: none;
 

@@ -74,13 +74,13 @@ export default function URLItemElement({
               />
             </Button>
             <div
-              className={`text-[14px] flex-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer border border-gray-500 py-2 px-1 ${linkReady ? "text-primary" : "text-white"}`}
+              className={`text-[12px] flex-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer border border-gray-500 py-1 px-1 ${linkReady ? "text-primary" : "text-white"}`}
               onClick={onLabelClick}
             >
               {urlItem.displayName}
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 text-[9px]">
             <div className="w-4"></div>
             {urlItem.type === URLType.JIRA ? (
               <div className="w-full flex justify-between gap-2 flex-wrap">

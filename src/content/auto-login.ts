@@ -54,12 +54,12 @@ const triggerInput = (element: HTMLInputElement, value: string) => {
   element.dispatchEvent(new Event("change", { bubbles: true }));
 };
 
-const executeMatchedFlow = async (userName: string, passWord: string) => {
-  const S = AUTO_LOGIN_SELECTORS;
+const executeMatchedFlow = async (userName: string, password: string) => {
+  const AUTO_LOGIN = AUTO_LOGIN_SELECTORS;
 
   // 1. Localhost Protected Warning
-  const detailsButton = await selectElement<HTMLButtonElement>(S.LOCALHOST_PROTECTED.DETAILS_BUTTON);
-  const proceedLink = await selectElement<HTMLAnchorElement>(S.LOCALHOST_PROTECTED.PROCEED_LINK);
+  const detailsButton = selectElement<HTMLButtonElement>(AUTO_LOGIN.LOCALHOST_PROTECTED.DETAILS_BUTTON);
+  const proceedLink = selectElement<HTMLAnchorElement>(AUTO_LOGIN.LOCALHOST_PROTECTED.PROCEED_LINK);
   if (detailsButton && proceedLink) {
     if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Flow: Localhost Protected");
     detailsButton.click();
@@ -68,35 +68,35 @@ const executeMatchedFlow = async (userName: string, passWord: string) => {
   }
 
   // 2. Localhost Login
-  const jUser = await selectElement<HTMLInputElement>(S.LOCALHOST_LOGIN.USERNAME);
-  const jPass = await selectElement<HTMLInputElement>(S.LOCALHOST_LOGIN.PASSWORD);
+  const jUser = selectElement<HTMLInputElement>(AUTO_LOGIN.LOCALHOST_LOGIN.USERNAME);
+  const jPass = selectElement<HTMLInputElement>(AUTO_LOGIN.LOCALHOST_LOGIN.PASSWORD);
   if (jUser && jPass) {
     if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Flow: Localhost Login");
     triggerInput(jUser, userName);
-    triggerInput(jPass, passWord);
-    const loginBtn = await selectElement<HTMLInputElement>(S.LOCALHOST_LOGIN.SUBMIT_BUTTON);
+    triggerInput(jPass, password);
+    const loginBtn = selectElement<HTMLInputElement>(AUTO_LOGIN.LOCALHOST_LOGIN.SUBMIT_BUTTON);
     if (loginBtn) loginBtn.click();
     return;
   }
 
   // 3. Two Step Login
-  const step1User = await selectElement<HTMLInputElement>(S.TWO_STEP_LOGIN.STEP_1_USERNAME);
-  const step1Form = await selectElement<HTMLFormElement>(S.TWO_STEP_LOGIN.STEP_1_FORM);
+  const step1User = selectElement<HTMLInputElement>(AUTO_LOGIN.TWO_STEP_LOGIN.STEP_1_USERNAME);
+  const step1Form = selectElement<HTMLFormElement>(AUTO_LOGIN.TWO_STEP_LOGIN.STEP_1_FORM);
   if (step1User || step1Form) {
     if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Flow: Two Step Login");
     if (step1User) triggerInput(step1User, userName);
-    const continueBtn = await selectElement<HTMLButtonElement>(S.TWO_STEP_LOGIN.STEP_1_CONTINUE_BUTTON);
+    const continueBtn = selectElement<HTMLButtonElement>(AUTO_LOGIN.TWO_STEP_LOGIN.STEP_1_CONTINUE_BUTTON);
     if (continueBtn) continueBtn.click();
 
     // Observe or poll for Step 2
     let attempts = 0;
     const checkStep2 = setInterval(async () => {
       attempts++;
-      const step2Pass = await selectElement<HTMLInputElement>(S.TWO_STEP_LOGIN.STEP_2_PASSWORD);
+      const step2Pass = selectElement<HTMLInputElement>(AUTO_LOGIN.TWO_STEP_LOGIN.STEP_2_PASSWORD);
       if (step2Pass && (step2Pass.offsetWidth > 0 || step2Pass.offsetHeight > 0)) {
         clearInterval(checkStep2);
-        triggerInput(step2Pass, passWord);
-        const login2Btn = await selectElement<HTMLButtonElement>(S.TWO_STEP_LOGIN.STEP_2_LOGIN_BUTTON);
+        triggerInput(step2Pass, password);
+        const login2Btn = selectElement<HTMLButtonElement>(AUTO_LOGIN.TWO_STEP_LOGIN.STEP_2_LOGIN_BUTTON);
         if (login2Btn) login2Btn.click();
       } else if (attempts > 20) {
         // wait up to 10 seconds
@@ -107,13 +107,13 @@ const executeMatchedFlow = async (userName: string, passWord: string) => {
   }
 
   // 4. Basic Login (General)
-  const basicUser = await selectElement<HTMLInputElement>(S.BASIC_LOGIN.USERNAME);
-  const basicPass = await selectElement<HTMLInputElement>(S.BASIC_LOGIN.PASSWORD);
+  const basicUser = selectElement<HTMLInputElement>(AUTO_LOGIN.BASIC_LOGIN.USERNAME);
+  const basicPass = selectElement<HTMLInputElement>(AUTO_LOGIN.BASIC_LOGIN.PASSWORD);
   if (basicUser && basicPass) {
     if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Flow: Basic Login");
     triggerInput(basicUser, userName);
-    triggerInput(basicPass, passWord);
-    const basicLoginBtn = await selectElement<HTMLButtonElement>(S.BASIC_LOGIN.SUBMIT_BUTTON);
+    triggerInput(basicPass, password);
+    const basicLoginBtn = selectElement<HTMLButtonElement>(AUTO_LOGIN.BASIC_LOGIN.SUBMIT_BUTTON);
     if (basicLoginBtn) basicLoginBtn.click();
     return;
   }

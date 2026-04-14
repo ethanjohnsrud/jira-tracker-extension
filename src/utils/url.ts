@@ -20,7 +20,7 @@ export const isCompanyUrl = (url: string): boolean => {
   return COMPANY_URL_REGEX.test(url);
 };
 
-export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string } | null => {
+export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string; } | null => {
   const match = url.match(JIRA_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseJiraUrl] JIRA match", match);
@@ -116,12 +116,14 @@ export const getListEntryDisplayName = (
   }
 };
 
-/** Trims URL list to MAX_LIST_LENGTH removing oldest non-favorites */
+/** Trim URL list to remove oldest item only( if it is not favorite and has no collectionName); with a minimum of 50% MAX_LIST_LENGTH. */
 export const evaluateMaxListLength = <T extends UrlListItem>(urlList: T[]): T[] => {
-  if (urlList.length > MAX_LIST_LENGTH) {
-    urlList.sort((a, b) => new Date(a.lastVisited).getTime() - new Date(b.lastVisited).getTime());
-    const idx = urlList.findIndex((u) => u.favorite === false);
-    if (idx !== -1) urlList.splice(idx, 1);
+  const min = Math.floor(MAX_LIST_LENGTH * 0.5);
+  if (urlList.length > MAX_LIST_LENGTH && urlList.filter((u) => !u.favorite && !u.collectionName?.trim()).length > min) {
+    const idx = urlList
+      .sort((a, b) => a.lastVisitedMS - b.lastVisitedMS)
+      .findIndex((u) => !u.favorite && !u.collectionName?.trim());
+    urlList.splice(idx, 1);
   }
   if (DEBUG_MODE) console.log("[BACKGROUND][evaluateMaxListLength] List length", urlList.length);
   return urlList;
@@ -196,7 +198,7 @@ export const saveJiraUrl = async (props: {
 
 /** Save AGO URL to Storage List and update popup dropdowns */
 export const saveAGOUrl = async (
-  props: ParsedAGOUrl & { agoClientName: string; agoPlanName: string; clientFullName: string; clientLastName: string }
+  props: ParsedAGOUrl & { agoClientName: string; agoPlanName: string; clientFullName: string; clientLastName: string; }
 ) => {
   const {
     capturedUrl: url,

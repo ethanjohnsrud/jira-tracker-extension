@@ -30,6 +30,12 @@ export type LoginCredentials = {
   password: string;
 };
 
+export interface DropdownSelections {
+  region: RegionSelection;
+  environment: EnvironmentSelectionOption;
+  route: RouteSelection;
+}
+
 /* Validate Jira  URL List on Import */
 export const validateCredentials = (credentialsList: Object[], debugMode: boolean): boolean => {
   let valid = true;
