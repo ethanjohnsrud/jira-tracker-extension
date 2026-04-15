@@ -3,14 +3,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import REGIONS from "@/constants/regions";
 import ENVIRONMENTS from "@/constants/environments";
 import ROUTES from "@/constants/routes";
-import {
-  UK_HOSTED_TEST_REGIONS,
-  QA_TEST_REGIONS,
-  JIRA_SEARCH_URL_PREFIX,
-  AGO_HEADER_HYPERLINK_DEFAULT,
-  JIRA_HEADER_HYPERLINK_DEFAULT,
-  ROUTE_DEPRIORITIZED_LABELS,
-} from "@/constants/constants";
 
 import Dropdown from "@/components/Dropdown";
 import {
@@ -30,7 +22,7 @@ import { AgoUrlListItem, JiraUrlListItem } from "@/types/storage-types";
 import { Accordion, Button as HerouiButton, PressEvent, Popover, Calendar, Chip, DateValue } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
-import { DropdownSelections, EnvironmentSelectionOption, RegionSelection, RouteSelection } from "@/types/dropdown-types";
+import { DropdownSelections } from "@/types/dropdown-types";
 import { AGO_URL_REGEX, JIRA_CODE_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
 import { UrlListItem } from "@/types/list-types";
@@ -178,15 +170,15 @@ const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
  * popup.tsx is the React extension popup display *
  **************************************************/
 const Popup = () => {
-  const { saveToStorage, storageState } = useStorage();
+  const { saveToStorage, storageState, settings } = useStorage();
   const [dropdowns, setDropdowns] = useState<DropdownSelections>({
     region: REGIONS[0],
     environment: ENVIRONMENTS[1],
     route: ROUTES[0],
   });
   const [currentTabURL, setCurrentTabURL] = useState<string>("");
-  const [agoLink, setAgoLink] = useState<string>(AGO_HEADER_HYPERLINK_DEFAULT);
-  const [jiraLink, setJiraLink] = useState<string>(JIRA_HEADER_HYPERLINK_DEFAULT);
+  const [agoLink, setAgoLink] = useState<string>(settings.CONSTANTS.AGO_HEADER_HYPERLINK);
+  const [jiraLink, setJiraLink] = useState<string>(settings.CONSTANTS.JIRA_HEADER_HYPERLINK);
   const [tabOn, setTabOn] = useState<boolean>(false);
   const [cacheOn, setCacheOn] = useState<boolean>(false);
   const [cacheLoading, setCacheLoading] = useState<boolean>(false);
@@ -289,10 +281,10 @@ const Popup = () => {
     } else {
       //Unique Testing Domains
       if (environmentValue === "test") {
-        if (QA_TEST_REGIONS.includes(regionValue)) environmentValue = "qa";
+        if (settings.regionPreferences.QA_TEST_REGIONS.includes(regionValue)) environmentValue = "qa";
         else if (regionValue === "UNI") regionValue = "global";
       }
-      const tld = environmentValue === "test" && UK_HOSTED_TEST_REGIONS.includes(regionValue) ? "co.uk" : "com";
+      const tld = environmentValue === "test" && settings.regionPreferences.UK_HOSTED_TEST_REGIONS.includes(regionValue) ? "co.uk" : "com";
       domain = `${regionValue.toLowerCase()}-${environmentValue}.domain.${tld}`; //TODO: source domain from settings
     }
 
@@ -500,6 +492,7 @@ const Popup = () => {
       ENVIRONMENTS.find((e) => e.value.toLowerCase() === (storageState.environment || "").toLowerCase()) ||
       ENVIRONMENTS[1];
 
+    const ROUTE_DEPRIORITIZED_LABELS = settings.routePreferences.ROUTE_DEPRIORITIZED_LABELS;
     const sortedRoutes = [...ROUTES].sort(
       (a, b) =>
         Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
@@ -519,7 +512,7 @@ const Popup = () => {
       // If Enter is pressed and we have a Jira code match -> redirect
       if (e.key === "Enter" && searchQuery.trim()) {
         if (JIRA_CODE_REGEX.test(searchQuery.trim())) {
-          const url = `${JIRA_SEARCH_URL_PREFIX}${searchQuery.trim().toUpperCase()}`;
+          const url = `${settings.jiraTracking.JIRA_SEARCH_URL_PREFIX}${searchQuery.trim().toUpperCase()}`;
           openUrlTab(e as unknown as NavigationEvent, url);
           return;
         }

@@ -1,5 +1,4 @@
-import { getFromStorage, saveToStorage } from "@/controllers/storageController";
-import { URL_SAVING_INTERVAL, AGO_TAB_RENAMING_INTERVAL } from "@/constants/constants";
+import { getFromStorage, getSettings, saveToStorage } from "@/controllers/storageController";
 import REGIONS from "@/constants/regions";
 import {
   extractAGOClientName,
@@ -88,6 +87,7 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
 
 /** Initialize AGO tab renaming based on storage setting */
 const initializeAGOTabRenaming = async (): Promise<void> => {
+  const settings = await getSettings();
   const renameAGOTab = async (url = currentUrl): Promise<void> => {
     const { tabOn, preferences } = await getFromStorage(["tabOn", "preferences"]);
     if (!preferences?.renameAGOTab) {
@@ -109,19 +109,20 @@ const initializeAGOTabRenaming = async (): Promise<void> => {
       }
     }
   };
-  setInterval(renameAGOTab, AGO_TAB_RENAMING_INTERVAL);
+  setInterval(renameAGOTab, settings.CONSTANTS.AGO_TAB_RENAMING_INTERVAL);
   renameAGOTab();
 };
 
 /** Initialize URL-saving interval */
 const initializeTabURLSaving = async (): Promise<void> => {
+  const settings = await getSettings();
   setInterval(() => {
     if (currentUrl !== window.location.href) {
       currentUrl = window.location.href;
       if (DEBUG_MODE) console.log("[CONTENT][initializeTabURLSaving] New URL:", currentUrl);
       saveUrl(currentUrl);
     }
-  }, URL_SAVING_INTERVAL);
+  }, settings.CONSTANTS.URL_SAVING_INTERVAL);
 };
 
 // Listen for cacheTabId changes

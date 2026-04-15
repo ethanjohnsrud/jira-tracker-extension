@@ -1,5 +1,4 @@
 import { formatDate } from "date-fns";
-import { DOM_NAMING_TIMEOUT } from "../constants/constants";
 import { DEBUG_MODE } from "./state";
 import {
   AGO_CLIENT_NAME_SELECTOR,
@@ -8,6 +7,7 @@ import {
   JIRA_STATUS_SELECTOR,
   JIRA_TITLE_SELECTOR,
 } from "../constants/dom-selectors";
+import { getSettings } from "@/controllers/storageController";
 
 export function selectElement<T extends HTMLElement>(selector: string) {
   return document.querySelector<T>(selector);
@@ -18,7 +18,7 @@ export function selectElement<T extends HTMLElement>(selector: string) {
  * Utility used for extracting elements after page loads
  */
 export async function waitForDOM<T>(fetchElement: () => T): Promise<T> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const observer = new MutationObserver(() => {
       const element = fetchElement();
       if (element) {
@@ -27,10 +27,11 @@ export async function waitForDOM<T>(fetchElement: () => T): Promise<T> {
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
+    const settings = await getSettings();
     setTimeout(() => {
       observer.disconnect();
-      reject(new Error(`Element not found within ${DOM_NAMING_TIMEOUT}ms`));
-    }, DOM_NAMING_TIMEOUT);
+      reject(new Error(`Element not found within ${settings.CONSTANTS.DOM_NAMING_TIMEOUT}ms`));
+    }, settings.CONSTANTS.DOM_NAMING_TIMEOUT);
   });
 }
 
@@ -141,7 +142,7 @@ export async function extractAGOPlanName(): Promise<string> {
  * @returns If innerText is `Campbell, John & Julia`
  *          clientFullName = `John & Julia Campbell`,clientLastName = `Campbell`
  */
-export async function extractAGOClientName(): Promise<{ clientFullName: string; clientLastName: string }> {
+export async function extractAGOClientName(): Promise<{ clientFullName: string; clientLastName: string; }> {
   try {
     const element = await getElement(AGO_CLIENT_NAME_SELECTOR);
     if (DEBUG_MODE) console.log("[extractAGOClientName] Element text:", element?.innerText);

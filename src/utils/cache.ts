@@ -1,5 +1,4 @@
-import { LOCAL_CACHE_INTERVAL } from "../constants/constants";
-import { getFromStorage, saveToStorage } from "../controllers/storageController";
+import { getFromStorage, saveToStorage, getSettings } from "../controllers/storageController";
 import ROUTES from "../constants/routes";
 import ENVIRONMENTS from "../constants/environments";
 import { DEBUG_MODE } from "./state";
@@ -71,11 +70,12 @@ export async function startCachePolling(): Promise<void> {
   stopCachePolling();
   if (cacheUrl && cacheUrl.length > 10) {
     if (DEBUG_MODE) console.log("[startCachePolling] Starting", cacheUrl);
+    const settings = await getSettings();
     cacheInterval = setInterval(async () => {
       await clearCache();
-      const nextDate = new Date(Date.now() + LOCAL_CACHE_INTERVAL);
+      const nextDate = new Date(Date.now() + settings.CONSTANTS.LOCAL_CACHE_INTERVAL);
       await saveToStorage({ nextTimerMS: nextDate.getTime() });
-    }, LOCAL_CACHE_INTERVAL);
+    }, settings.CONSTANTS.LOCAL_CACHE_INTERVAL);
 
     //Execute Immediately:
     await clearCache();

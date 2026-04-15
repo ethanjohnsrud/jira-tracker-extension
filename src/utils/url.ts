@@ -1,5 +1,4 @@
-import { getFromStorage, saveToStorage } from "../controllers/storageController";
-import { MAX_LIST_LENGTH } from "../constants/constants";
+import { getFromStorage, getSettings, saveToStorage } from "../controllers/storageController";
 import { JiraUrlListItem, StorageKey } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
 import ENVIRONMENTS from "../constants/environments";
@@ -117,7 +116,7 @@ export const getListEntryDisplayName = (
 };
 
 /** Trim URL list to remove oldest item only( if it is not favorite and has no collectionName); with a minimum of 50% MAX_LIST_LENGTH. */
-export const evaluateMaxListLength = <T extends UrlListItem>(urlList: T[]): T[] => {
+export const evaluateMaxListLength = <T extends UrlListItem>(urlList: T[], MAX_LIST_LENGTH: number): T[] => {
   const min = Math.floor(MAX_LIST_LENGTH * 0.5);
   if (urlList.length > MAX_LIST_LENGTH && urlList.filter((u) => !u.favorite && !u.collectionName?.trim()).length > min) {
     const idx = urlList
@@ -142,8 +141,7 @@ export const saveJiraUrl = async (props: {
     return false;
   }
 
-  const storageKey: StorageKey = "jiraUrlList";
-  const { jiraUrlList } = await getFromStorage(storageKey);
+  const { jiraUrlList } = await getFromStorage("jiraUrlList");
   const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
   const parsedJiraUrl = parseJiraUrl(url);
@@ -187,7 +185,8 @@ export const saveJiraUrl = async (props: {
       lastVisited: nowDate.toISOString(),
       favorite: false,
     });
-    updatedUrlList = evaluateMaxListLength(urlList);
+    const settings = await getSettings();
+    updatedUrlList = evaluateMaxListLength(urlList, settings.CONSTANTS.MAX_LIST_LENGTH);
     if (DEBUG_MODE) console.log("[saveJiraUrl] New Entry:", capturedUrl);
   }
 
@@ -218,8 +217,7 @@ export const saveAGOUrl = async (
     return false;
   }
 
-  const storageKey: StorageKey = "agoUrlList";
-  const { agoUrlList } = await getFromStorage(storageKey);
+  const { agoUrlList } = await getFromStorage("agoUrlList");
   const urlList = Array.isArray(agoUrlList) ? agoUrlList : [];
 
   const capturedUrl = url.match(AGO_URL_REGEX)?.[1];
@@ -267,11 +265,12 @@ export const saveAGOUrl = async (
       favorite: false,
       preserveCustomName: false,
     });
-    updatedUrlList = evaluateMaxListLength(urlList);
+    const settings = await getSettings();
+    updatedUrlList = evaluateMaxListLength(urlList, settings.CONSTANTS.MAX_LIST_LENGTH);
     if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] New Entry:", capturedUrl);
   }
 
-  await saveToStorage({ [storageKey]: updatedUrlList });
+  await saveToStorage({ agoUrlList: updatedUrlList });
   if (DEBUG_MODE) console.log("[BACKGROUND][saveAGOUrl] Saved List", updatedUrlList.length);
 
   return true;

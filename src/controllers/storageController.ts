@@ -1,3 +1,4 @@
+import { SETTINGS, DEFAULT_SETTINGS } from "@/types/settings-types";
 import { StorageKey, StorageSchema } from "../types/storage-types";
 
 export const saveToStorage = (obj: Partial<StorageSchema>) => {
@@ -43,4 +44,13 @@ export const getFromStorage = async <K extends StorageKey>(
   }
 
   return { [keys]: res[keys] } as Partial<Pick<StorageSchema, K>>;
+};
+
+/**
+ * Gets settings from storage, returning default settings if not found
+ * @returns Settings object
+ */
+export const getSettings = async (): Promise<SETTINGS> => {
+  const { settings = DEFAULT_SETTINGS } = await getFromStorage("settings");
+  return settings;
 };

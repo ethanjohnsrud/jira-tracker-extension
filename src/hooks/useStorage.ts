@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Preferences, StorageChangeCallback, StorageSchema } from "../types/storage-types";
+import { DEFAULT_STORAGE_STATE, Preferences, StorageChangeCallback, StorageSchema } from "../types/storage-types";
 import { getFromStorage, saveToStorage as saveToStorageController } from "@/controllers/storageController";
-import { DEFAULT_STORAGE_STATE } from "@/constants/constants";
+import { SETTINGS } from "@/types/settings-types";
 
 interface UseStorageReturn {
   storageState: StorageSchema;
   preferences: Preferences;
+  settings: SETTINGS;
   /* Save storage with partial changes and update hook state */
   saveToStorage: (changes: Partial<StorageSchema>) => Promise<void>;
   changePreference: (preference: keyof Preferences, value: boolean) => void;
@@ -49,6 +50,7 @@ export const useStorage = (): UseStorageReturn => {
   return {
     storageState,
     preferences: storageState.preferences,
+    settings: storageState.settings,
     saveToStorage,
     changePreference,
   };

@@ -1,10 +1,5 @@
 import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
-import {
-  AGO_HEADER_HYPERLINK_DEFAULT,
-  DEFAULT_STORAGE_STATE,
-  JIRA_HEADER_HYPERLINK_DEFAULT,
-} from "./constants/constants";
-import { StorageKey, StorageSchema } from "./types/storage-types";
+import { DEFAULT_STORAGE_STATE, StorageKey, StorageSchema } from "./types/storage-types";
 import { DEBUG_MODE } from "./utils/state";
 import { MessageHandlers, OnMessageListener } from "./types/message-types";
 
