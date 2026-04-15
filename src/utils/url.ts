@@ -1,7 +1,6 @@
 import { getFromStorage, getSettings, saveToStorage } from "../controllers/storageController";
-import { JiraUrlListItem, StorageKey } from "../types/storage-types";
+import { JiraUrlListItem } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
-import ENVIRONMENTS from "../constants/environments";
 import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
 import { UrlListItem, URLType } from "../types/list-types";
 
@@ -70,11 +69,11 @@ export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
 };
 
 /** Derives display name for JIRA and AGO URLs */
-export const getListEntryDisplayName = (
+export const getListEntryDisplayName = async (
   url: string,
   jiraSprint: string | null,
   agoClientName: string | null
-): string | null => {
+): Promise<string | null> => {
   if (isJiraUrl(url)) {
     const parsedJiraUrl = parseJiraUrl(url)!;
     const name = parsedJiraUrl.jiraCode + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
@@ -87,9 +86,10 @@ export const getListEntryDisplayName = (
       return "AGO";
     }
 
+    const settings = await getSettings();
     const region = groups[2].toUpperCase();
     const environmentPrefix = (
-      ENVIRONMENTS.find((e) => e.value === groups[3] || e.value === groups[4])?.prefix || "ENV"
+      settings.ENVIRONMENTS.find((e) => e.value === groups[3] || e.value === groups[4])?.prefix || "ENV"
     ).toUpperCase();
     const clientSuffix = groups[5];
     const planSuffix = groups[6];
@@ -157,7 +157,7 @@ export const saveJiraUrl = async (props: {
     return false;
   }
 
-  const displayName = jiraTitle || getListEntryDisplayName(url, jiraSprint, null);
+  const displayName = jiraTitle || (await getListEntryDisplayName(url, jiraSprint, null));
   if (!displayName) return false;
 
   let updatedUrlList: JiraUrlListItem[] = [];
@@ -234,8 +234,8 @@ export const saveAGOUrl = async (
   } else if (clientLastName.length > 2) {
     displayName = clientLastName;
   } else {
-    displayName = getListEntryDisplayName(url, null, agoClientName);
-  }
+    displayName = await getListEntryDisplayName(url, null, agoClientName);
+  }``
   if (!displayName) return false;
 
   let updatedUrlList = [];

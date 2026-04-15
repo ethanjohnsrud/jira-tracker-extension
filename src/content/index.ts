@@ -1,5 +1,4 @@
 import { getFromStorage, getSettings, saveToStorage } from "@/controllers/storageController";
-import REGIONS from "@/constants/regions";
 import {
   extractAGOClientName,
   extractAGOPlanName,
@@ -103,7 +102,7 @@ const initializeAGOTabRenaming = async (): Promise<void> => {
       if (item?.displayName) {
         const parts = item.displayName.split("-");
         const first = parts[0]?.toLowerCase();
-        const isPref = REGIONS.some((r) => r.value.toLowerCase() === first);
+        const isPref = settings.REGIONS.some((r) => r.value.toLowerCase() === first);
         document.title = isPref ? parts.slice(1).join("-") : item.displayName;
         if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] New title:", document.title);
       }

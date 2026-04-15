@@ -1,6 +1,4 @@
 import { getFromStorage, saveToStorage, getSettings } from "../controllers/storageController";
-import ROUTES from "../constants/routes";
-import ENVIRONMENTS from "../constants/environments";
 import { DEBUG_MODE } from "./state";
 import { isAgoUrl } from "./url";
 import { AGO_URL_REGEX } from "../constants/regex";
@@ -20,14 +18,15 @@ export async function createCacheURL(url: string): Promise<string | null> {
     if (DEBUG_MODE) console.log("[createCacheURL] Regex failed", matched);
     return null;
   }
+  const settings = await getSettings();
   const regionValue = matched[2];
   const environmentValue = matched[4];
-  const localEnvironmentValue = ENVIRONMENTS.find((l) => l.label === "Local")?.value;
+  const localEnvironmentValue = settings.ENVIRONMENTS.find((l) => l.label === "Local")?.value;
   if (environmentValue !== localEnvironmentValue) {
     if (DEBUG_MODE) console.log("[createCacheURL] Not local environment");
     return null;
   }
-  const cacheRoute = ROUTES.find((r) => r.label === "Cache");
+  const cacheRoute = settings.ROUTES.find((r) => r.label === "Cache");
   if (!cacheRoute) {
     if (DEBUG_MODE) console.error("[createCacheURL] Cache route not found");
     return null;

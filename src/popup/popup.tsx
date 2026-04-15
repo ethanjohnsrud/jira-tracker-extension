@@ -1,8 +1,5 @@
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
 import { useState, useEffect, useRef, useMemo } from "react";
-import REGIONS from "@/constants/regions";
-import ENVIRONMENTS from "@/constants/environments";
-import ROUTES from "@/constants/routes";
 
 import Dropdown from "@/components/Dropdown";
 import {
@@ -172,9 +169,9 @@ const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
 const Popup = () => {
   const { saveToStorage, storageState, settings } = useStorage();
   const [dropdowns, setDropdowns] = useState<DropdownSelections>({
-    region: REGIONS[0],
-    environment: ENVIRONMENTS[1],
-    route: ROUTES[0],
+    region: settings.REGIONS[0],
+    environment: settings.ENVIRONMENTS[1],
+    route: settings.ROUTES[0],
   });
   const [currentTabURL, setCurrentTabURL] = useState<string>("");
   const [agoLink, setAgoLink] = useState<string>(settings.CONSTANTS.AGO_HEADER_HYPERLINK);
@@ -298,7 +295,7 @@ const Popup = () => {
 
   /* Handle route dropdown change */
   const onRouteChange = async (route: string) => {
-    const validRoute = ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase())!;
+    const validRoute = settings.ROUTES.find((r) => r.value.toLowerCase() === (route ?? "").toLowerCase())!;
     updateDropdowns({ route: validRoute });
     if (DEBUG_MODE) console.log("[POPUP][onRouteChange] New route:", validRoute);
     navigateTabOnChange({ ...dropdowns, route: validRoute });
@@ -306,7 +303,7 @@ const Popup = () => {
 
   /* Handle region dropdown change */
   const onRegionChange = async (region: string) => {
-    const validRegion = REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase())!;
+    const validRegion = settings.REGIONS.find((r) => r.value.toLowerCase() === (region ?? "").toLowerCase())!;
     updateDropdowns({ region: validRegion });
     if (DEBUG_MODE) console.log("[POPUP][onRegionChange] New region:", validRegion);
     navigateTabOnChange({ ...dropdowns, region: validRegion });
@@ -314,7 +311,7 @@ const Popup = () => {
 
   /* Handle environment dropdown change */
   const onEnvironmentChange = async (environment: string) => {
-    const validEnvironment = ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase())!;
+    const validEnvironment = settings.ENVIRONMENTS.find((e) => e.value.toLowerCase() === (environment ?? "").toLowerCase())!;
     updateDropdowns({ environment: validEnvironment });
     if (DEBUG_MODE) console.log("[POPUP][onEnvironmentChange] New environment:", validEnvironment);
     navigateTabOnChange({ ...dropdowns, environment: validEnvironment });
@@ -369,7 +366,7 @@ const Popup = () => {
 
       //Other webpage -> Import
     } else {
-      const importRoute = ROUTES.find((r) => r.label === "Import")!;
+      const importRoute = settings.ROUTES.find((r) => r.label === "Import")!;
       if (DEBUG_MODE) console.log("[CONTENT][handleDynamicButtonClick] importRoute:", importRoute);
       navigateTabOnChange({ ...dropdowns, route: importRoute });
     }
@@ -486,21 +483,21 @@ const Popup = () => {
   // Update dropdowns based on storage state
   useEffect(() => {
     const validRegion =
-      REGIONS.find((r) => r.value.toLowerCase() === (storageState.region || "").toLowerCase()) || REGIONS[0];
+      settings.REGIONS.find((r) => r.value.toLowerCase() === (storageState.region || "").toLowerCase()) || settings.REGIONS[0];
 
     const validEnvironment =
-      ENVIRONMENTS.find((e) => e.value.toLowerCase() === (storageState.environment || "").toLowerCase()) ||
-      ENVIRONMENTS[1];
+      settings.ENVIRONMENTS.find((e) => e.value.toLowerCase() === (storageState.environment || "").toLowerCase()) ||
+      settings.ENVIRONMENTS[1];
 
     const ROUTE_DEPRIORITIZED_LABELS = settings.routePreferences.ROUTE_DEPRIORITIZED_LABELS;
-    const sortedRoutes = [...ROUTES].sort(
+    const sortedRoutes = [...settings.ROUTES].sort(
       (a, b) =>
         Number(ROUTE_DEPRIORITIZED_LABELS.includes(a.label)) - Number(ROUTE_DEPRIORITIZED_LABELS.includes(b.label))
     );
     //Some have general regex; where could be more specific
     const validRoute = !!storageState.route
-      ? sortedRoutes.find((r) => new RegExp(r.regex).test(storageState.route)) || ROUTES[0]
-      : ROUTES[0];
+      ? sortedRoutes.find((r) => new RegExp(r.regex).test(storageState.route)) || settings.ROUTES[0]
+      : settings.ROUTES[0];
 
     if (DEBUG_MODE) console.log("[POPUP] Dropdowns set:", validRegion, validEnvironment, validRoute);
     // setDropdowns({ region: validRegion, environment: validEnvironment, route: validRoute });
@@ -543,14 +540,14 @@ const Popup = () => {
         <PreferencePopover />
       </div>
       <div className="w-full grid grid-cols-3 gap-x-2">
-        <Dropdown label="Region" options={REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
+        <Dropdown label="Region" options={settings.REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
         <Dropdown
           label="Environment"
-          options={ENVIRONMENTS}
+          options={settings.ENVIRONMENTS}
           onChange={onEnvironmentChange}
           value={dropdowns.environment.value}
         />
-        <Dropdown label="Route" options={ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
+        <Dropdown label="Route" options={settings.ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
       </div>
 
       {/* Search Input */}
