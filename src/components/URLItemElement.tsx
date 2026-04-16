@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@heroui/react";
+import { Button, cn } from "@heroui/react";
 import { StarIcon } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
 import UrlItemEditor from "@/components/UrlItemEditor";
@@ -52,7 +52,7 @@ export default function URLItemElement({
   return (
     <>
       <div
-        className={`flex justify-start gap-x-2 w-full items-center ${className} rounded-md`}
+        className={cn(`flex justify-start gap-x-2 w-full items-center rounded-[8px] py-2 px-3 ${className} `)}
         onContextMenu={(e) => {
           e.preventDefault();
           setIsEditorOpen(true);
@@ -68,13 +68,13 @@ export default function URLItemElement({
               onPress={handleFavPress}
             >
               <StarIcon
-                className="size-4.5"
+                className="size-4"
                 fill={favorite ? "#ffffff" : "none"}
                 stroke={favorite ? "#ffffff" : "#ffffff"}
               />
             </Button>
             <div
-              className={`text-[12px] flex-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer border border-gray-500 py-1 px-1 ${linkReady ? "text-primary" : "text-white"}`}
+              className={`text-[12px] flex-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer ${linkReady ? "text-primary" : "text-white"}`}
               onClick={onLabelClick}
             >
               {urlItem.displayName}

@@ -22,6 +22,7 @@ import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
 import PreferencePopover from "@/components/PreferencePopover";
 import { buildGroupedListEntries, renderGroupedList, sortByRecentAndFavorite, StorageListKey } from "./popup-utilities";
+import { SelectInput } from "@/components/SelectInput";
 
 type HerouiButtonPressEvent = Parameters<NonNullable<ComponentProps<typeof HerouiButton>["onPress"]>>[0];
 type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent> | HerouiButtonPressEvent;
@@ -405,14 +406,17 @@ const Popup = () => {
         <PreferencePopover />
       </div>
       <div className="w-full grid grid-cols-3 gap-x-2">
-        <Dropdown label="Region" options={settings.REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
-        <Dropdown
-          label="Environment"
+        <SelectInput options={settings.REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
+        <SelectInput
           options={settings.ENVIRONMENTS}
           onChange={onEnvironmentChange}
           value={dropdowns.environment.value}
         />
-        <Dropdown label="Route" options={settings.ROUTES} onChange={onRouteChange} value={dropdowns.route.value} />
+        <SelectInput
+          options={settings.ROUTES}
+          onChange={onRouteChange}
+          value={dropdowns.route.value}
+        />
       </div>
 
       {/* Search Input */}
@@ -478,7 +482,6 @@ const Popup = () => {
         {/* 40% Width Column */}
         <div className="w-[40%] h-full overflow-y-auto hide-scrollbar">
           <div className="flex items-center gap-1">
-            <div className="w-5">{/* Empty space for the layout */}</div>
             <div className="flex-1 flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
               <a
                 href={jiraLink}
@@ -523,7 +526,7 @@ const Popup = () => {
               </Popover>
             </div>
           </div>
-          <div className="flex flex-col gap-2 flex-1 h-full max-h-[300px] overflow-y-auto hide-scrollbar p-0">
+          <div className="flex flex-col gap-2 flex-1 h-full max-h-[370px] overflow-y-auto hide-scrollbar p-0">
             {renderGroupedList(jiraGroupedEntries, StorageListKey.JIRA, latestJiraId)}
           </div>
         </div>
@@ -557,7 +560,7 @@ const Popup = () => {
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-2 w-full h-full max-h-[300px] overflow-x-hidden overflow-y-auto hide-scrollbar">
+          <div className="flex flex-col gap-2 w-full h-full max-h-[370px] overflow-x-hidden overflow-y-auto hide-scrollbar">
             {renderGroupedList(agoGroupedEntries, StorageListKey.AGO, latestAgoId)}
           </div>
         </div>

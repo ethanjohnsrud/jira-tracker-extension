@@ -1,7 +1,7 @@
 import URLItemElement from "@/components/URLItemElement";
 import { UrlListItem } from "@/types/list-types";
 import { AgoUrlListItem, JiraUrlListItem } from "@/types/storage-types";
-import { Accordion } from "@heroui/react";
+import { Accordion, cn } from "@heroui/react";
 import { FolderIcon } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -93,7 +93,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
   storageListKey: StorageListKey,
   latestId: string
 ): ReactNode =>
-  entries.map((entry) => {
+  entries.map((entry, idx) => {
     if (entry.displayType === ItemDisplayType.INDIVIDUAL) {
       return (
         <URLItemElement
@@ -101,6 +101,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
           storageListKey={storageListKey}
           urlItem={entry.item}
           linkReady={entry.item.id === latestId}
+          className={cn(idx % 2 == 0 ? "bg-[#2d2d2d]" : "")}
         />
       );
     } else if (entry.displayType === ItemDisplayType.COLLECTION) {
@@ -120,12 +121,13 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
             <Accordion.Panel>
               <Accordion.Body className="pl-6 pr-0 pb-2 pt-0">
                 <div className="flex flex-col gap-2">
-                  {entry.items.map((item) => (
+                  {entry.items.map((item, idx) => (
                     <URLItemElement
                       key={item.id}
                       storageListKey={storageListKey}
                       urlItem={item}
                       linkReady={item.id === latestId}
+                      className={cn(idx % 2 == 0 ? "bg-[#2d2d2d]" : "")}
                     />
                   ))}
                 </div>

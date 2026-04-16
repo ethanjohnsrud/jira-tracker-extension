@@ -15,9 +15,9 @@ export default function Dropdown({ onChange, value, options, label }: DropdownPr
     <HeroDropdown className="w-full border border-primary rounded-md shadow-sm bg-background">
       <HeroDropdown.Trigger className="w-full outline-none focus:outline-none">
         <div className="flex w-full flex-col border-collapse">
-          {label && (
+          {/* {label && (
             <label className="py-1 px-2 border border-[#7bbd4a] border-b-0 text-white text-center">{label}</label>
-          )}
+          )} */}
           <span className="w-full flex items-center justify-between border border-[#7bbd4a] rounded-none text-white py-1 px-2 text-[14px] min-w-0 bg-alternative-background hover:bg-[#7bbd4a] transition duration-300 ease-in-out">
             <span className="text-center w-full">{selectedOption?.label}</span>
             <svg
