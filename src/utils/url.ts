@@ -1,25 +1,32 @@
 import { getFromStorage, getSettings, saveToStorage } from "../controllers/storageController";
 import { JiraUrlListItem } from "../types/storage-types";
 import { DEBUG_MODE } from "./state";
-import { AGO_URL_REGEX, COMPANY_URL_REGEX, JIRA_URL_REGEX } from "../constants/regex";
 import { UrlListItem, URLType } from "../types/list-types";
 
 const createId = () => crypto.randomUUID();
 
-export const isJiraUrl = (url: string): boolean => {
-  return JIRA_URL_REGEX.test(url);
+export const testRegexStr = (url: string, regex: string): boolean => {
+  return new RegExp(regex).test(url);
 };
 
-export const isAgoUrl = (url: string): boolean => {
-  return AGO_URL_REGEX.test(url);
+export const isJiraUrl = async (url: string): Promise<boolean> => {
+  const settings = await getSettings();
+  return testRegexStr(url, settings.jiraTracking.JIRA_URL_REGEX);
 };
 
-export const isCompanyUrl = (url: string): boolean => {
-  return COMPANY_URL_REGEX.test(url);
+export const isAgoUrl = async (url: string): Promise<boolean> => {
+  const settings = await getSettings();
+  return testRegexStr(url, settings.agoTracking.AGO_URL_REGEX);
 };
 
-export const parseJiraUrl = (url: string): { jiraCode: string; capturedUrl: string; } | null => {
-  const match = url.match(JIRA_URL_REGEX);
+export const isCompanyUrl = async (url: string): Promise<boolean> => {
+  const settings = await getSettings();
+  return testRegexStr(url, settings.agoTracking.COMPANY_REGEX);
+};
+
+export const parseJiraUrl = async (url: string): Promise<{ jiraCode: string; capturedUrl: string; } | null> => {
+  const settings = await getSettings();
+  const match = url.match(settings.jiraTracking.JIRA_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseJiraUrl] JIRA match", match);
   if (match.groups?.jiraCode) return { jiraCode: match.groups.jiraCode, capturedUrl: match[0] };
@@ -33,8 +40,9 @@ export type ParsedCompanyUrl = {
   route?: string;
 };
 
-export const parseCompanyUrl = (url: string): ParsedCompanyUrl | null => {
-  const match = url.match(COMPANY_URL_REGEX);
+export const parseCompanyUrl = async (url: string): Promise<ParsedCompanyUrl | null> => {
+  const settings = await getSettings();
+  const match = url.match(settings.agoTracking.COMPANY_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseCompanyUrl] match", match);
   return {
@@ -54,8 +62,9 @@ export type ParsedAGOUrl = {
   planID: string;
 };
 
-export const parseAGOUrl = (url: string): ParsedAGOUrl | null => {
-  const match = url.match(AGO_URL_REGEX);
+export const parseAGOUrl = async (url: string): Promise<ParsedAGOUrl | null> => {
+  const settings = await getSettings();
+  const match = url.match(settings.agoTracking.AGO_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseAGOUrl] match", match);
   return {
@@ -74,19 +83,20 @@ export const getListEntryDisplayName = async (
   jiraSprint: string | null,
   agoClientName: string | null
 ): Promise<string | null> => {
-  if (isJiraUrl(url)) {
-    const parsedJiraUrl = parseJiraUrl(url)!;
+  const settings = await getSettings();
+
+  if (await isJiraUrl(url)) {
+    const parsedJiraUrl = (await parseJiraUrl(url))!;
     const name = parsedJiraUrl.jiraCode + (jiraSprint && jiraSprint.length > 0 ? ` [${jiraSprint}]` : "");
     if (DEBUG_MODE) console.log("[getListEntryDisplayName] JIRA name", name);
     return name;
-  } else if (isAgoUrl(url)) {
-    const groups = url.match(AGO_URL_REGEX);
+  } else if (await isAgoUrl(url)) {
+    const groups = url.match(settings.agoTracking.AGO_URL_REGEX);
     if (!groups || groups.length < 5) {
       if (DEBUG_MODE) console.log("[getListEntryDisplayName] Invalid AGO Match", url, groups);
       return "AGO";
     }
 
-    const settings = await getSettings();
     const region = groups[2].toUpperCase();
     const environmentPrefix = (
       settings.ENVIRONMENTS.find((e) => e.value === groups[3] || e.value === groups[4])?.prefix || "ENV"
@@ -136,15 +146,17 @@ export const saveJiraUrl = async (props: {
   jiraStatus: string;
 }) => {
   const { url, jiraSprint, jiraTitle, jiraStatus } = props;
+  const settings = await getSettings();
+
   if (!isJiraUrl(url)) {
-    if (DEBUG_MODE) console.log("[saveJiraUrl] Not Jira URL", url, JIRA_URL_REGEX);
+    if (DEBUG_MODE) console.log("[saveJiraUrl] Not Jira URL", url, settings.jiraTracking.JIRA_URL_REGEX);
     return false;
   }
 
   const { jiraUrlList } = await getFromStorage("jiraUrlList");
   const urlList: JiraUrlListItem[] = Array.isArray(jiraUrlList) ? jiraUrlList : [];
 
-  const parsedJiraUrl = parseJiraUrl(url);
+  const parsedJiraUrl = await parseJiraUrl(url);
   if (!parsedJiraUrl) {
     if (DEBUG_MODE) console.log("[saveJiraUrl] URL Not Captured", url);
     return false;
@@ -185,7 +197,6 @@ export const saveJiraUrl = async (props: {
       lastVisited: nowDate.toISOString(),
       favorite: false,
     });
-    const settings = await getSettings();
     updatedUrlList = evaluateMaxListLength(urlList, settings.CONSTANTS.MAX_LIST_LENGTH);
     if (DEBUG_MODE) console.log("[saveJiraUrl] New Entry:", capturedUrl);
   }
@@ -211,16 +222,17 @@ export const saveAGOUrl = async (
     clientFullName,
     clientLastName,
   } = props;
+  const settings = await getSettings();
 
   if (!isAgoUrl(url)) {
-    if (DEBUG_MODE) console.log("[saveAGOUrl] Not AGO URL", url, AGO_URL_REGEX);
+    if (DEBUG_MODE) console.log("[saveAGOUrl] Not AGO URL", url, settings.agoTracking.AGO_URL_REGEX);
     return false;
   }
 
   const { agoUrlList } = await getFromStorage("agoUrlList");
   const urlList = Array.isArray(agoUrlList) ? agoUrlList : [];
 
-  const capturedUrl = url.match(AGO_URL_REGEX)?.[1];
+  const capturedUrl = url.match(settings.agoTracking.AGO_URL_REGEX)?.[1];
   if (DEBUG_MODE) console.log("[saveAGOUrl] Captured:", capturedUrl);
 
   if (!capturedUrl) {
@@ -235,7 +247,7 @@ export const saveAGOUrl = async (
     displayName = clientLastName;
   } else {
     displayName = await getListEntryDisplayName(url, null, agoClientName);
-  }``
+  } ``;
   if (!displayName) return false;
 
   let updatedUrlList = [];

@@ -20,7 +20,6 @@ import { Accordion, Button as HerouiButton, PressEvent, Popover, Calendar, Chip,
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { DropdownSelections } from "@/types/dropdown-types";
-import { AGO_URL_REGEX, JIRA_CODE_REGEX } from "@/constants/regex";
 import { isAgoUrl } from "@/utils/url";
 import { UrlListItem } from "@/types/list-types";
 import { useStorage } from "@/hooks/useStorage";
@@ -352,7 +351,7 @@ const Popup = () => {
 
   //Alternative Manager for Cache Button
   const handleDynamicButtonClick = async (event: PressEvent) => {
-    const matched = currentTabURL.match(AGO_URL_REGEX);
+    const matched = currentTabURL.match(settings.agoTracking.AGO_URL_REGEX);
 
     //Local Environment -> Auto Cache Button
     if (currentTabURL.includes("localhost")) {
@@ -508,6 +507,7 @@ const Popup = () => {
     const handleKeyDown = (e: globalThis.KeyboardEvent) => {
       // If Enter is pressed and we have a Jira code match -> redirect
       if (e.key === "Enter" && searchQuery.trim()) {
+        const JIRA_CODE_REGEX = new RegExp(settings.jiraTracking.JIRA_CODE_REGEX);
         if (JIRA_CODE_REGEX.test(searchQuery.trim())) {
           const url = `${settings.jiraTracking.JIRA_SEARCH_URL_PREFIX}${searchQuery.trim().toUpperCase()}`;
           openUrlTab(e as unknown as NavigationEvent, url);

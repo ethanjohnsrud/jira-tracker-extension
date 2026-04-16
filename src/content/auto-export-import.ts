@@ -1,15 +1,14 @@
-import { getFromStorage } from "@/controllers/storageController";
+import { getFromStorage, getSettings } from "@/controllers/storageController";
 import { DEBUG_MODE } from "@/utils/state";
 import { AUTO_EXPORT_IMPORT_SELECTORS } from "@/constants/dom-selectors";
 import { getElement, waitForUserGesture } from "@/utils/dom-extractor";
 import { sleep } from "@/utils/functions";
-
-const EXPORT_ROUTE_REGEX = /\/client-export/;
-const IMPORT_ROUTE_REGEX = /\/client-import|\/integration/;
+import { testRegexStr } from "@/utils/url";
 
 export const initAutoExportImport = async () => {
   try {
     const { preferences } = await getFromStorage(["preferences"]);
+    const settings = await getSettings();
 
     if (!preferences?.autoExportImport) {
       if (DEBUG_MODE) console.log("[AutoExportImport] Auto Export/Import disabled");
@@ -18,10 +17,10 @@ export const initAutoExportImport = async () => {
 
     const url = window.location.href;
 
-    if (EXPORT_ROUTE_REGEX.test(url)) {
+    if (testRegexStr(url, settings.others.EXPORT_ROUTE_REGEX)) {
       if (DEBUG_MODE) console.log("[AutoExportImport] Detected export page");
       await handleExportPage();
-    } else if (IMPORT_ROUTE_REGEX.test(url)) {
+    } else if (testRegexStr(url, settings.others.IMPORT_ROUTE_REGEX)) {
       if (DEBUG_MODE) console.log("[AutoExportImport] Detected import page");
       await handleImportPage();
     } else {

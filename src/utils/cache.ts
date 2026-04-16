@@ -1,7 +1,6 @@
 import { getFromStorage, saveToStorage, getSettings } from "../controllers/storageController";
 import { DEBUG_MODE } from "./state";
 import { isAgoUrl } from "./url";
-import { AGO_URL_REGEX } from "../constants/regex";
 
 /* Interval Clear Cache */
 let cacheInterval: ReturnType<typeof setInterval> | null = null;
@@ -9,16 +8,17 @@ let cacheUrl: string = "";
 
 /** Create cache URL for local AGO environment */
 export async function createCacheURL(url: string): Promise<string | null> {
-  if (!isAgoUrl(url)) {
+  if (!(await isAgoUrl(url))) {
     if (DEBUG_MODE) console.log("[createCacheURL] Not an AGO URL");
     return null;
   }
+  const settings = await getSettings();
+  const AGO_URL_REGEX = new RegExp(settings.agoTracking.AGO_URL_REGEX);
   const matched = url.match(AGO_URL_REGEX);
   if (!matched || matched.length < 4) {
     if (DEBUG_MODE) console.log("[createCacheURL] Regex failed", matched);
     return null;
   }
-  const settings = await getSettings();
   const regionValue = matched[2];
   const environmentValue = matched[4];
   const localEnvironmentValue = settings.ENVIRONMENTS.find((l) => l.label === "Local")?.value;

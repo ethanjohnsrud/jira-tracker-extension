@@ -11,7 +11,6 @@ import { DEBUG_MODE, stateInitPromise } from "@/utils/state";
 import { sendMessage } from "@/controllers/messageController";
 import { IErrorMsgResponse } from "@/types/message-types";
 import { isAgoUrl, isCompanyUrl, isJiraUrl, parseAGOUrl, parseCompanyUrl, saveAGOUrl, saveJiraUrl } from "@/utils/url";
-import { AGO_URL_REGEX } from "@/constants/regex";
 import { initAutoLogin } from "@/content/auto-login";
 import { initAutoExportImport } from "@/content/auto-export-import";
 
@@ -26,7 +25,7 @@ let thisTabId: number | null = null;
 /** Send URL save request to background script */
 const saveUrl = async (url: string = currentUrl): Promise<void> => {
   if (DEBUG_MODE) console.log("[CONTENT][saveUrl] URL:", url);
-  if (isJiraUrl(url)) {
+  if (await isJiraUrl(url)) {
     const [jiraTitle, jiraSprint, jiraStatus] = await Promise.all([
       extractJiraTitle(),
       extractJiraSprint(),
@@ -37,9 +36,9 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
     const saved = await saveJiraUrl({ url, jiraTitle, jiraSprint, jiraStatus });
     if (DEBUG_MODE) console.log("[CONTENT][saveUrl] Saved JIRA URL", saved);
     // await sendMessage({ command: "SAVE_JIRA_URL", url, jiraTitle, jiraSprint, jiraStatus });
-  } else if (isCompanyUrl(url)) {
+  } else if (await isCompanyUrl(url)) {
     //Dropdown storage (for popup)
-    const parsedCompanyUrl = parseCompanyUrl(url);
+    const parsedCompanyUrl = await parseCompanyUrl(url);
     if (DEBUG_MODE) console.log("[CONTENT][saveUrl] parsed Company URL", parsedCompanyUrl);
     if (parsedCompanyUrl) {
       const { region, environment, route } = parsedCompanyUrl;
@@ -49,8 +48,9 @@ const saveUrl = async (url: string = currentUrl): Promise<void> => {
     }
 
     //Save AGO Plan URL
-    if (isAgoUrl(url)) {
-      const parsedAgoUrl = parseAGOUrl(url)!;
+    if (await isAgoUrl(url)) {
+      const parsedAgoUrl = await parseAGOUrl(url);
+      if (!parsedAgoUrl) return console.error("[CONTENT][saveUrl] Failed to parse AGO URL", url);
       const [{ clientFullName, clientLastName }, agoPlanName] = await Promise.all([
         extractAGOClientName(),
         extractAGOPlanName(),
@@ -95,7 +95,7 @@ const initializeAGOTabRenaming = async (): Promise<void> => {
     }
     if (DEBUG_MODE) console.log("[CONTENT][renameAGOTab] tabOn:", tabOn, "URL:", url);
 
-    const matched = url.match(AGO_URL_REGEX);
+    const matched = url.match(settings.agoTracking.AGO_URL_REGEX);
     if (tabOn && matched) {
       const { agoUrlList = [] } = await getFromStorage("agoUrlList");
       const item = agoUrlList.find((u) => u.url === matched[1]);

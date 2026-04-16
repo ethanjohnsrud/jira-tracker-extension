@@ -58,7 +58,10 @@ export interface SETTINGS {
     JIRA_SEARCH_URL_PREFIX: string;
 
     /*  Matches and captures base JIRA issue URL and ticket ID */
-    JIRA_REGEX: string;
+    JIRA_URL_REGEX: string;
+
+    /*  Matches and captures JIRA ticket ID */
+    JIRA_CODE_REGEX: string;
 
     /*  Selector for the JIRA sprint element in the issue view */
     JIRA_SPRINT_ELEMENT_SELECTOR: string;
@@ -72,11 +75,25 @@ export interface SETTINGS {
     COMPANY_REGEX: string;
 
     /*  Matches and captures base AGO URL, region, environment, client, and plan IDs */
-    AGO_REGEX: string;
+    AGO_URL_REGEX: string;
+
+    /** Matches and captures base company URL, region, and environment */
+    COMPANY_URL_REGEX: string;
 
     /*  Element ID for fetching AGO client name from the page */
     AGO_CLIENT_NAME_ELEMENT_ID: string;
   };
+
+  others: {
+    /** Matches and captures login URLs with region and environment */
+    LOGIN_URL_REGEX: string;
+
+    /** Matches and captures export page route */
+    EXPORT_ROUTE_REGEX: string;
+
+    /** Matches and captures import page route */
+    IMPORT_ROUTE_REGEX: string;
+  }
 }
 
 export const DEFAULT_SETTINGS: SETTINGS = {
@@ -136,9 +153,10 @@ export const DEFAULT_SETTINGS: SETTINGS = {
   jiraTracking: {
     JIRA_SEARCH_URL_PREFIX: "https://jira.ethanjohnsrud.com/browse/",
 
-    JIRA_REGEX:
-      "^(https:\/\/jira\.ethanjohnsrud\.com\/(?:browse\/|jira\/software\/c\/projects\/[^\/?#]+\/boards\/\d+\/backlog\?selectedIssue=)([A-Z]{2,5}-\d{2,5}))$",
+    JIRA_URL_REGEX:
+      "^(https:\\/\\/jira\\.ethanjohnsrud\\.com)\\/(?:browse\\/|jira\\/software\\/c\\/projects\\/[^\\/?#]+\\/boards\\/\\d+\\/backlog\\?selectedIssue=)(?<jiraCode>[A-Z]{2,5}-\\d{2,5})$",
 
+    JIRA_CODE_REGEX: "^[a-zA-Z]{2,10}-\\d{1,10}$",
     //Extract Sprint for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
     JIRA_SPRINT_ELEMENT_SELECTOR:
       '[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a',
@@ -150,12 +168,20 @@ export const DEFAULT_SETTINGS: SETTINGS = {
 
     // [Group #1] Captures full URL through plan ID but excludes sub-route
     // [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] 5-chars-ending client ID | [Group #5] 5-chars-ending plan ID
-    AGO_REGEX:
-      "^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com))\/advisergo\/#\/[a-f0-9]{27}([a-f0-9]{5})\/[a-f0-9]{27}([a-f0-9]{5}))",
+    AGO_URL_REGEX:
+      "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)\\/(?<route>advisergo)\\/#\\/(?<clientID>[a-f0-9]{27}[a-f0-9]{5})\\/(?<planID>[a-f0-9]{27}[a-f0-9]{5})",
+
+    COMPANY_URL_REGEX: "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)\\/(?<route>advisergo)\\/",
 
     //Extract Client Last Name for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
     AGO_CLIENT_NAME_ELEMENT_ID: "client-actions-dropdown",
   },
+
+  others: {
+    LOGIN_URL_REGEX: "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)",
+    EXPORT_ROUTE_REGEX: "\\/client-export",
+    IMPORT_ROUTE_REGEX: "\\/client-import|\\/integration",
+  }
 };
 
 /* Use for Importing Settings Override */
@@ -256,14 +282,14 @@ export const validateSettings = (object: Object, debugMode: boolean): boolean =>
     valid = false;
   }
   try {
-    if (!settings.jiraTracking?.JIRA_REGEX) {
-      if (debugMode) console.log("[Settings Validation] Failed: invalid jiraTracking.JIRA_REGEX.");
+    if (!settings.jiraTracking?.JIRA_URL_REGEX) {
+      if (debugMode) console.log("[Settings Validation] Failed: invalid jiraTracking.JIRA_URL_REGEX.");
       valid = false;
     } else {
-      new RegExp(settings.jiraTracking.JIRA_REGEX);
+      new RegExp(settings.jiraTracking.JIRA_URL_REGEX);
     }
   } catch (error) {
-    if (debugMode) console.log("[Settings Validation] Failed: invalid jiraTracking.JIRA_REGEX.", error);
+    if (debugMode) console.log("[Settings Validation] Failed: invalid jiraTracking.JIRA_URL_REGEX.", error);
     valid = false;
   }
   if (!settings.jiraTracking?.JIRA_SPRINT_ELEMENT_SELECTOR) {
@@ -284,11 +310,11 @@ export const validateSettings = (object: Object, debugMode: boolean): boolean =>
   }
 
   try {
-    if (!settings.agoTracking?.AGO_REGEX) {
+    if (!settings.agoTracking?.AGO_URL_REGEX) {
       if (debugMode) console.log("[Settings Validation] Failed: invalid agoTracking.AGO_REGEX.");
       valid = false;
     } else {
-      new RegExp(settings.agoTracking.AGO_REGEX);
+      new RegExp(settings.agoTracking.AGO_URL_REGEX);
     }
   } catch (error) {
     if (debugMode) console.log("[Settings Validation] Failed: invalid agoTracking.AGO_REGEX.", error);

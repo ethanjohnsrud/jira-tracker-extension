@@ -1,6 +1,5 @@
-import { getFromStorage } from "@/controllers/storageController";
+import { getFromStorage, getSettings } from "@/controllers/storageController";
 import { DEBUG_MODE } from "@/utils/state";
-import { LOGIN_URL_REGEX } from "@/constants/regex";
 import { AUTO_LOGIN_SELECTORS } from "@/constants/dom-selectors";
 import { selectElement } from "@/utils/dom-extractor";
 import { LoginCredentials } from "@/types/dropdown-types";
@@ -8,13 +7,14 @@ import { LoginCredentials } from "@/types/dropdown-types";
 export const initAutoLogin = async () => {
   try {
     const { preferences, loginCredentials } = await getFromStorage(["preferences", "loginCredentials"]);
+    const settings = await getSettings();
 
     if (!preferences?.autoLogin) {
       if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] Auto Login disabled in preferences.");
       return;
     }
 
-    const urlMatch = window.location.href.match(LOGIN_URL_REGEX);
+    const urlMatch = window.location.href.match(settings.others.LOGIN_URL_REGEX);
     if (!urlMatch || !urlMatch.groups?.region || !urlMatch.groups?.environment) {
       if (DEBUG_MODE) console.log("[CONTENT][AutoLogin] URL does not match region/environment pattern.");
       return;
