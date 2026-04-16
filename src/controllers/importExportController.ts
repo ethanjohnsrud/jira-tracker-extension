@@ -2,28 +2,30 @@ import { DEBUG_MODE } from "@/utils/state";
 import { getFromStorage, saveToStorage } from "./storageController";
 import { validateAGOList, validateJiraList } from "@/types/list-types";
 import { validateCredentials } from "@/types/dropdown-types";
+import { validateSettings } from "@/types/settings-types";
 
-export const handleExport = async (type: "jira" | "ago" | "credentials") => {
+type ExportableKey = "jiraUrlList" | "agoUrlList" | "settings";
+export const handleExport = async (key: ExportableKey) => {
   try {
-    const storageKey = type === "jira" ? "jiraUrlList" : type === "ago" ? "agoUrlList" : ("loginCredentials" as const);
-    const data = await getFromStorage(storageKey);
-    const list = data[storageKey] || [];
+    const data = await getFromStorage(key);
+    const list = data[key] || [];
 
     const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${type}_export_${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `${key}_export_${new Date().toISOString().split("T")[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (error) {
-    if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${type}:`, error);
+    if (DEBUG_MODE) console.error(`[POPUP][handleExport] Failed to export ${key}:`, error);
   }
 };
 
-export const handleImport = (type: "jira" | "ago" | "credentials") => {
+type ImportableKey = "jiraUrlList" | "agoUrlList" | "loginCredentials" | "settings";
+export const handleImport = (key: ImportableKey) => {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = ".json";
@@ -38,26 +40,24 @@ export const handleImport = (type: "jira" | "ago" | "credentials") => {
         const parsed = JSON.parse(content);
 
         let isValid = false;
-        if (type === "jira") isValid = validateJiraList(parsed, DEBUG_MODE);
-        else if (type === "ago") isValid = validateAGOList(parsed, DEBUG_MODE);
-        else if (type === "credentials") isValid = validateCredentials(parsed, DEBUG_MODE);
+        if (key === "jiraUrlList") isValid = validateJiraList(parsed, DEBUG_MODE);
+        else if (key === "agoUrlList") isValid = validateAGOList(parsed, DEBUG_MODE);
+        else if (key === "loginCredentials") isValid = validateCredentials(parsed, DEBUG_MODE);
+        else if (key === "settings") isValid = validateSettings(parsed, DEBUG_MODE);
 
         if (isValid) {
-          if (type === "jira") {
-            await saveToStorage({ jiraUrlList: parsed });
-          } else if (type === "ago") {
-            await saveToStorage({ agoUrlList: parsed });
-          } else if (type === "credentials") {
-            await saveToStorage({ loginCredentials: parsed });
-          }
+          if (key === "jiraUrlList") await saveToStorage({ jiraUrlList: parsed });
+          else if (key === "agoUrlList") await saveToStorage({ agoUrlList: parsed });
+          else if (key === "loginCredentials") await saveToStorage({ loginCredentials: parsed });
+          else if (key === "settings") await saveToStorage({ settings: parsed });
           // UI will be updated via storage listener calling loadDisplayLists
-          if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${type}`);
+          if (DEBUG_MODE) console.log(`[POPUP][handleImport] Successfully imported ${key}`);
         } else {
-          alert(`Invalid ${type.toUpperCase()} JSON file format.`);
+          alert(`Invalid ${key} JSON file format.`);
         }
       } catch (error) {
-        if (DEBUG_MODE) console.error(`[POPUP][handleImport] Failed to parse ${type} import:`, error);
-        alert(`Failed to parse ${type.toUpperCase()} JSON file.`);
+        if (DEBUG_MODE) console.error(`[POPUP][handleImport] Failed to parse ${key} import:`, error);
+        alert(`Failed to parse ${key} JSON file.`);
       }
     };
     reader.readAsText(file);

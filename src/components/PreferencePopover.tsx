@@ -59,38 +59,43 @@ export default function PreferencePopover() {
           <p className="text-base font-semibold mt-2">Import/Export</p>
           <div className="flex flex-col gap-y-1 mt-1">
             <Button
-              onPress={() => handleImport("jira")}
+              onPress={() => handleImport("jiraUrlList")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowUpToLineIcon className="size-3.5" /> Jira links
             </Button>
             <Button
-              onPress={() => handleExport("jira")}
+              onPress={() => handleExport("jiraUrlList")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowDownToLineIcon className="size-3.5" /> Jira links
             </Button>
             <Button
-              onPress={() => handleImport("ago")}
+              onPress={() => handleImport("agoUrlList")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowUpToLineIcon className="size-3.5" /> AGO links
             </Button>
             <Button
-              onPress={() => handleExport("ago")}
+              onPress={() => handleExport("agoUrlList")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowDownToLineIcon className="size-3.5" /> AGO links
             </Button>
-            {/* TODO: Add functionality to import/export */}
-            <Button className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+            <Button
+              onPress={() => handleImport("settings")}
+              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
+            >
               <ArrowUpToLineIcon className="size-3.5" /> Settings
             </Button>
-            <Button className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0">
+            <Button
+              onPress={() => handleExport("settings")}
+              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
+            >
               <ArrowDownToLineIcon className="size-3.5" /> Settings
             </Button>
             <Button
-              onPress={() => handleImport("credentials")}
+              onPress={() => handleImport("loginCredentials")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowUpToLineIcon className="size-3.5" /> Auto Login Credentials

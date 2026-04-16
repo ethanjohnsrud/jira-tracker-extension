@@ -143,16 +143,15 @@ const initialize = async () => {
   await createCacheURL(window.location.href);
 
   // Get and cache this tab's ID
-  sendMessage<"GET_TAB_ID">({ command: "GET_TAB_ID" }).then((response) => {
+  sendMessage<"GET_TAB_ID">({ command: "GET_TAB_ID" }).then(async (response) => {
     if (DEBUG_MODE) console.log("[CONTENT][initTabId] Response:", response);
     if (response.ok && response.tabId !== undefined) {
       thisTabId = response.tabId;
       if (DEBUG_MODE) console.log("[CONTENT][initTabId] Tab ID:", thisTabId);
 
       // Check if this tab should start polling
-      chrome.storage.local.get(["cacheTabId"], (result) => {
-        if (result.cacheTabId === thisTabId) startCachePolling();
-      });
+      const { cacheTabId } = await getFromStorage("cacheTabId");
+      if (cacheTabId === thisTabId) startCachePolling();
     } else {
       const errRes = response as IErrorMsgResponse;
       if (DEBUG_MODE) console.warn("[CONTENT][initTabId] Failed to get tab ID:", errRes.error);
