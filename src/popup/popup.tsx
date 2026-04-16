@@ -1,5 +1,5 @@
 import type { ComponentProps, MouseEvent } from "react";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Activity } from "react";
 
 import Dropdown from "@/components/Dropdown";
 import {
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { removeFromStorage, getFromStorage } from "@/controllers/storageController";
-import { Button as HerouiButton, PressEvent, Popover, Calendar, Chip, DateValue } from "@heroui/react";
+import { Button as HerouiButton, PressEvent, Popover, Calendar, Chip, DateValue, Input } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { DropdownSelections } from "@/types/dropdown-types";
@@ -390,6 +390,7 @@ const Popup = () => {
 
       if (!isInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
         searchInputRef.current?.focus();
+        if (searchQuery.length === 0) setSearchQuery(e.key);
       }
     };
 
@@ -415,43 +416,47 @@ const Popup = () => {
       </div>
 
       {/* Search Input */}
-      <div className="w-full flex items-center bg-content2/40 rounded-lg px-3 py-0.5 gap-2 border border-default-200 focus-within:border-primary transition-colors">
-        <SearchIcon className="size-4 text-default-400" />
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Search Jira or AGO..."
-          className="bg-transparent border-none outline-none text-sm w-full h-8 text-white placeholder:text-default-400"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        {searchQuery && (
-          <HerouiButton
-            isIconOnly
-            size="sm"
-            variant="ghost"
-            onPress={() => setSearchQuery("")}
-            className="text-default-400 hover:text-white"
-          >
-            <XIcon className="size-4" />
-          </HerouiButton>
-        )}
+      <div className="h-10 w-full">
+        <Activity mode={searchQuery.length > 0 ? "visible" : "hidden"}>
+          <div className="w-full flex items-center bg-content2/40 rounded-lg px-3 py-0.5 gap-2 border border-default-200 focus-within:border-primary transition-colors">
+            <SearchIcon className="size-4 text-default-400" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search Jira or AGO..."
+              className="bg-transparent border-none outline-none text-sm w-full text-white placeholder:text-default-400 focus:ring-0"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <HerouiButton
+              isIconOnly
+              size="sm"
+              variant="ghost"
+              onPress={() => setSearchQuery("")}
+              className="text-default-400 hover:text-white"
+            >
+              <XIcon className="size-4" />
+            </HerouiButton>
+          </div>
+        </Activity>
+        <Activity mode={searchQuery.length <= 0 ? "visible" : "hidden"}>
+          <div className="w-full grid grid-cols-3 gap-3">
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+              <ArrowUpToLineIcon className="size-4" />
+              Import
+            </HerouiButton>
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+              <ArrowUpToLineIcon className="size-4" />
+              Basic Plan
+            </HerouiButton>
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+              <ArrowDownToLineIcon className="size-4" />
+              Export
+            </HerouiButton>
+          </div>
+        </Activity>
       </div>
 
-      <div className="w-full grid grid-cols-3 gap-3">
-        <HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
-          <ArrowUpToLineIcon className="size-4" />
-          Import
-        </HerouiButton>
-        <HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
-          <ArrowUpToLineIcon className="size-4" />
-          Basic Plan
-        </HerouiButton>
-        <HerouiButton className="w-full h-8 bg-primary text-white font-semibold">
-          <ArrowDownToLineIcon className="size-4" />
-          Export
-        </HerouiButton>
-      </div>
       {/* TODO: Remove these section after migration */}
       {/* <div className="flex gap-x-2 justify-start w-full">
 				<Button label={"✎ Tab"} type={tabOn ? "primary" : "alternative-background"} onClick={handleTabToggle} />
@@ -469,7 +474,7 @@ const Popup = () => {
 					<Button label="⇩ Import" type="primary" loading={false} onClick={handleDynamicButtonClick} />
 				)}
 			</div> */}
-      <div className="flex justify-between w-full mt-2 gap-x-2 relative">
+      <div className="flex justify-between w-full gap-x-2 relative">
         {/* 40% Width Column */}
         <div className="w-[40%] h-full overflow-y-auto hide-scrollbar">
           <div className="flex items-center gap-1">
