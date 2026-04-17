@@ -258,7 +258,7 @@ const Popup = () => {
       latestAgo.displayName = `${latestJira.displayName} | ${latestAgo.displayName}`;
       latestAgo.preserveCustomName = true;
       latestAgo.jiraCode = latestJira.jiraCode;
-      latestAgo.additionalLinks = latestJira.additionalLinks || [];
+      latestAgo.additionalLinks = latestAgo.additionalLinks || [];
       const existingLink = latestAgo.additionalLinks.find((link) => link.link === latestJira.url);
       if (!existingLink) {
         latestAgo.additionalLinks.push({ link: latestJira.url, name: latestJira.jiraCode });
