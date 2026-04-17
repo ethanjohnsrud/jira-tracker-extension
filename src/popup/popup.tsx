@@ -17,7 +17,7 @@ import { Button as HerouiButton, PressEvent, Popover, Calendar, Chip, DateValue,
 import { getLocalTimeZone } from "@internationalized/date";
 import { formatDate, isSameDay } from "date-fns";
 import { DropdownSelections } from "@/types/dropdown-types";
-import { isAgoUrl } from "@/utils/url";
+import { isAgoUrl, parseAGOUrl } from "@/utils/url";
 import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
 import PreferencePopover from "@/components/PreferencePopover";
@@ -399,6 +399,29 @@ const Popup = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [searchQuery]);
 
+  const onImportBtnClick = () => {
+    const importRoute = settings.ROUTES.find((r) => r.label.toLowerCase() == "import");
+    if (!importRoute) return alert("Import route not found");
+    navigateTabOnChange({ ...dropdowns, route: importRoute });
+  };
+
+  const onExportBtnClick = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab.url) return alert("No URL found");
+    const parsedUrl = await parseAGOUrl(tab.url);
+    if (parsedUrl?.capturedUrl) {
+      if (DEBUG_MODE) console.log("[POPUP] AGO URL detected", parsedUrl);
+      const exportPageUrl = `${parsedUrl.capturedUrl}/client-export`;
+      chrome.tabs.update(tab.id, { url: exportPageUrl });
+    } else {
+      if (DEBUG_MODE) console.log("[POPUP] Not an AGO URL", tab.url);
+    }
+  };
+
+  const onBasicPlanBtnClick = () => {
+    //TODO: Implement basic plan button click
+  };
+
   return (
     <div className="w-full h-full flex flex-col items-center space-y-4">
       <div className="w-full flex justify-between items-center">
@@ -445,15 +468,15 @@ const Popup = () => {
         </Activity>
         <Activity mode={searchQuery.length <= 0 ? "visible" : "hidden"}>
           <div className="w-full grid grid-cols-3 gap-3">
-            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold" onClick={onImportBtnClick}>
               <ArrowUpToLineIcon className="size-4" />
               Import
             </HerouiButton>
-            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold" onClick={onBasicPlanBtnClick}>
               <ArrowUpToLineIcon className="size-4" />
               Basic Plan
             </HerouiButton>
-            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold">
+            <HerouiButton size="sm" className="w-full bg-primary text-white font-semibold" onClick={onExportBtnClick}>
               <ArrowDownToLineIcon className="size-4" />
               Export
             </HerouiButton>
