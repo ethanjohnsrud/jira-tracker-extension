@@ -46,6 +46,6 @@ export default defineManifest({
       description: "Open the extension popup window",
     },
   },
-  permissions: ["storage", "alarms", "activeTab", "cookies"],
+  permissions: ["storage", "alarms", "activeTab", "cookies", "tabs"],
   host_permissions: ["https://jira.ethanjohnsrud.com/*", "https://*.ethanjohnsrud.com/*"],
 });

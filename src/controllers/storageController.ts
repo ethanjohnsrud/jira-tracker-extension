@@ -54,3 +54,17 @@ export const getSettings = async (): Promise<SETTINGS> => {
   const { settings = DEFAULT_SETTINGS } = await getFromStorage("settings");
   return settings;
 };
+
+/** Reset the cache states (cacheTabId, nextTimerMS) and preferences (localCacheClearing) from storage */
+export const resetCacheStates = async (): Promise<void> => {
+  await removeFromStorage(["cacheTabId", "nextTimerMS"]);
+  const { preferences } = await getFromStorage("preferences");
+  if (preferences) {
+    await saveToStorage({
+      preferences: {
+        ...preferences,
+        localCacheClearing: false,
+      },
+    });
+  }
+};

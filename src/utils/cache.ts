@@ -1,6 +1,6 @@
 import { getFromStorage, saveToStorage, getSettings } from "../controllers/storageController";
 import { DEBUG_MODE } from "./state";
-import { isAgoUrl } from "./url";
+import { isAgoUrl, parseAGOUrl } from "./url";
 
 /* Interval Clear Cache */
 let cacheInterval: ReturnType<typeof setInterval> | null = null;
@@ -13,16 +13,14 @@ export async function createCacheURL(url: string): Promise<string | null> {
     return null;
   }
   const settings = await getSettings();
-  const AGO_URL_REGEX = new RegExp(settings.agoTracking.AGO_URL_REGEX);
-  const matched = url.match(AGO_URL_REGEX);
-  if (!matched || matched.length < 4) {
-    if (DEBUG_MODE) console.log("[createCacheURL] Regex failed", matched);
+  const parsedAgoUrl = await parseAGOUrl(url);
+  if (!parsedAgoUrl) {
+    if (DEBUG_MODE) console.log("[createCacheURL] Regex failed", parsedAgoUrl);
     return null;
   }
-  const regionValue = matched[2];
-  const environmentValue = matched[4];
+  const { region, environment } = parsedAgoUrl;
   const localEnvironmentValue = settings.ENVIRONMENTS.find((l) => l.label === "Local")?.value;
-  if (environmentValue !== localEnvironmentValue) {
+  if (environment !== localEnvironmentValue) {
     if (DEBUG_MODE) console.log("[createCacheURL] Not local environment");
     return null;
   }
@@ -31,7 +29,7 @@ export async function createCacheURL(url: string): Promise<string | null> {
     if (DEBUG_MODE) console.error("[createCacheURL] Cache route not found");
     return null;
   }
-  cacheUrl = `https://${regionValue}.${environmentValue}/${cacheRoute.value}`;
+  cacheUrl = `https://${region}.${environment}/${cacheRoute.value}`;
   if (DEBUG_MODE) console.log("[createCacheURL] cacheUrl:", cacheUrl);
   return cacheUrl;
 }

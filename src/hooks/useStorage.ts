@@ -9,7 +9,7 @@ interface UseStorageReturn {
   settings: SETTINGS;
   /* Save storage with partial changes and update hook state */
   saveToStorage: (changes: Partial<StorageSchema>) => Promise<void>;
-  changePreference: (preference: keyof Preferences, value: boolean) => void;
+  changePreference: (preference: keyof Preferences, value: boolean) => Promise<void>;
 }
 
 export const useStorage = (): UseStorageReturn => {
@@ -20,9 +20,10 @@ export const useStorage = (): UseStorageReturn => {
     await saveToStorageController(changes);
   };
 
-  const changePreference = (preference: keyof Preferences, value: boolean) => {
-    setStorageState((prev) => ({ ...prev, preferences: { ...prev.preferences, [preference]: value } }));
-    saveToStorageController({ preferences: { ...storageState.preferences, [preference]: value } });
+  const changePreference = async (preference: keyof Preferences, value: boolean) => {
+    const nextPreferences = { ...storageState.preferences, [preference]: value };
+    setStorageState((prev) => ({ ...prev, preferences: nextPreferences }));
+    await saveToStorageController({ preferences: nextPreferences });
   };
 
   /* Initialize storage state and listen for changes */

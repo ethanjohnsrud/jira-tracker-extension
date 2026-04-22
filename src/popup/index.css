@@ -123,7 +123,6 @@ html {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 10px;
   transition:
     background 0.3s,
     color 0.3s;

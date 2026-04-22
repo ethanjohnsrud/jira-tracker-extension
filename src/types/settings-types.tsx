@@ -93,7 +93,7 @@ export interface SETTINGS {
 
     /** Matches and captures import page route */
     IMPORT_ROUTE_REGEX: string;
-  }
+  };
 }
 
 export const DEFAULT_SETTINGS: SETTINGS = {
@@ -135,10 +135,35 @@ export const DEFAULT_SETTINGS: SETTINGS = {
       regex: "advisergo\\/#\\/advisor\\/integration",
     },
     {
+      label: "Features",
+      value: "voyant/main/advisergofeatures/list",
+      regex: "voyant\\/main\\/advisergofeatures",
+    },
+    {
+      label: "Version",
+      value: "voyant/version.txt",
+      regex: "version\\.txt",
+    },
+    {
       label: "Release Notes",
       value: "advisergo/#/advisor/clients?releaseNotes=true",
       regex: "releaseNotes=true",
     },
+    {
+      label: "My User",
+      value: "voyant/main/user/view",
+      regex: "voyant\\/main\\/user",
+    },
+    {
+      label: "Logs",
+      value: "voyant/main/admin/logs/logfiles",
+      regex: "voyant\\/main\\/admin\\/logs\\/logfiles",
+    },
+    {
+      label: "Cache",
+      value: "voyant/main/admin/view/ehcache?cacheName=calculationCache&cmd=flush&Submit=Submit",
+      regex: "voyant\\/main\\/admin\\/view\\/ehcache",
+    }
   ],
 
   routePreferences: {

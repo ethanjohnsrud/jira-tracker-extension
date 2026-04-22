@@ -24,6 +24,14 @@ export const isCompanyUrl = async (url: string): Promise<boolean> => {
   return testRegexStr(url, settings.agoTracking.COMPANY_REGEX);
 };
 
+export const isLocalhostUrl = (url: string): boolean => {
+  try {
+    return new URL(url).hostname.includes("localhost");
+  } catch {
+    return url.includes("localhost");
+  }
+};
+
 export const parseJiraUrl = async (url: string): Promise<{ jiraCode: string; capturedUrl: string; } | null> => {
   const settings = await getSettings();
   const match = url.match(settings.jiraTracking.JIRA_URL_REGEX);

@@ -3,12 +3,31 @@ import { CheckboxWrapper } from "./CheckboxWrapper";
 import { useStorage } from "@/hooks/useStorage";
 import { ArrowDownToLineIcon, ArrowUpToLineIcon, EllipsisVerticalIcon } from "lucide-react";
 import { handleExport, handleImport } from "@/controllers/importExportController";
+import { removeFromStorage } from "@/controllers/storageController";
+import { isLocalhostUrl } from "@/utils/url";
+import useActiveTab from "@/hooks/useActiveTab";
 
 /**
  * Renders a vertical 3-dot icon. When clicked, it opens a popover for managing preferences.
  */
 export default function PreferencePopover() {
-  const { preferences, changePreference } = useStorage();
+  const { preferences, changePreference, saveToStorage, storageState } = useStorage();
+  const activeTab = useActiveTab()
+
+  const isCachePollingActive = activeTab.id !== null && storageState.cacheTabId === activeTab.id;
+
+  const handleCachePollingToggle = async (isSelected: boolean) => {
+    const tab = await activeTab.query();
+    if (!tab?.id || !tab.url || !isLocalhostUrl(tab.url)) return;
+
+    if (isSelected) {
+      await changePreference("localCacheClearing", true);
+      await saveToStorage({ cacheTabId: tab.id });
+    } else {
+      await changePreference("localCacheClearing", false);
+      await removeFromStorage(["cacheTabId", "nextTimerMS"]);
+    }
+  };
 
   return (
     <Popover>
@@ -49,12 +68,14 @@ export default function PreferencePopover() {
             isSelected={preferences.renameAGOTab}
             onChange={() => changePreference("renameAGOTab", !preferences.renameAGOTab)}
           />
-          <CheckboxWrapper
-            id="localCacheClearing"
-            label="Local Cache Clearing"
-            isSelected={preferences.localCacheClearing}
-            onChange={() => changePreference("localCacheClearing", !preferences.localCacheClearing)}
-          />
+          {activeTab.isLocalhost && (
+            <CheckboxWrapper
+              id="localCacheClearing"
+              label="Local Cache Clearing"
+              isSelected={isCachePollingActive}
+              onChange={handleCachePollingToggle}
+            />
+          )}
 
           <p className="text-base font-semibold mt-2">Import/Export</p>
           <div className="flex flex-col gap-y-1 mt-1">

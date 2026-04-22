@@ -1,4 +1,4 @@
-import { saveToStorage, removeFromStorage, getFromStorage } from "./controllers/storageController";
+import { saveToStorage, removeFromStorage, getFromStorage, resetCacheStates } from "./controllers/storageController";
 import { DEFAULT_STORAGE_STATE, StorageKey, StorageSchema } from "./types/storage-types";
 import { DEBUG_MODE } from "./utils/state";
 import { MessageHandlers, OnMessageListener } from "./types/message-types";
@@ -60,8 +60,17 @@ chrome.runtime.onInstalled.addListener(async () => {
     if (DEBUG_MODE) console.log("[BACKGROUND][onInstalled] Defaults saved", defaultsToSave);
   }
 
-  //Reset on CHrome restart
-  await removeFromStorage("cacheTabId");
+  //Reset on Chrome restart
+  await removeFromStorage(["cacheTabId", "nextTimerMS"]);
 
   if (DEBUG_MODE) console.log("[BACKGROUND][onInstalled] Service Worker initialized");
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await resetCacheStates();
+});
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const { cacheTabId } = await getFromStorage(["cacheTabId"]);
+  if (tabId === cacheTabId) await resetCacheStates();
 });
