@@ -1,56 +1,52 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>AGO Router</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
 
-<body>
+  <body>
     <div id="app">Loading...</div>
 
     <script>
-        const host = window.location.hostname;
-        const hash = window.location.hash || "";
+      const host = window.location.hostname;
+      const hash = window.location.hash || "";
 
-        if (hash.includes("#/advisor/integration")) {
-            window.location.replace("/test-pages/client-import.html");
-            
-        } else {
-            let fileToLoad = "/test-pages/ago-mock.html";
+      if (hash.includes("#/advisor/integration")) {
+        window.location.replace("/test-pages/client-import.html");
+      } else {
+        let fileToLoad = "/test-pages/ago-mock.html";
 
-            if (host.endsWith(".localhost.ethanjohnsrud.com")) {
-                fileToLoad = "/test-pages/ago-localhost-mock.html";
+        if (host.endsWith(".localhost.ethanjohnsrud.com")) {
+          fileToLoad = "/test-pages/ago-localhost-mock.html";
+        } else if (/\/client-export(?:\/|$)/.test(hash)) {
+          fileToLoad = "/test-pages/client-export.html";
+        }
 
-            } else if (/\/client-export(?:\/|$)/.test(hash)) {
-                fileToLoad = "/test-pages/client-export.html";
+        fetch(fileToLoad, { cache: "no-store" })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Failed to load ${fileToLoad}: ${response.status}`);
             }
-
-            fetch(fileToLoad, { cache: "no-store" })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to load ${fileToLoad}: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then((html) => {
-                    document.getElementById("app").innerHTML = html;
-                    console.log("[AGO_ROUTER] host:", host);
-                    console.log("[AGO_ROUTER] hash:", hash);
-                    console.log("[AGO_ROUTER] file:", fileToLoad);
-                })
-                .catch((error) => {
-                    console.error("[AGO_ROUTER] Error:", error);
-                    document.getElementById("app").innerHTML = `
+            return response.text();
+          })
+          .then((html) => {
+            document.getElementById("app").innerHTML = html;
+            console.log("[AGO_ROUTER] host:", host);
+            console.log("[AGO_ROUTER] hash:", hash);
+            console.log("[AGO_ROUTER] file:", fileToLoad);
+          })
+          .catch((error) => {
+            console.error("[AGO_ROUTER] Error:", error);
+            document.getElementById("app").innerHTML = `
                         <div style="padding:16px;font-family:Arial,sans-serif;">
                             <h2>Router error</h2>
                             <p>${error.message}</p>
                         </div>
                     `;
-                });
-        }
+          });
+      }
     </script>
-</body>
-
+  </body>
 </html>

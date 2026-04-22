@@ -1,64 +1,62 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Login Router</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
 
-<body>
+  <body>
     <p id="router-status">Choosing login mock...</p>
     <div id="app">Loading...</div>
 
     <script>
-        const loginPages = [
-            { name: "login-basic", file: "/test-pages/login-basic.html" },
-            { name: "login_2_step", file: "/test-pages/login_2_step.html" },
-            { name: "localhost-login", file: "/test-pages/localhost-login.html" },
-            { name: "localhost-protected-login", file: "/test-pages/localhost-protected.html" }
-        ];
+      const loginPages = [
+        { name: "login-basic", file: "/test-pages/login-basic.html" },
+        { name: "login_2_step", file: "/test-pages/login_2_step.html" },
+        { name: "localhost-login", file: "/test-pages/localhost-login.html" },
+        { name: "localhost-protected-login", file: "/test-pages/localhost-protected.html" },
+      ];
 
-        const randomIndex = Math.floor(Math.random() * loginPages.length);
-        const selected = loginPages[randomIndex];
+      const randomIndex = Math.floor(Math.random() * loginPages.length);
+      const selected = loginPages[randomIndex];
 
-        fetch(selected.file, { cache: "no-store" })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`Failed to load ${selected.file}: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then((html) => {
-                document.getElementById("router-status").textContent = `Serving: ${selected.name}`;
-                document.getElementById("app").innerHTML = html;
+      fetch(selected.file, { cache: "no-store" })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load ${selected.file}: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then((html) => {
+          document.getElementById("router-status").textContent = `Serving: ${selected.name}`;
+          document.getElementById("app").innerHTML = html;
 
-                const scripts = document.getElementById("app").querySelectorAll("script");
-                scripts.forEach((oldScript) => {
-                    const newScript = document.createElement("script");
+          const scripts = document.getElementById("app").querySelectorAll("script");
+          scripts.forEach((oldScript) => {
+            const newScript = document.createElement("script");
 
-                    for (const attr of oldScript.attributes) {
-                        newScript.setAttribute(attr.name, attr.value);
-                    }
+            for (const attr of oldScript.attributes) {
+              newScript.setAttribute(attr.name, attr.value);
+            }
 
-                    newScript.textContent = oldScript.textContent;
-                    oldScript.replaceWith(newScript);
-                });
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
+          });
 
-                console.log("[LOGIN_ROUTER] route:", selected.name);
-                console.log("[LOGIN_ROUTER] file:", selected.file);
-            })
-            .catch((error) => {
-                console.error("[LOGIN_ROUTER] Error:", error);
-                document.getElementById("router-status").textContent = "Router failed";
-                document.getElementById("app").innerHTML = `
+          console.log("[LOGIN_ROUTER] route:", selected.name);
+          console.log("[LOGIN_ROUTER] file:", selected.file);
+        })
+        .catch((error) => {
+          console.error("[LOGIN_ROUTER] Error:", error);
+          document.getElementById("router-status").textContent = "Router failed";
+          document.getElementById("app").innerHTML = `
                     <div style="padding:16px;font-family:Arial,sans-serif;">
                         <h2>Router error</h2>
                         <p>${error.message}</p>
                     </div>
                 `;
-            });
+        });
     </script>
-</body>
-
+  </body>
 </html>
