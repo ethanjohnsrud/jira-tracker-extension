@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Button, Chip, Input, Label, Modal, useOverlayState } from "@heroui/react";
-import { Trash2Icon, XIcon } from "lucide-react";
+import { CircleMinus, CircleMinusIcon, CopyIcon, LinkIcon, PaperclipIcon, PlusCircleIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useStorage } from "@/hooks/useStorage";
 import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { AGOListItem, ARCHIVED_COLLECTION_NAME, JiraListItem, URLType } from "@/types/list-types";
@@ -23,9 +23,6 @@ const parseOptionalNumber = (value: string) => {
   return Number.isNaN(parsedValue) ? undefined : parsedValue;
 };
 
-const formatAdditionalLinks = (additionalLinks: EditableUrlItem["additionalLinks"]) =>
-  JSON.stringify(additionalLinks ?? [], null, 2);
-
 const toSnapshot = (item: EditableUrlItem) => JSON.stringify(item);
 
 export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, urlItem }: UrlItemEditorProps) {
@@ -33,8 +30,6 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
   const { storageState, saveToStorage } = useStorage();
   const storageList = storageState[storageListKey] as EditableUrlItem[];
   const [draft, setDraft] = useState<EditableUrlItem>(urlItem);
-  const [additionalLinksText, setAdditionalLinksText] = useState(formatAdditionalLinks(urlItem.additionalLinks));
-  const [additionalLinksError, setAdditionalLinksError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const lookupIdRef = useRef(urlItem.id);
   const lookupUrlRef = useRef(urlItem.url);
@@ -43,8 +38,6 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
 
   useEffect(() => {
     setDraft(urlItem);
-    setAdditionalLinksText(formatAdditionalLinks(urlItem.additionalLinks));
-    setAdditionalLinksError(null);
     setSaveState("idle");
     lookupIdRef.current = urlItem.id;
     lookupUrlRef.current = urlItem.url;
@@ -58,7 +51,6 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
       isHydratingRef.current = false;
       return;
     }
-    if (additionalLinksError) return;
     if (toSnapshot(draft) === lastSavedSnapshotRef.current) {
       if (saveState !== "idle") setSaveState("idle");
       return;
@@ -84,7 +76,7 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
     }, 350);
 
     return () => window.clearTimeout(timeout);
-  }, [additionalLinksError, draft, overlayState.isOpen, saveToStorage, saveState, storageList, storageListKey]);
+  }, [draft, overlayState.isOpen, saveToStorage, saveState, storageList, storageListKey]);
 
   const updateDraft = (updater: (previous: EditableUrlItem) => EditableUrlItem) => {
     setDraft((previous) => updater(previous));
@@ -97,18 +89,37 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
         updateDraft((previous) => ({ ...previous, [key]: value }));
       };
 
-  const handleAdditionalLinksChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const value = event.target.value;
-    setAdditionalLinksText(value);
+  const handleAddEmptyLink = () => {
+    updateDraft((prev) => {
+      const additionalLinks = [...(prev.additionalLinks ?? []), { name: "", link: "" }];
+      return { ...prev, additionalLinks };
+    });
+  };
 
-    try {
-      const parsedValue = JSON.parse(value);
-      const normalizedValue = Array.isArray(parsedValue) ? parsedValue : [];
-      updateDraft((previous) => ({ ...previous, additionalLinks: normalizedValue }));
-      setAdditionalLinksError(null);
-    } catch {
-      setAdditionalLinksError("Must be a valid JSON array.");
-    }
+  const handleAddCurrentPage = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      if (!tab?.url) return;
+      updateDraft((prev) => ({
+        ...prev,
+        additionalLinks: [...(prev.additionalLinks ?? []), { name: tab.title ?? "", link: tab.url! }],
+      }));
+    });
+  };
+
+  const handleUpdateLink = (index: number, field: "name" | "link", value: string) => {
+    updateDraft((prev) => {
+      const links = [...(prev.additionalLinks ?? [])];
+      links[index] = { ...links[index], [field]: value };
+      return { ...prev, additionalLinks: links };
+    });
+  };
+
+  const handleRemoveLink = (index: number) => {
+    updateDraft((prev) => ({ ...prev, additionalLinks: (prev.additionalLinks ?? []).filter((_, i) => i !== index) }));
+  };
+
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
   };
 
   const handleDelete = () => {
@@ -125,7 +136,7 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
       <Modal.Backdrop className="bg-black/70">
         <Modal.Container size="cover" scroll="inside" placement="center" className="p-2">
           <Modal.Dialog className="overflow-hidden bg-background">
-            <Modal.Header>
+            <Modal.Header className="px-1">
               <Modal.Heading className="text-lg font-semibold">Edit {draft.type} Item</Modal.Heading>
               <div className="flex items-center justify-between gap-3">
                 <CheckboxWrapper
@@ -146,7 +157,7 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
               </Modal.CloseTrigger>
             </Modal.Header>
 
-            <Modal.Body className="hide-scrollbar space-y-4">
+            <Modal.Body className="hide-scrollbar space-y-4 px-1">
               <CustomTextField
                 id="url-item-display-name"
                 value={draft.displayName}
@@ -161,6 +172,68 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                 placeholder="Description"
                 label="Description Details"
               />
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 items-center justify-between">
+                  <span className="col-span-1 flex items-center gap-1.5 font-medium text-primary">
+                    <PaperclipIcon className="size-4" />
+                    Additional
+                  </span>
+                  <div className="col-span-2 flex items-center justify-between gap-1.5">
+                    <span className="text-primary">Links</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-primary"
+                      onPress={handleAddCurrentPage}
+                    >
+                      <PlusCircleIcon className="size-4" /> Add Link
+                    </Button>
+                  </div>
+                </div>
+                {(draft.additionalLinks ?? []).length > 0 && (
+                  <div className="space-y-1.5">
+                    {(draft.additionalLinks ?? []).map((link, index) => (
+                      <div key={index} className="grid grid-cols-3 items-center gap-2">
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Button
+                            onPress={() => handleCopyLink(link.link)}
+                            aria-label="Copy link"
+                            size="sm"
+                            variant="outline"
+                            className="border-zinc-700 hover:border-zinc-600"
+                          >
+                            <CopyIcon className="size-3.5" />
+                          </Button>
+                          <Input
+                            value={link.name}
+                            onChange={(e) => handleUpdateLink(index, "name", e.target.value)}
+                            placeholder="Name"
+                            className="w-full focus:ring-primary focus:ring-1"
+                          />
+                        </div>
+                        <div className="col-span-2 flex items-center gap-2">
+                          <Input
+                            value={link.link}
+                            onChange={(e) => handleUpdateLink(index, "link", e.target.value)}
+                            placeholder="URL"
+                            className="flex-1 focus:ring-primary focus:ring-1"
+                          />
+                          <Button
+                            onPress={() => handleRemoveLink(index)}
+                            aria-label="Remove link"
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500"
+                            isIconOnly
+                          >
+                            <CircleMinusIcon className="size-5 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <CustomTextField
                 id="url-item-url"
                 value={draft.url}
@@ -199,7 +272,7 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                     value={draft.collectionName ?? ""}
                     onChange={bindTextField("collectionName")}
                     disabled={draft.collectionName === ARCHIVED_COLLECTION_NAME}
-                    className="ring-0"
+                    className="focus:ring-primary focus:ring-1"
                   />
                 </div>
                 <div className="flex flex-col col-span-2 gap-1">
@@ -241,16 +314,6 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                   label="Archived"
                 />
               </div>
-
-              {/* Todo: implement a better way to handle additional links */}
-              <CustomTextAreaField
-                id="url-item-additional-links"
-                value={additionalLinksText}
-                onChange={handleAdditionalLinksChange}
-                placeholder="Additional Links"
-                label="Additional Links (JSON)"
-                error={additionalLinksError}
-              />
 
               {draft.type === URLType.JIRA ? (
                 <div className="space-y-3 rounded-lg border border-zinc-700 bg-alternative-background p-3">

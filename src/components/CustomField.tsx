@@ -19,7 +19,7 @@ export function CustomTextField({ id, value, onChange, placeholder, label }: Tex
         type="text"
         value={value}
         onChange={onChange}
-        className="ring-0"
+        className="ring-primary focus:ring-1"
       />
     </div>
   );
@@ -43,7 +43,7 @@ export function CustomTextAreaField({ id, value, onChange, placeholder, label, e
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="ring-0"
+        className="ring-primary focus:ring-1"
       />
       {error ? <p className="text-xs text-danger">{error}</p> : null}
     </div>
