@@ -1,6 +1,6 @@
 import URLItemElement from "@/components/URLItemElement";
 import { UrlListItem } from "@/types/list-types";
-import { AgoUrlListItem, JiraUrlListItem } from "@/types/storage-types";
+import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { Accordion, cn } from "@heroui/react";
 import { FolderIcon } from "lucide-react";
 import { ReactNode } from "react";
@@ -91,7 +91,8 @@ export enum StorageListKey {
 export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
   entries: GroupedListEntry<T>[],
   storageListKey: StorageListKey,
-  latestId: string
+  latestId: string,
+  onEditRequest: (item: JiraUrlListItem | AgoUrlListItem, listKey: URLItemListKey) => void
 ): ReactNode =>
   entries.map((entry, idx) => {
     if (entry.displayType === ItemDisplayType.INDIVIDUAL) {
@@ -102,6 +103,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
           urlItem={entry.item}
           linkReady={entry.item.id === latestId}
           className={cn(idx % 2 == 0 ? "bg-[#2d2d2d]" : "")}
+          onEditRequest={() => onEditRequest(entry.item, storageListKey)}
         />
       );
     } else if (entry.displayType === ItemDisplayType.COLLECTION) {
@@ -128,6 +130,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
                       urlItem={item}
                       linkReady={item.id === latestId}
                       className={cn(idx % 2 == 0 ? "bg-[#2d2d2d]" : "")}
+                      onEditRequest={() => onEditRequest(item, storageListKey)}
                     />
                   ))}
                 </div>

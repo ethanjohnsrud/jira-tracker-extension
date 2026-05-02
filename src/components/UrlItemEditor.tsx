@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Button, Chip, Label, Modal, useOverlayState } from "@heroui/react";
 import { Trash2Icon, XIcon } from "lucide-react";
 import { useStorage } from "@/hooks/useStorage";
-import { AgoUrlListItem, JiraUrlListItem, StorageKey } from "@/types/storage-types";
+import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { AGOListItem, JiraListItem, URLType } from "@/types/list-types";
 import { CustomTextAreaField, CustomTextField } from "./CustomField";
 import { CheckboxWrapper } from "./CheckboxWrapper";
@@ -10,7 +10,7 @@ import { CheckboxWrapper } from "./CheckboxWrapper";
 type UrlItemEditorProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  storageListKey: Extract<StorageKey, "jiraUrlList" | "agoUrlList">;
+  storageListKey: URLItemListKey;
   urlItem: JiraUrlListItem | AgoUrlListItem;
 };
 

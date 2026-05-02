@@ -14,7 +14,9 @@ import { parseAGOUrl } from "@/utils/url";
 import { useStorage } from "@/hooks/useStorage";
 import { DEBUG_MODE } from "@/utils/state";
 import PreferencePopover from "@/components/PreferencePopover";
+import UrlItemEditor from "@/components/UrlItemEditor";
 import { buildGroupedListEntries, renderGroupedList, sortByRecentAndFavorite, StorageListKey } from "./popup-utilities";
+import type { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { SelectInput } from "@/components/SelectInput";
 import { getLocalTimeZone } from "@internationalized/date";
 import useActiveTab from "@/hooks/useActiveTab";
@@ -41,6 +43,16 @@ const Popup = () => {
   const [isAgoFilterActive, setIsAgoFilterActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [editingItem, setEditingItem] = useState<JiraUrlListItem | AgoUrlListItem | null>(null);
+  const [editingListKey, setEditingListKey] = useState<URLItemListKey | null>(null);
+
+  const handleEditRequest = (
+    item: JiraUrlListItem | AgoUrlListItem,
+    listKey: URLItemListKey
+  ) => {
+    setEditingItem(item);
+    setEditingListKey(listKey);
+  };
 
   // Memoized Filtered and Sorted Jira List
   const jiraEntries = useMemo(() => {
@@ -444,7 +456,7 @@ const Popup = () => {
               </div>
             </div>
             <div className="flex flex-col gap-2 flex-1 h-full max-h-[370px] overflow-y-auto hide-scrollbar p-0">
-              {renderGroupedList(jiraGroupedEntries, StorageListKey.JIRA, latestJiraId)}
+              {renderGroupedList(jiraGroupedEntries, StorageListKey.JIRA, latestJiraId, handleEditRequest)}
             </div>
           </div>
 
@@ -478,11 +490,24 @@ const Popup = () => {
               </div>
             </div>
             <div className="flex flex-col gap-2 w-full h-full max-h-[370px] overflow-x-hidden overflow-y-auto hide-scrollbar">
-              {renderGroupedList(agoGroupedEntries, StorageListKey.AGO, latestAgoId)}
+              {renderGroupedList(agoGroupedEntries, StorageListKey.AGO, latestAgoId, handleEditRequest)}
             </div>
           </div>
         </div>
       </div>
+      {editingItem && editingListKey && (
+        <UrlItemEditor
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingItem(null);
+              setEditingListKey(null);
+            }
+          }}
+          storageListKey={editingListKey}
+          urlItem={editingItem}
+        />
+      )}
     </div>
   );
 };

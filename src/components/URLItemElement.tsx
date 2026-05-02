@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, cn } from "@heroui/react";
 import { StarIcon } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
-import UrlItemEditor from "@/components/UrlItemEditor";
 import { useStorage } from "@/hooks/useStorage";
-import { AgoUrlListItem, JiraUrlListItem, StorageKey } from "@/types/storage-types";
+import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { URLType } from "@/types/list-types";
 
 type Props = {
   urlItem: JiraUrlListItem | AgoUrlListItem;
-  storageListKey: Extract<StorageKey, "jiraUrlList" | "agoUrlList">;
+  storageListKey: URLItemListKey;
   className?: string;
   linkReady?: boolean;
+  onEditRequest: () => void;
 };
 
 export default function URLItemElement({
@@ -19,10 +19,10 @@ export default function URLItemElement({
   className,
   linkReady,
   urlItem,
+  onEditRequest,
   ...props
 }: Props & React.ComponentProps<"div">) {
   const { storageState, saveToStorage } = useStorage();
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const { favorite, id, url } = urlItem;
 
   const onLabelClick: React.MouseEventHandler<HTMLElement> = (e) => {
@@ -55,7 +55,7 @@ export default function URLItemElement({
         className={cn(`flex justify-start gap-x-2 w-full items-center rounded-[8px] py-2 px-3 ${className} `)}
         onContextMenu={(e) => {
           e.preventDefault();
-          setIsEditorOpen(true);
+          onEditRequest();
         }}
         {...props}
       >
@@ -102,12 +102,6 @@ export default function URLItemElement({
           </div>
         </div>
       </div>
-      <UrlItemEditor
-        isOpen={isEditorOpen}
-        onOpenChange={setIsEditorOpen}
-        storageListKey={storageListKey}
-        urlItem={urlItem}
-      />
     </>
   );
 }

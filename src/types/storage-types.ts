@@ -39,6 +39,7 @@ export interface StorageSchema {
 }
 
 export type StorageKey = keyof StorageSchema;
+export type URLItemListKey = Extract<StorageKey, "jiraUrlList" | "agoUrlList">;
 
 interface StorageChange<T> {
   /** The new value of the item, if there is a new value. */
