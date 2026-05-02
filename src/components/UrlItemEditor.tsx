@@ -234,20 +234,48 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                   </div>
                 )}
               </div>
-              <CustomTextField
-                id="url-item-url"
-                value={draft.url}
-                onChange={bindTextField("url")}
-                placeholder="URL"
-                label="URL"
-              />
-              <CustomTextField
-                id="url-item-original-url"
-                value={draft.originalUrl}
-                onChange={bindTextField("originalUrl")}
-                placeholder="Original URL"
-                label="Original URL"
-              />
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="url-item-url" className="text-primary">URL</Label>
+                <div className="flex gap-1">
+                  <Input
+                    id="url-item-url"
+                    value={draft.url}
+                    onChange={bindTextField("url")}
+                    placeholder="URL"
+                    className="flex-1 ring-primary focus:ring-1"
+                  />
+                  <Button
+                    onPress={() => handleCopyLink(draft.url)}
+                    aria-label="Copy link"
+                    size="sm"
+                    variant="outline"
+                    className="border-zinc-700 hover:border-zinc-600"
+                  >
+                    <CopyIcon className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="url-item-original-url" className="text-primary">Original URL</Label>
+                <div className="flex gap-1">
+                  <Input
+                    id="url-item-original-url"
+                    value={draft.originalUrl}
+                    onChange={bindTextField("originalUrl")}
+                    placeholder="Original URL"
+                    className="flex-1 ring-primary focus:ring-1"
+                  />
+                  <Button
+                    onPress={() => handleCopyLink(draft.originalUrl)}
+                    aria-label="Copy link"
+                    size="sm"
+                    variant="outline"
+                    className="border-zinc-700 hover:border-zinc-600"
+                  >
+                    <CopyIcon className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
 
               <div className="grid grid-cols-5 gap-3">
                 <div className="flex flex-col col-span-3 gap-1">
