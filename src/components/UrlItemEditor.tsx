@@ -134,8 +134,8 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
   return (
     <Modal state={overlayState}>
       <Modal.Backdrop className="bg-black/70">
-        <Modal.Container size="cover" scroll="inside" placement="center" className="p-2">
-          <Modal.Dialog className="overflow-hidden bg-background">
+        <Modal.Container size="cover" scroll="inside" className="p-2">
+          <Modal.Dialog className="overflow-hidden bg-background h-full">
             <Modal.Header className="px-1">
               <Modal.Heading className="text-lg font-semibold">Edit {draft.type} Item</Modal.Heading>
               <div className="flex items-center justify-between gap-3">
@@ -270,9 +270,8 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                     placeholder="Collection Name"
                     type="text"
                     value={draft.collectionName ?? ""}
-                    onChange={bindTextField("collectionName")}
-                    disabled={draft.collectionName === ARCHIVED_COLLECTION_NAME}
-                    className="focus:ring-primary focus:ring-1"
+                    onChange={draft.collectionName === ARCHIVED_COLLECTION_NAME ? () => { } : bindTextField("collectionName")}
+                    className={`focus:ring-primary focus:ring-1 ${draft.collectionName === ARCHIVED_COLLECTION_NAME ? " opacity-50 pointer-events-none" : ""}`}
                   />
                 </div>
                 <div className="flex flex-col col-span-2 gap-1">
@@ -301,19 +300,17 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <CheckboxWrapper
-                  id="url-item-archived"
-                  isSelected={draft.collectionName === ARCHIVED_COLLECTION_NAME}
-                  onChange={(isSelected) => {
-                    updateDraft((previous) => ({
-                      ...previous,
-                      collectionName: isSelected ? ARCHIVED_COLLECTION_NAME : undefined,
-                    }));
-                  }}
-                  label="Archived"
-                />
-              </div>
+              <CheckboxWrapper
+                id="url-item-archived"
+                isSelected={draft.collectionName === ARCHIVED_COLLECTION_NAME}
+                onChange={(isSelected) => {
+                  updateDraft((previous) => ({
+                    ...previous,
+                    collectionName: isSelected ? ARCHIVED_COLLECTION_NAME : undefined,
+                  }));
+                }}
+                label="Archived"
+              />
 
               {draft.type === URLType.JIRA ? (
                 <div className="space-y-3 rounded-lg border border-zinc-700 bg-alternative-background p-3">
