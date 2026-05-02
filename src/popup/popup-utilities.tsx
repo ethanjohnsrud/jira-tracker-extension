@@ -100,7 +100,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
           storageListKey={storageListKey}
           urlItem={entry.item}
           linkReady={entry.item.id === latestId}
-          className={cn(idx % 2 == 0 ? "bg-[#2d2d2d]" : "")}
+          className={cn(idx % 2 == 0 ? "bg-alternative-background" : "")}
           onEditRequest={() => onEditRequest(entry.item, storageListKey)}
         />
       );
@@ -112,7 +112,7 @@ export const renderGroupedList = <T extends JiraUrlListItem | AgoUrlListItem>(
               <Accordion.Trigger className="w-full px-0 py-2 hover:bg-content2/60 transition-colors">
                 <div className="flex w-full items-center gap-2 text-left">
                   <FolderIcon className="size-4 text-primary shrink-0" />
-                  <span className="flex-1 truncate text-sm font-semibold text-white">{entry.collectionName}</span>
+                  <span className="flex-1 truncate text-sm font-semibold text-white bg-primary px-2">{entry.collectionName}</span>
                   <span className="text-xs text-default-400 whitespace-nowrap">{entry.items.length}</span>
                   <Accordion.Indicator className="size-4 text-default-400 shrink-0" />
                 </div>

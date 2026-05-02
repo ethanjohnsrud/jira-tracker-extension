@@ -350,28 +350,27 @@ const Popup = () => {
         </div>
       )}
       <div className="relative w-full h-full flex flex-col items-center space-y-4 p-4">
-        <div className="w-full flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-primary">Jira Tracker</h1>
+        <div className="w-full flex justify-between items-center gap-4">
+          <div className="w-full grid grid-cols-3 gap-x-2">
+            <SelectInput options={settings.REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
+            <SelectInput
+              options={settings.ENVIRONMENTS}
+              onChange={onEnvironmentChange}
+              value={dropdowns.environment.value}
+            />
+            <SelectInput
+              options={settings.ROUTES}
+              onChange={onRouteChange}
+              value={dropdowns.route.value}
+            />
+          </div>
           <PreferencePopover />
-        </div>
-        <div className="w-full grid grid-cols-3 gap-x-2">
-          <SelectInput options={settings.REGIONS} onChange={onRegionChange} value={dropdowns.region.value} />
-          <SelectInput
-            options={settings.ENVIRONMENTS}
-            onChange={onEnvironmentChange}
-            value={dropdowns.environment.value}
-          />
-          <SelectInput
-            options={settings.ROUTES}
-            onChange={onRouteChange}
-            value={dropdowns.route.value}
-          />
         </div>
 
         {/* Search Input */}
         <div className="h-10 w-full">
           <Activity mode={searchQuery.length > 0 ? "visible" : "hidden"}>
-            <div className="w-full flex items-center bg-content2/40 rounded-lg px-3 py-0.5 gap-2 border border-default-200 focus-within:border-primary transition-colors">
+            <div className="w-full flex items-center bg-content2/40 rounded-4xl px-3 py-0.5 gap-2 border border-default-200 border-primary transition-colors">
               <SearchIcon className="size-4 text-default-400" />
               <Input
                 ref={searchInputRef}
@@ -424,8 +423,8 @@ const Popup = () => {
                 </a>
                 {/* Date Picker for filtering */}
                 <Popover>
-                  <Popover.Trigger className="group rounded-full p-2 cursor-pointer hover:bg-success-hover">
-                    <CalendarDaysIcon size={18} className="text-green-500 group-hover:text-white" />
+                  <Popover.Trigger className="group rounded-full p-2 cursor-pointer hover:bg-primary">
+                    <CalendarDaysIcon size={18} className="text-primary group-hover:text-white" />
                   </Popover.Trigger>
                   <Popover.Content className="max-w-64">
                     <Popover.Dialog>
@@ -465,9 +464,9 @@ const Popup = () => {
             <div className="flex items-center gap-1">
               <span
                 onClick={handleLinkClick}
-                className="flex items-center justify-center p-0.5 mb-2 cursor-pointer hover:text-success-hover"
+                className="group rounded-full p-2 flex items-center justify-center mb-2 cursor-pointer hover:bg-primary"
               >
-                <LinkIcon className="size-4 text-primary" />
+                <LinkIcon className="size-4 text-primary group-hover:text-white" />
               </span>
               <div className="flex-1 flex justify-between items-center border-b-2 border-primary mb-2 sticky top-0 z-10 bg-background">
                 <a
@@ -480,11 +479,11 @@ const Popup = () => {
                 </a>
                 <span
                   onClick={() => setIsAgoFilterActive(!isAgoFilterActive)}
-                  className={`group rounded-full p-2 cursor-pointer hover:bg-success-hover ${isAgoFilterActive ? "bg-success-hover/20" : ""}`}
+                  className={`group rounded-full p-2 cursor-pointer hover:bg-primary ${isAgoFilterActive ? "bg-primary" : ""}`}
                 >
                   <FilterIcon
                     size={18}
-                    className={`${isAgoFilterActive ? "text-white" : "text-green-500"} group-hover:text-white`}
+                    className={`${isAgoFilterActive ? "text-white" : "text-primary"} group-hover:text-white`}
                   />
                 </span>
               </div>
