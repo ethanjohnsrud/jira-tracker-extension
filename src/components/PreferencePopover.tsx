@@ -41,9 +41,9 @@ export default function PreferencePopover() {
           <EllipsisVerticalIcon className="size-5" />
         </Button>
       </Popover.Trigger>
-      <Popover.Content className="w-[320px]">
+      <Popover.Content className="w-[320px] bg-background">
         <Popover.Dialog>
-          <Popover.Heading className="text-base font-semibold">Preferences</Popover.Heading>
+          <Popover.Heading className="text-base font-semibold text-primary">Preferences</Popover.Heading>
           <CheckboxWrapper
             id="debug"
             label="Debug Mode"
@@ -77,7 +77,7 @@ export default function PreferencePopover() {
             />
           )}
 
-          <p className="text-base font-semibold mt-2">Import/Export</p>
+          <p className="text-base font-semibold mt-2 text-primary">Import</p>
           <div className="flex flex-col gap-y-1 mt-1">
             <Button
               onPress={() => handleImport("jiraUrlList")}
@@ -86,22 +86,10 @@ export default function PreferencePopover() {
               <ArrowUpToLineIcon className="size-3.5" /> Jira links
             </Button>
             <Button
-              onPress={() => handleExport("jiraUrlList")}
-              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-            >
-              <ArrowDownToLineIcon className="size-3.5" /> Jira links
-            </Button>
-            <Button
               onPress={() => handleImport("agoUrlList")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowUpToLineIcon className="size-3.5" /> AGO links
-            </Button>
-            <Button
-              onPress={() => handleExport("agoUrlList")}
-              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-            >
-              <ArrowDownToLineIcon className="size-3.5" /> AGO links
             </Button>
             <Button
               onPress={() => handleImport("settings")}
@@ -110,16 +98,32 @@ export default function PreferencePopover() {
               <ArrowUpToLineIcon className="size-3.5" /> Settings
             </Button>
             <Button
-              onPress={() => handleExport("settings")}
-              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
-            >
-              <ArrowDownToLineIcon className="size-3.5" /> Settings
-            </Button>
-            <Button
               onPress={() => handleImport("loginCredentials")}
               className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
             >
               <ArrowUpToLineIcon className="size-3.5" /> Auto Login Credentials
+            </Button>
+          </div>
+
+          <p className="text-base font-semibold mt-2 text-primary">Export</p>
+          <div className="flex flex-col gap-y-1 mt-1">
+            <Button
+              onPress={() => handleExport("jiraUrlList")}
+              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
+            >
+              <ArrowDownToLineIcon className="size-3.5" /> Jira links
+            </Button>
+            <Button
+              onPress={() => handleExport("agoUrlList")}
+              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
+            >
+              <ArrowDownToLineIcon className="size-3.5" /> AGO links
+            </Button>
+            <Button
+              onPress={() => handleExport("settings")}
+              className="w-full h-5 justify-start text-white hover:text-primary bg-transparent p-0"
+            >
+              <ArrowDownToLineIcon className="size-3.5" /> Settings
             </Button>
           </div>
         </Popover.Dialog>
