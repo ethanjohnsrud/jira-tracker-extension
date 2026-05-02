@@ -12,8 +12,15 @@ interface TextInputProps {
 export function CustomTextField({ id, value, onChange, placeholder, label }: TextInputProps) {
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={id}>{label}</Label>
-      <Input id={id} placeholder={placeholder} type="text" value={value} onChange={onChange} className="ring-0" />
+      <Label htmlFor={id} className="text-primary">{label}</Label>
+      <Input
+        id={id}
+        placeholder={placeholder}
+        type="text"
+        value={value}
+        onChange={onChange}
+        className="ring-0"
+      />
     </div>
   );
 }
@@ -30,8 +37,14 @@ interface TextAreaInputProps {
 export function CustomTextAreaField({ id, value, onChange, placeholder, label, error }: TextAreaInputProps) {
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={id}>{label}</Label>
-      <TextArea id={id} placeholder={placeholder} value={value} onChange={onChange} className="ring-0" />
+      <Label htmlFor={id} className="text-primary">{label}</Label>
+      <TextArea
+        id={id}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className="ring-0"
+      />
       {error ? <p className="text-xs text-danger">{error}</p> : null}
     </div>
   );

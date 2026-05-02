@@ -1,9 +1,9 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Button, Chip, Label, Modal, useOverlayState } from "@heroui/react";
+import { Button, Chip, Input, Label, Modal, useOverlayState } from "@heroui/react";
 import { Trash2Icon, XIcon } from "lucide-react";
 import { useStorage } from "@/hooks/useStorage";
 import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
-import { AGOListItem, JiraListItem, URLType } from "@/types/list-types";
+import { AGOListItem, ARCHIVED_COLLECTION_NAME, JiraListItem, URLType } from "@/types/list-types";
 import { CustomTextAreaField, CustomTextField } from "./CustomField";
 import { CheckboxWrapper } from "./CheckboxWrapper";
 
@@ -92,10 +92,10 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
 
   const bindTextField =
     <T extends keyof JiraListItem | keyof AGOListItem>(key: T) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      updateDraft((previous) => ({ ...previous, [key]: value }));
-    };
+      (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value = event.target.value;
+        updateDraft((previous) => ({ ...previous, [key]: value }));
+      };
 
   const handleAdditionalLinksChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
@@ -124,13 +124,16 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
     <Modal state={overlayState}>
       <Modal.Backdrop className="bg-black/70">
         <Modal.Container size="cover" scroll="inside" placement="center" className="p-2">
-          <Modal.Dialog className="overflow-hidden">
+          <Modal.Dialog className="overflow-hidden bg-background">
             <Modal.Header>
-              <Modal.Heading className="text-lg font-semibold">Edit URL Item</Modal.Heading>
+              <Modal.Heading className="text-lg font-semibold">Edit {draft.type} Item</Modal.Heading>
               <div className="flex items-center justify-between gap-3">
-                <Chip color="accent" size="sm">
-                  {draft.type}
-                </Chip>
+                <CheckboxWrapper
+                  id="url-item-favorite"
+                  isSelected={Boolean(draft.favorite)}
+                  onChange={() => updateDraft((previous) => ({ ...previous, favorite: !previous.favorite }))}
+                  label="Favorite"
+                />
                 <span className="text-xs text-zinc-400">
                   {saveState === "saving" ? "Saving..." : saveState === "saved" ? "All changes saved" : "Ready"}
                 </span>
@@ -152,13 +155,20 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                 label="Display Name"
               />
               <CustomTextAreaField
+                id="url-item-description"
+                value={draft.description ?? ""}
+                onChange={bindTextField("description")}
+                placeholder="Description"
+                label="Description Details"
+              />
+              <CustomTextField
                 id="url-item-url"
                 value={draft.url}
                 onChange={bindTextField("url")}
                 placeholder="URL"
                 label="URL"
               />
-              <CustomTextAreaField
+              <CustomTextField
                 id="url-item-original-url"
                 value={draft.originalUrl}
                 onChange={bindTextField("originalUrl")}
@@ -166,15 +176,33 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                 label="Original URL"
               />
 
-              <div className="grid grid-cols-2 gap-3">
-                <CustomTextField
-                  id="url-item-collection-name"
-                  value={draft.collectionName ?? ""}
-                  onChange={bindTextField("collectionName")}
-                  placeholder="Collection Name"
-                  label="Collection Name"
-                />
-                <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-5 gap-3">
+                <div className="flex flex-col col-span-3 gap-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="url-item-collection-name" className="text-primary">Collection (Optional)</Label>
+                    <CheckboxWrapper
+                      id="url-item-preserve-custom-name"
+                      isSelected={Boolean(draft.preserveCustomName)}
+                      onChange={() =>
+                        updateDraft((previous) => ({
+                          ...previous,
+                          preserveCustomName: !previous.preserveCustomName,
+                        }))
+                      }
+                      label="Preserve Custom Name"
+                    />
+                  </div>
+                  <Input
+                    id="url-item-collection-name"
+                    placeholder="Collection Name"
+                    type="text"
+                    value={draft.collectionName ?? ""}
+                    onChange={bindTextField("collectionName")}
+                    disabled={draft.collectionName === ARCHIVED_COLLECTION_NAME}
+                    className="ring-0"
+                  />
+                </div>
+                <div className="flex flex-col col-span-2 gap-1">
                   <Label htmlFor="url-item-last-visited" className="text-sm">
                     Last Visited
                   </Label>
@@ -202,21 +230,15 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
 
               <div className="grid grid-cols-2 gap-3">
                 <CheckboxWrapper
-                  id="url-item-favorite"
-                  isSelected={Boolean(draft.favorite)}
-                  onChange={() => updateDraft((previous) => ({ ...previous, favorite: !previous.favorite }))}
-                  label="Favorite"
-                />
-                <CheckboxWrapper
-                  id="url-item-preserve-custom-name"
-                  isSelected={Boolean(draft.preserveCustomName)}
-                  onChange={() =>
+                  id="url-item-archived"
+                  isSelected={draft.collectionName === ARCHIVED_COLLECTION_NAME}
+                  onChange={(isSelected) => {
                     updateDraft((previous) => ({
                       ...previous,
-                      preserveCustomName: !previous.preserveCustomName,
-                    }))
-                  }
-                  label="Preserve Custom Name"
+                      collectionName: isSelected ? ARCHIVED_COLLECTION_NAME : undefined,
+                    }));
+                  }}
+                  label="Archived"
                 />
               </div>
 

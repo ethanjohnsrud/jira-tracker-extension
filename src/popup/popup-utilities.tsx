@@ -1,11 +1,9 @@
 import URLItemElement from "@/components/URLItemElement";
-import { UrlListItem } from "@/types/list-types";
+import { ARCHIVED_COLLECTION_NAME, UrlListItem } from "@/types/list-types";
 import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { Accordion, cn } from "@heroui/react";
 import { FolderIcon } from "lucide-react";
 import { ReactNode } from "react";
-
-const ARCHIVED_COLLECTION_NAME = "Archived";
 
 enum ItemDisplayType {
   INDIVIDUAL = 'INDIVIDUAL',

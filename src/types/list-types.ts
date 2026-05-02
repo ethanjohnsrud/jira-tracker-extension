@@ -9,6 +9,8 @@ export enum URLType {
   AGO = "AGO",
 }
 
+export const ARCHIVED_COLLECTION_NAME = "Archived";
+
 export interface UrlListItem {
   type: URLType.JIRA | URLType.AGO;
   /**@deprecated use `url` instead */
@@ -17,6 +19,7 @@ export interface UrlListItem {
   originalUrl: string;
 
   displayName: string;
+  description?: string;
   preserveCustomName?: boolean; //Toggle when edited within extension, prevents override on next visit
 
   favorite?: boolean;
