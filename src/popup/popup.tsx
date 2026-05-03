@@ -1,14 +1,14 @@
 import type { MouseEvent } from "react";
 import { useState, useEffect, useMemo, useRef, Activity } from "react";
 import {
-  ArrowDownToLineIcon, ArrowUpToLineIcon, CalendarDaysIcon, FilterIcon, LinkIcon,
+  ArrowDownToLineIcon, ArrowUpToLineIcon, FilterIcon, LinkIcon,
   SearchIcon,
   XIcon,
 } from "lucide-react";
 
 import { getFromStorage } from "@/controllers/storageController";
-import { Button as HerouiButton, Popover, Calendar, Chip, DateValue, Input } from "@heroui/react";
-import { formatDate, isSameDay } from "date-fns";
+import { Button as HerouiButton, Input } from "@heroui/react";
+import { isSameDay } from "date-fns";
 import { DropdownSelections } from "@/types/dropdown-types";
 import { parseAGOUrl } from "@/utils/url";
 import { useStorage } from "@/hooks/useStorage";
@@ -18,8 +18,8 @@ import UrlItemEditor from "@/components/UrlItemEditor";
 import { buildGroupedListEntries, renderGroupedList, sortByRecentAndFavorite, StorageListKey } from "./popup-utilities";
 import type { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { SelectInput } from "@/components/SelectInput";
-import { getLocalTimeZone } from "@internationalized/date";
 import useActiveTab from "@/hooks/useActiveTab";
+import { DatePickerField } from "@/components/DatePickerField";
 
 type NavigationEvent = MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>;
 
@@ -39,7 +39,7 @@ const Popup = () => {
   const [cacheProgress, setCacheProgress] = useState<number>(0);
   const [latestJiraId, setLatestJiraId] = useState<string>("");
   const [latestAgoId, setLatestAgoId] = useState<string>("");
-  const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<DateValue | null>(null);
+  const [jiraTargetDateFilter, setJiraTargetDateFilter] = useState<number | null>(null);
   const [isAgoFilterActive, setIsAgoFilterActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +61,7 @@ const Popup = () => {
         const matchesDate =
           !jiraTargetDateFilter ||
           (item.targetDateMS &&
-            isSameDay(new Date(item.targetDateMS), jiraTargetDateFilter.toDate(getLocalTimeZone())));
+            isSameDay(new Date(item.targetDateMS), new Date(jiraTargetDateFilter)));
 
         const searchAbleFields = [item.displayName, item.jiraCode, item.title, item.sprint, item.status];
         const matchesSearch =
@@ -421,37 +421,11 @@ const Popup = () => {
                 >
                   Jira
                 </a>
-                {/* Date Picker for filtering */}
-                <Popover>
-                  <Popover.Trigger className="group rounded-full p-2 cursor-pointer hover:bg-primary">
-                    <CalendarDaysIcon size={18} className="text-primary group-hover:text-white" />
-                  </Popover.Trigger>
-                  <Popover.Content className="max-w-64">
-                    <Popover.Dialog>
-                      <Calendar aria-label="Event date" value={jiraTargetDateFilter} onChange={setJiraTargetDateFilter}>
-                        <Calendar.Header>
-                          <Calendar.Heading />
-                          <Calendar.NavButton slot="previous" />
-                          <Calendar.NavButton slot="next" />
-                        </Calendar.Header>
-                        <Calendar.Grid>
-                          <Calendar.GridHeader>
-                            {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-                          </Calendar.GridHeader>
-                          <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
-                        </Calendar.Grid>
-                      </Calendar>
-                      <div className="flex justify-end mt-2">
-                        {jiraTargetDateFilter && (
-                          <Chip>{formatDate(jiraTargetDateFilter.toDate(getLocalTimeZone()), "MMM dd, yyyy")}</Chip>
-                        )}
-                        <HerouiButton size="sm" variant="ghost" onPress={() => setJiraTargetDateFilter(null)}>
-                          Clear
-                        </HerouiButton>
-                      </div>
-                    </Popover.Dialog>
-                  </Popover.Content>
-                </Popover>
+                <DatePickerField
+                  ariaLabel="Filter by target date"
+                  value={jiraTargetDateFilter}
+                  onChange={setJiraTargetDateFilter}
+                />
               </div>
             </div>
             <div className="flex flex-col gap-2 flex-1 h-full max-h-[370px] overflow-y-auto hide-scrollbar p-0">

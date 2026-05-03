@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Button, Chip, Input, Label, Modal, useOverlayState } from "@heroui/react";
 import { CircleMinus, CircleMinusIcon, CopyIcon, LinkIcon, PaperclipIcon, PlusCircleIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { DatePickerField } from "./DatePickerField";
 import { useStorage } from "@/hooks/useStorage";
 import { AgoUrlListItem, JiraUrlListItem, URLItemListKey } from "@/types/storage-types";
 import { AGOListItem, ARCHIVED_COLLECTION_NAME, JiraListItem, URLType } from "@/types/list-types";
@@ -16,12 +17,6 @@ type UrlItemEditorProps = {
 
 type EditableUrlItem = JiraUrlListItem | AgoUrlListItem;
 type SaveState = "idle" | "saving" | "saved";
-
-const parseOptionalNumber = (value: string) => {
-  if (!value.trim()) return undefined;
-  const parsedValue = Number(value);
-  return Number.isNaN(parsedValue) ? undefined : parsedValue;
-};
 
 const toSnapshot = (item: EditableUrlItem) => JSON.stringify(item);
 
@@ -302,28 +297,22 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                     className={`focus:ring-primary focus:ring-1 ${draft.collectionName === ARCHIVED_COLLECTION_NAME ? " opacity-50 pointer-events-none" : ""}`}
                   />
                 </div>
-                <div className="flex flex-col col-span-2 gap-1">
-                  <Label htmlFor="url-item-last-visited" className="text-sm">
-                    Last Visited
-                  </Label>
-                  <input
+                <div className="col-span-2">
+                  <DatePickerField
                     id="url-item-last-visited"
-                    type="datetime-local"
-                    value={
-                      draft.lastVisitedMS && !Number.isNaN(new Date(draft.lastVisitedMS).getTime())
-                        ? new Date(draft.lastVisitedMS).toISOString().slice(0, 16)
-                        : ""
-                    }
-                    onChange={(event) => {
-                      const date = new Date(event.target.value);
-                      if (Number.isNaN(date.getTime())) return;
+                    ariaLabel="Last Visited Date"
+                    label="Last Visited"
+                    triggerVariant="input"
+                    value={draft.lastVisitedMS ?? null}
+                    onChange={(ms) => {
+                      if (ms === null) return;
                       updateDraft((previous) => ({
                         ...previous,
-                        lastVisited: date.toISOString(),
-                        lastVisitedMS: date.getTime(),
+                        lastVisited: new Date(ms).toISOString(),
+                        lastVisitedMS: ms,
                       }));
                     }}
-                    className="rounded-md border border-zinc-700 bg-alternative-background px-3 py-2 text-sm text-white outline-none"
+                    clearable={false}
                   />
                 </div>
               </div>
@@ -374,17 +363,15 @@ export default function UrlItemEditor({ isOpen, onOpenChange, storageListKey, ur
                       placeholder="Status"
                       label="Status"
                     />
-                    <CustomTextField
-                      id="jira-target-date-ms"
-                      value={draft.targetDateMS?.toString() ?? ""}
-                      onChange={(event) =>
-                        updateDraft((previous) => ({
-                          ...previous,
-                          targetDateMS: parseOptionalNumber(event.target.value),
-                        }))
+                    <DatePickerField
+                      id="jira-target-date"
+                      ariaLabel="Target Date"
+                      label="Target Date"
+                      triggerVariant="input"
+                      value={draft.targetDateMS ?? null}
+                      onChange={(ms) =>
+                        updateDraft((previous) => ({ ...previous, targetDateMS: ms ?? undefined }))
                       }
-                      placeholder="Target Date MS"
-                      label="Target Date MS"
                     />
                   </div>
                 </div>
