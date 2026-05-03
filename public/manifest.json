@@ -5,10 +5,7 @@
   "manifest_version": 3,
   "content_scripts": [
     {
-      "matches": [
-        "https://jira.ethanjohnsrud.com/*",
-        "https://*.ethanjohnsrud.com/*"
-      ],
+      "matches": ["https://jira.ethanjohnsrud.com/*", "https://*.ethanjohnsrud.com/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }
@@ -37,14 +34,6 @@
     "64": "./assets/icons/64.png",
     "128": "./assets/icons/128.png"
   },
-  "permissions": [
-    "storage",
-    "alarms",
-    "activeTab",
-    "cookies"
-  ],
-  "host_permissions": [
-    "https://jira.ethanjohnsrud.com/*",
-    "https://*.ethanjohnsrud.com/*"
-  ]
+  "permissions": ["storage", "alarms", "activeTab", "cookies"],
+  "host_permissions": ["https://jira.ethanjohnsrud.com/*", "https://*.ethanjohnsrud.com/*"]
 }

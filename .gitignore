@@ -1,11 +1,15 @@
 /dist/
+/release/
 /node_modules/
 /src-*/
 /src -*/
 
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 .env
 .pem
 .DS_Store
 *.zip
+
+bundle-stats.html
