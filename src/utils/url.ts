@@ -21,7 +21,7 @@ export const isAgoUrl = async (url: string): Promise<boolean> => {
 
 export const isCompanyUrl = async (url: string): Promise<boolean> => {
   const settings = await getSettings();
-  return testRegexStr(url, settings.agoTracking.COMPANY_REGEX);
+  return testRegexStr(url, settings.agoTracking.COMPANY_URL_REGEX);
 };
 
 export const isLocalhostUrl = (url: string): boolean => {
@@ -30,6 +30,24 @@ export const isLocalhostUrl = (url: string): boolean => {
   } catch {
     return url.includes("localhost");
   }
+};
+
+type ParsedUrlOrigin = {
+  capturedUrl: string;
+  region?: string;
+  environment?: string;
+};
+export const parseUrlOrigin = async (url: string): Promise<ParsedUrlOrigin | null> => {
+  const settings = await getSettings();
+  if (!settings.others.URL_ORIGIN_REGEX) throw new Error("URL_ORIGIN_REGEX not set in settings");
+  const match = url.match(settings.others.URL_ORIGIN_REGEX);
+  if (!match) return null;
+  if (DEBUG_MODE) console.log("[parseUrlOrigin] match", match);
+  return {
+    capturedUrl: match[0],
+    region: match.groups?.region,
+    environment: match.groups?.environment
+  };
 };
 
 export const parseJiraUrl = async (url: string): Promise<{ jiraCode: string; capturedUrl: string; } | null> => {
@@ -50,7 +68,7 @@ export type ParsedCompanyUrl = {
 
 export const parseCompanyUrl = async (url: string): Promise<ParsedCompanyUrl | null> => {
   const settings = await getSettings();
-  const match = url.match(settings.agoTracking.COMPANY_REGEX);
+  const match = url.match(settings.agoTracking.COMPANY_URL_REGEX);
   if (!match) return null;
   if (DEBUG_MODE) console.log("[parseCompanyUrl] match", match);
   return {

@@ -71,9 +71,6 @@ export interface SETTINGS {
    * AGO URL Tracking *
    ********************/
   agoTracking: {
-    /*  Matches and captures company app URLs with region and environment */
-    COMPANY_REGEX: string;
-
     /*  Matches and captures base AGO URL, region, environment, client, and plan IDs */
     AGO_URL_REGEX: string;
 
@@ -85,6 +82,9 @@ export interface SETTINGS {
   };
 
   others: {
+    /** Matches and captures the origin of the URL (domain + region + environment) */
+    URL_ORIGIN_REGEX: string;
+
     /** Matches and captures login URLs with region and environment */
     LOGIN_URL_REGEX: string;
 
@@ -95,6 +95,8 @@ export interface SETTINGS {
     IMPORT_ROUTE_REGEX: string;
   };
 }
+
+const URL_ORIGIN_REGEX = "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)";
 
 export const DEFAULT_SETTINGS: SETTINGS = {
   CONSTANTS: {
@@ -189,21 +191,22 @@ export const DEFAULT_SETTINGS: SETTINGS = {
 
   agoTracking: {
     // [Group #1] Captures full matched URL | [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] Localhost marker
-    COMPANY_REGEX: "^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com)).+)",
+    // COMPANY_REGEX: "^(https:\/\/([a-zA-Z]{2,7})(?:-([a-z]+)\.ethanjohnsrud\.com|(\.localhost\.ethanjohnsrud\.com)).+)",
 
     // [Group #1] Captures full URL through plan ID but excludes sub-route
     // [Group #2] Region | [Group #3] Environment domain (integrations/staging/test/qa) | [Group #4] 5-chars-ending client ID | [Group #5] 5-chars-ending plan ID
     AGO_URL_REGEX:
-      "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)\\/(?<route>advisergo)\\/#\\/(?<clientID>[a-f0-9]{27}[a-f0-9]{5})\\/(?<planID>[a-f0-9]{27}[a-f0-9]{5})",
+      `${URL_ORIGIN_REGEX}\\/(?<route>advisergo)\\/#\\/(?<clientID>[a-f0-9]{27}[a-f0-9]{5})\\/(?<planID>[a-f0-9]{27}[a-f0-9]{5})`,
 
-    COMPANY_URL_REGEX: "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)\\/(?<route>advisergo)\\/",
+    COMPANY_URL_REGEX: `${URL_ORIGIN_REGEX}\\/(?<route>advisergo)\\/`,
 
     //Extract Client Last Name for URL Naming: document.querySelector('[data-testid="issue-field-sprint-readview-full.ui.sprint.sprint-content.view-sprint-content"] a');
     AGO_CLIENT_NAME_ELEMENT_ID: "client-actions-dropdown",
   },
 
   others: {
-    LOGIN_URL_REGEX: "^https:\\/\\/(?<region>[a-zA-Z]{2,7})(?:[-.](?<environment>[a-z]+)[a-z.]+)",
+    URL_ORIGIN_REGEX,
+    LOGIN_URL_REGEX: `${URL_ORIGIN_REGEX}`,
     EXPORT_ROUTE_REGEX: "\\/client-export",
     IMPORT_ROUTE_REGEX: "\\/client-import|\\/integration",
   }
@@ -323,11 +326,11 @@ export const validateSettings = (object: Object, debugMode: boolean): boolean =>
   }
 
   try {
-    if (!settings.agoTracking?.COMPANY_REGEX) {
+    if (!settings.agoTracking?.COMPANY_URL_REGEX) {
       if (debugMode) console.log("[Settings Validation] Failed: invalid agoTracking.companyTrackingRegex.");
       valid = false;
     } else {
-      new RegExp(settings.agoTracking.COMPANY_REGEX);
+      new RegExp(settings.agoTracking.COMPANY_URL_REGEX);
     }
   } catch (error) {
     if (debugMode) console.log("[Settings Validation] Failed: invalid agoTracking.companyTrackingRegex.", error);

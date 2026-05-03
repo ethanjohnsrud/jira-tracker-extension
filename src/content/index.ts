@@ -15,8 +15,8 @@ import { initAutoLogin } from "@/content/auto-login";
 import { initAutoExportImport } from "@/content/auto-export-import";
 
 /* **********************************************************
- * content.jsx | Used for is for manipulating the DOM        *
- * Runs in current tab, so console.log will be under inspect *
+ * content/index.ts | Used for is for manipulating the DOM  *
+ * Runs in current tab, so console.log will be under inspect  *
  *************************************************************/
 
 let currentUrl = "";

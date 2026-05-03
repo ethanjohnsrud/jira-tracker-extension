@@ -36,6 +36,15 @@ export interface StorageSchema {
   preferences: Preferences;
   cacheTabId?: number;
   loginCredentials?: LoginCredentials[];
+  /**Base64 encoded string of import-export file */
+  importedFileData?: {
+    [region: string]: {
+      [environment: string]: {
+        data: string; //base64 string
+        contentType?: string;
+      };
+    };
+  };
 }
 
 export type StorageKey = keyof StorageSchema;
